@@ -1,0 +1,6 @@
+{
+  "content_type": "application/json",
+  "lines": [
+    "{\"detail\":{\"code\":\"FAULT_INJECTED\"}}"
+  ]
+}

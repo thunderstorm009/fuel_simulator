@@ -1,11 +1,46 @@
+# Secrets and local configuration. Keep the shareable template tracked.
 .env
-*.pyc
+.env.*
+!.env.example
+
+# Local AI workspace; retained on the developer machine, not published.
+.agents/
+.claude/
+.local/
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/INSTRUCTIONS.md
+/KIT-MANIFEST.json
+/prompts/
+/scripts/bootstrap_agents.sh
+/scripts/new_worktree.sh
+/scripts/run_prompt.sh
+/scripts/sprint_gate.sh
+
+# Local-only planning reference and duplicate output from the old explorer run.
+/reference/Fuel Supply Intelligence & Resilience Platform 28-Hour Build Guide.pdf
+/docs/sim-samples/*.json.json
+
+# Python and test artifacts.
 __pycache__/
-node_modules/
-dist/
+*.py[cod]
 .venv/
-*.log
-.DS_Store
-coverage/
 .pytest_cache/
 .ruff_cache/
+.coverage
+coverage/
+*.log
+
+# Frontend dependencies and build output.
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local database, editor and operating-system artifacts.
+*.sqlite
+*.sqlite3
+*.db
+.DS_Store
+.idea/
+.vscode/

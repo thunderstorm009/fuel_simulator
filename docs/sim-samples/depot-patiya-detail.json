@@ -1,0 +1,17 @@
+{
+  "capacity": {
+    "DIESEL": 85000,
+    "OCTANE": 40000,
+    "PETROL": 65000
+  },
+  "dispatch_capacity_per_tick": 11000.0,
+  "id": "depot-patiya",
+  "inventory": {
+    "DIESEL": 55000,
+    "OCTANE": 24000,
+    "PETROL": 42000
+  },
+  "name": "Patiya Depot",
+  "region_id": "region-chattogram",
+  "status": "OPEN"
+}

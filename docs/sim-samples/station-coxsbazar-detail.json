@@ -1,0 +1,18 @@
+{
+  "capacity": {
+    "DIESEL": 12000,
+    "OCTANE": 7000,
+    "PETROL": 12000
+  },
+  "demand_multiplier": 1.0,
+  "demand_profile": "regional",
+  "id": "station-coxsbazar",
+  "inventory": {
+    "DIESEL": 7500,
+    "OCTANE": 4200,
+    "PETROL": 7500
+  },
+  "name": "Cox's Bazar Regional Station",
+  "region_id": "region-chattogram",
+  "status": "OPEN"
+}

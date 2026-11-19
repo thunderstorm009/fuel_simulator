@@ -1,4 +1,6 @@
-# Final documentation checklist (complete in Sprint 6-7; run prompts/DOCS-PROMPTS.md)
+# Final documentation checklist (remaining Sprint 6-7 work)
+
+Personal documentation prompts are retained locally under `.local/prompts/` and are not part of this public repository.
 
 Documents (all in this same repo): README.md, docs/architecture.md, docs/simulator-contract.md and sim-findings.md, docs/intelligence.md, docs/resilience.md, docs/observability.md, docs/operations.md (deployment), docs/testing-and-ci.md, docs/loadtest.md, docs/operator-guide.md, docs/runbook.md, docs/security-and-guardrails.md, docs/decisions.md, docs/assumptions-and-limitations.md, docs/ai-usage.md, docs/final-demo-script.md, docs/qa.md, docs/known-issues.md, docs/sprint-reports/sprint-01..07.md, docs/results/, docs/evidence/, docs/SUBMISSION-MAP.md, CHANGELOG.md.
 

@@ -1,0 +1,8 @@
+{
+  "end_tick": 2,
+  "id": 1,
+  "parameters": {},
+  "start_tick": 1,
+  "status": "SCHEDULED",
+  "type": "depot_constraint"
+}

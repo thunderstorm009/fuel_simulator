@@ -1,0 +1,18 @@
+{
+  "capacity": {
+    "DIESEL": 15000,
+    "OCTANE": 9000,
+    "PETROL": 14000
+  },
+  "demand_multiplier": 1.0,
+  "demand_profile": "urban_high",
+  "id": "station-mirpur",
+  "inventory": {
+    "DIESEL": 9000,
+    "OCTANE": 5000,
+    "PETROL": 9000
+  },
+  "name": "Mirpur Fuel Station",
+  "region_id": "region-dhaka",
+  "status": "OPEN"
+}

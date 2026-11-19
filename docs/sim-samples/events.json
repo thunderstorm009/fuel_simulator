@@ -1,0 +1,10 @@
+[
+  {
+    "end_tick": 1,
+    "id": 1,
+    "parameters": {},
+    "start_tick": 0,
+    "status": "ACTIVE",
+    "type": "demand_spike"
+  }
+]

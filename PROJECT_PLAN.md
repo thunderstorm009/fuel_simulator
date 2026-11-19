@@ -6,17 +6,18 @@ An operator-facing platform that shows live simulated fuel state, forecasts hour
 ## 2. Key insight
 Stations are refilled only by our allocations. Depots are refilled by 22 scheduled supply arrivals. With no action, stations run dry in roughly a simulated day. The platform's value is measured against that do-nothing baseline.
 
-## 3. Architecture (modular, few containers)
-```
-Simulator :8000 --REST poll + SSE hint--> WORKER (ingest, forecast, recommend, execute)
-WORKER --> PREDICTOR (thin FastAPI around core forecast; falls back to baseline if down)
-WORKER --> POSTGRES <-- API (FastAPI, reads DB only) <-- FRONTEND (React)
-Prometheus scrapes api, worker, predictor --> Grafana
-```
-- core/: pure logic (models, sim_client, forecast, risk, policies, validator, explain)
-- worker/: ingest.py, sse.py, forecast_job.py, recommend_job.py, executor.py
-- predictor/, api/, frontend/, infra/ (prometheus, grafana), scripts/, loadtest/, tests/
-- Allowed adaptation: fewer containers (worker as a background task inside api) if recorded in docs/decisions.md. Keep the predictor separate so 'prediction service unavailable' is demonstrable.
+## 3. Architecture (current implementation)
+The six platform services remain separate: simulator REST/SSE feeds the worker; the worker persists validated state and domain results in PostgreSQL; the API serves database-backed operator routes; the React frontend calls the API; Prometheus scrapes API, worker and predictor; Grafana uses Prometheus. The predictor currently exposes health/metrics only. Forecasting runs in the worker with shared core logic; a remote predictor/fallback path is not yet implemented.
+
+- `backend/api/`: API, routes, database access and schema.
+- `backend/worker/`: ingestion, forecast/recommendation jobs, SSE and approved execution.
+- `backend/shared/core/`: pure models, simulator client, forecast/risk/policy/validator logic and shared metrics.
+- `intel/predictor/`: independent predictor service.
+- `web/`: React application organized by feature.
+- `observability/`: Prometheus and Grafana provisioning.
+- `scripts/`, `tests/`: operational scripts and unit/integration/scenario suites.
+
+The topology is defined in `docker-compose.yml`; API, worker and predictor are not combined into one runtime.
 
 ## 4. Application API (confirm against code)
 GET /api/state, /api/data-health, /api/events, /api/risks, /api/risks/{station}/{fuel}/trajectory, /api/recommendations, /api/decisions, /api/health; POST /api/recommendations/{id}/approve and /reject (operator token); POST /api/chaos/forecast-fail (operator token, demo only).
@@ -41,7 +42,7 @@ P2: LP optimizer, LLM summaries, what-if endpoint, extra charts.
 Cut order when behind: P2, then polish, then extra charts. Never cut: hard constraints, re-validation, human approval, stale-data handling, fault demo, tests of the executor.
 
 ## 7. Sprint acceptance gates
-Each `prompts/SPRINT-0N.md` ends with its own acceptance checklist. A sprint passes only when every box has real command output or evidence.
+Sprint acceptance prompts are retained in the local-only `.local/prompts/` workspace. A sprint passes only when every acceptance item has real command output or evidence in its report.
 
 ## 8. Scoring map
 Product and UX 20, Intelligence 20, Architecture 15, DevOps 15, Resilience 15, Observability and performance 10, Demo 5. Most points come from a working, resilient, observable system, not from model sophistication.

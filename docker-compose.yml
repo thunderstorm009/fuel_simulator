@@ -1,0 +1,158 @@
+services:
+  simulator:
+    image: asifmahmoud414/bup-fuel-supply-simulator:1.0.0
+    environment:
+      SIMULATION_SPEED: ${SIMULATION_SPEED:-8}
+      TICK_MINUTES: ${TICK_MINUTES:-15}
+      SIMULATOR_START_MODE: ${SIMULATOR_START_MODE:-paused}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/health', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  postgres:
+    image: postgres:16.8-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fuel}
+      POSTGRES_USER: ${POSTGRES_USER:-fuel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fuel-local}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/api/db.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/api/Dockerfile
+    command: [uvicorn, api.main:app, --host, 0.0.0.0, --port, "8101"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://fuel:fuel-local@postgres:5432/fuel}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      OPERATOR_TOKEN: ${OPERATOR_TOKEN:-}
+    ports:
+      - "8101:8101"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8101/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  worker:
+    build:
+      context: .
+      dockerfile: backend/worker/Dockerfile
+    command: [uvicorn, worker.main:app, --host, 0.0.0.0, --port, "8102"]
+    environment:
+      SIM_BASE_URL: ${SIM_BASE_URL:-http://simulator:8000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://fuel:fuel-local@postgres:5432/fuel}
+      INGEST_INTERVAL_S: ${INGEST_INTERVAL_S:-5}
+      SIM_MAX_RETRIES: ${SIM_MAX_RETRIES:-3}
+      SIM_CONNECT_TIMEOUT_S: ${SIM_CONNECT_TIMEOUT_S:-2}
+      SIM_READ_TIMEOUT_S: ${SIM_READ_TIMEOUT_S:-3}
+      SIM_BREAKER_FAILURE_THRESHOLD: ${SIM_BREAKER_FAILURE_THRESHOLD:-5}
+      SIM_BREAKER_RESET_S: ${SIM_BREAKER_RESET_S:-10}
+    ports:
+      - "8102:8102"
+    depends_on:
+      simulator:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8102/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  predictor:
+    build:
+      context: .
+      dockerfile: intel/predictor/Dockerfile
+    command: [uvicorn, app.main:app, --host, 0.0.0.0, --port, "8103"]
+    ports:
+      - "8103:8103"
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8103/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  frontend:
+    build:
+      context: web
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8101}
+    ports:
+      - "${FRONTEND_HOST_PORT:-5173}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O - http://127.0.0.1/ >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  prometheus:
+    image: prom/prometheus:v3.3.0
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      api:
+        condition: service_healthy
+      worker:
+        condition: service_healthy
+      predictor:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:9090/-/healthy]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-local-demo-only}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, "wget -q -O - http://127.0.0.1:3000/api/health >/dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  postgres_data:
+  grafana_data:

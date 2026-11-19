@@ -1,0 +1,6 @@
+{
+  "error": {
+    "code": "FAULT_INJECTED",
+    "message": "Simulator API temporarily unavailable."
+  }
+}

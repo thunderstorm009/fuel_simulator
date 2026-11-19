@@ -1,69 +1,90 @@
-# Fuel Supply Intelligence & Resilience Platform: 28-hour Hackathon Kit
+# Fuel Supply Intelligence & Resilience Platform
 
-BUP CSE FEST 2026 Final Hackathon. This kit is the project harness: rules, skills, prompts, docs templates and scripts for building ONE application in seven 4-hour sprints with Claude Code, Codex CLI and Google Antigravity (agy). It is not the application itself.
+An operator-facing application for the BUP CSE Fest 2026 fuel supply simulator. It turns simulated network state into shortage forecasts and explainable allocation recommendations, then records an operator decision before the worker can submit an approved allocation.
 
-## The one rule that matters
+> **SIMULATED:** This project operates on simulated fuel supply data. It does not control real fuel infrastructure.
 
-**ONE repository for the whole 28 hours.** A sprint is not a new repo and not a new project. Sprint 2 extends the code from Sprint 1, Sprint 3 extends Sprint 2, and so on. Each sprint is just the next part of the same build, marked by a git tag (sprint-1 ... sprint-7). Every sprint prompt tells the agent to inspect what already exists and extend it. Progress between sessions lives in `docs/PROGRESS.md`, not in anyone's memory.
+## What it does
 
+- Synchronizes simulator state through the worker and stores validated snapshots in PostgreSQL.
+- Shows station and depot inventory, network routes, events, data freshness, and degraded status.
+- Forecasts station demand and inventory risk, including uncertainty and known station allocation arrivals.
+- Produces constraint-checked recommendations with explanations and a human approval/rejection workflow.
+- Uses a persistent idempotency key and exact request body for safe simulator submission retries.
+- Exposes service health and Prometheus metrics, with Grafana provisioned against Prometheus.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  SIM[Official simulator] -->|REST poll; SSE refetch hint| W[Worker]
+  W --> DB[(PostgreSQL)]
+  DB --> API[API]
+  WEB[Frontend] --> API
+  W -->|approved allocation only| SIM
+  P[Predictor service] -. independent health/metrics service .-> PROM[Prometheus]
+  API --> PROM
+  W --> PROM
+  PROM --> G[Grafana]
 ```
-one repo: fuel-ops/
-  main  ---- sprint-1 ---- sprint-2 ---- sprint-3 ---- ... ---- sprint-7 (release)
-            (foundation)  (ingest+UI)   (forecast)            (final)
+
+The platform has six independently running services:
+
+| Service | Responsibility | Local URL |
+|---|---|---|
+| API | Database-backed operator reads and approval/rejection records; no simulator reads | `http://localhost:8101` |
+| Worker | Simulator REST/SSE, validation, persistence, forecasting, recommendation and approved execution jobs | `http://localhost:8102` |
+| Predictor | Independent health/metrics service; forecast request/fallback integration is planned | `http://localhost:8103` |
+| Frontend | React + TypeScript operator interface | `http://localhost:5173` |
+| Prometheus | Scrapes API, worker and predictor metrics | `http://localhost:9090` |
+| Grafana | Provisioned Prometheus data source | `http://localhost:3000` |
+
+PostgreSQL and the official simulator are supporting containers, so the Compose stack has eight containers in total.
+
+## Technology
+
+Python, FastAPI, SQLAlchemy, PostgreSQL, React, TypeScript, Vite, TanStack Query, Tailwind CSS, Recharts, Prometheus, Grafana, Docker Compose, pytest, Ruff, Vitest and Testing Library.
+
+## Repository layout
+
+```text
+backend/api/             API application, database schema and tests
+backend/worker/          Simulator synchronization and background jobs
+backend/shared/core/     Shared simulator client, domain logic and metrics
+intel/predictor/         Independent predictor service
+web/                     React application, feature modules and UI tests
+observability/           Prometheus and Grafana configuration
+tests/                   Unit, integration and scenario tests
+scripts/                 Runtime smoke and project scripts
+docs/                    Architecture, decisions, evidence and sprint reports
 ```
 
-## Start here (about 30 minutes, once)
+## Run locally
 
-1. Create one empty git repo, for example `fuel-ops`, and open a terminal in it.
-2. Unzip this kit and copy EVERYTHING (including hidden files such as `.agents/` and `.gitignore`) into the repo root:
-   `cp -r fuel-ops-hackathon-kit/. fuel-ops/`
-3. Put the two official PDFs in `reference/` (hackathon brief, simulator integration guide).
-4. Run `bash scripts/bootstrap_agents.sh`. It creates CLAUDE.md and GEMINI.md from AGENTS.md and links `.claude/skills` to `.agents/skills`.
-5. Open the repo in your tools and check that they see the rules and skills (see INSTRUCTIONS.md section 3).
-6. `git add -A && git commit -m 'kit' && git tag sprint-0`
-7. Run `prompts/00-MASTER-BOOTSTRAP.md` once (planning only), approve the plan, then start Sprint 1.
+1. Copy `.env.example` to `.env` and configure `DATABASE_URL` and `POSTGRES_PASSWORD` to match. Set `OPERATOR_TOKEN` for approval/rejection actions. The defaults are for local development only.
+2. Start the stack with `make up`. If host port 5173 is occupied, set `FRONTEND_HOST_PORT=5174` and `CORS_ORIGIN=http://localhost:5174` in `.env`.
+3. Check service health at each service's `/health` endpoint, and open the frontend URL above.
 
-Full step-by-step instructions are in `INSTRUCTIONS.md`. Read it once before hour 0.
+`make down` stops containers and preserves volumes. Do not use `docker compose down -v` unless you intend to delete local database and Grafana data.
 
-## Where every file goes (all paths are relative to the repo root)
+The worker owns simulator I/O. REST responses are authoritative; SSE is only a signal to refetch. The only simulator write is `POST /v1/allocations`, performed by the worker after a fresh read, validation, and an explicit persisted operator approval. Scheduled or in-transit supply is never counted as current inventory.
 
-| File or folder | Purpose | Read by | When |
-|---|---|---|---|
-| `AGENTS.md` | Durable rules for every agent | Codex, Antigravity, (copies for Claude Code and Gemini) | Every session |
-| `CLAUDE.md`, `GEMINI.md` | Copies of AGENTS.md made by the bootstrap script | Claude Code, Antigravity | Every session |
-| `PROJECT_PLAN.md` | Scope, architecture, 28-hour schedule, gates | You and agents | Start, each gate |
-| `INSTRUCTIONS.md` | How to run the kit, tool by tool | You | Before hour 0 |
-| `.agents/skills/<name>/SKILL.md` | 12 reusable skills | Agents | Loaded on demand |
-| `.claude/skills` | Link to `.agents/skills` (created by script) | Claude Code | Automatic |
-| `prompts/` | Bootstrap, 7 sprint prompts, header, gate, review, docs and rescue prompts | You paste them into the agent | Each sprint |
-| `docs/PROGRESS.md` | Running state: what exists, what is next | Agents and you | Start and end of every session |
-| `docs/decisions.md` | Decision log (ADR style) | Agents and you | When a decision is made |
-| `docs/architecture.md` and other design docs | Planned design; update to match reality | Agents | While building |
-| `docs/templates/` | Sprint report, ADR, demo evidence, runbook templates | Agents | Sprint ends |
-| `docs/sprint-reports/` | One report per sprint (sprint-01.md ...) | Judges and you | End of each sprint |
-| `docs/evidence/` | Screenshots, logs, command output | Docs | Whenever a feature works |
-| `docs/results/` | Scenario comparison and load-test results | Docs | Sprint 6 |
-| `docs/sim-samples/` | Captured simulator JSON (test fixtures) | Tests | Sprint 1 |
-| `reference/` | Official brief and simulator guide PDFs | Agents | Always |
-| `scripts/` | bootstrap, sprint gate, run prompt, worktree helper | You | Throughout |
-| `.env.example` | Config template (copy to `.env`, never commit) | You | Sprint 1 |
+## Verification commands
 
-The application folders (`core/`, `worker/`, `predictor/`, `api/`, `frontend/`, `infra/`, `tests/`, `loadtest/`) do not exist yet. The agents create them across the sprints, inside this same repo.
+```sh
+make lint
+make test
+npm --prefix web run typecheck
+npm --prefix web run test
+npm --prefix web run build
+docker compose config -q
+make smoke
+```
 
-## Agent compatibility
+See `.env.example` for supported environment variables and [docs/operations.md](docs/operations.md) for service and troubleshooting details.
 
-| Tool | Reads rules from | Skills location | Start |
-|---|---|---|---|
-| Claude Code | CLAUDE.md | `.claude/skills` (linked to `.agents/skills`) | `claude` in the repo root |
-| Codex CLI | AGENTS.md | `.agents/skills` | `codex` in the repo root |
-| Antigravity (agy) | AGENTS.md and GEMINI.md | `.agents/skills` | `agy` in the repo root, or open the folder in the app |
+## Development status
 
-Tool conventions change. If a tool does not find the skills, check its current docs, restart the session, or paste the skill text into the prompt. References: Antigravity skills https://antigravity.google/docs/skills ; Codex skills https://developers.openai.com/codex/skills ; the open Agent Skills standard https://agentskills.io .
+Sprint 1–4 implementation work is present. Sprints 1–3 have local acceptance evidence. Sprint 4 implementation and local checks are complete, while its live acceptance gate remains open: an operator-approved allocation reaching `ARRIVED` and an identical body/key replay have not been verified, and no simulator allocation was submitted. The predictor service is currently a health/metrics skeleton; the worker computes forecasts using shared logic.
 
-## Safety and scope
-
-Simulator only. No real fuel systems, purchases or dispatches. All values are SIMULATED and labelled so. Human approval is required before any allocation is sent to the simulator. The official brief and the live simulator override this kit if they disagree.
-
-## What is in the kit
-
-See `KIT-MANIFEST.json` for the full file list.
+The consolidated engineering update is [Day 1 Engineering Progress — Sprints 1–4](docs/DAY-1-UPDATE.md).

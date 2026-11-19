@@ -1,0 +1,94 @@
+"""Database-backed recommendation reads and human decision writes."""
+
+from __future__ import annotations
+
+import hmac
+import os
+from typing import Annotated, Any
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, HTTPException
+from pydantic import BaseModel, Field, field_validator
+
+from api.database import ReadRepository
+from api.routes.read import RepositoryDep
+
+router = APIRouter(prefix="/api")
+
+
+class RejectRequest(BaseModel):
+    reason: str = Field(min_length=1, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def reason_must_contain_non_whitespace(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("reason must contain non-whitespace text")
+        return normalized
+
+
+def require_operator_token(
+    token: Annotated[str, Header(alias="X-Operator-Token")] = "",
+) -> str:
+    expected = os.getenv("OPERATOR_TOKEN")
+    if not expected:
+        raise HTTPException(status_code=503, detail="Operator decisions are not configured")
+    if not hmac.compare_digest(token, expected):
+        raise HTTPException(status_code=401, detail="Invalid operator token")
+    return "operator"
+
+
+@router.get("/recommendations")
+async def recommendations(repository: RepositoryDep) -> dict[str, Any]:
+    return {"recommendations": await repository.get_recommendations(), "simulated": True}
+
+
+@router.get("/decisions")
+async def decisions(repository: RepositoryDep) -> dict[str, Any]:
+    return {"decisions": await repository.get_decisions(), "simulated": True}
+
+
+async def _decide(
+    recommendation_id: UUID,
+    action: str,
+    reason: str | None,
+    actor: str,
+    repository: ReadRepository,
+) -> dict[str, Any]:
+    try:
+        result = await repository.decide_recommendation(
+            str(recommendation_id), action, reason, actor
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    if result is None:
+        raise HTTPException(status_code=404, detail="Recommendation not found")
+    recommendation = result["recommendation"]
+    if recommendation["status"] == "EXPIRED":
+        raise HTTPException(status_code=409, detail="Recommendation has expired")
+    return {
+        "recommendation_id": str(recommendation_id),
+        "status": recommendation["status"],
+        "already_decided": not result["decision_recorded"],
+        "simulated": True,
+    }
+
+
+@router.post("/recommendations/{recommendation_id}/approve")
+async def approve_recommendation(
+    recommendation_id: UUID,
+    repository: RepositoryDep,
+    actor: Annotated[str, Depends(require_operator_token)],
+) -> dict[str, Any]:
+    return await _decide(recommendation_id, "approve", None, actor, repository)
+
+
+@router.post("/recommendations/{recommendation_id}/reject")
+async def reject_recommendation(
+    recommendation_id: UUID,
+    payload: RejectRequest,
+    repository: RepositoryDep,
+    actor: Annotated[str, Depends(require_operator_token)],
+) -> dict[str, Any]:
+    return await _decide(recommendation_id, "reject", payload.reason, actor, repository)

@@ -1,0 +1,12 @@
+[
+  {
+    "demand_factor": 1.0,
+    "id": "region-dhaka",
+    "name": "Dhaka Division"
+  },
+  {
+    "demand_factor": 1.08,
+    "id": "region-chattogram",
+    "name": "Chattogram Division"
+  }
+]

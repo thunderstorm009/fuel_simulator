@@ -1,0 +1,25 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-ra"
+pythonpath = [".", "backend", "backend/shared", "intel/predictor"]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+src = [
+    "backend/shared",
+    "backend/api",
+    "backend/worker",
+    "intel/predictor",
+    "tests",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+extend-ignore = ["UP007"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

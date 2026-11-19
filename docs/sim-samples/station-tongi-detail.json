@@ -1,0 +1,18 @@
+{
+  "capacity": {
+    "DIESEL": 18000,
+    "OCTANE": 6000,
+    "PETROL": 9000
+  },
+  "demand_multiplier": 1.0,
+  "demand_profile": "industrial",
+  "id": "station-tongi",
+  "inventory": {
+    "DIESEL": 11000,
+    "OCTANE": 3500,
+    "PETROL": 6000
+  },
+  "name": "Tongi Industrial Station",
+  "region_id": "region-dhaka",
+  "status": "OPEN"
+}

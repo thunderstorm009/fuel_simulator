@@ -1,0 +1,18 @@
+{
+  "capacity": {
+    "DIESEL": 14000,
+    "OCTANE": 9000,
+    "PETROL": 15000
+  },
+  "demand_multiplier": 1.0,
+  "demand_profile": "highway",
+  "id": "station-karnaphuli",
+  "inventory": {
+    "DIESEL": 8500,
+    "OCTANE": 5200,
+    "PETROL": 9500
+  },
+  "name": "Karnaphuli Highway Station",
+  "region_id": "region-chattogram",
+  "status": "OPEN"
+}

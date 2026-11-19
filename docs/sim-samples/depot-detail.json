@@ -1,0 +1,1 @@
+{"id":"depot-gazipur","name":"Gazipur Depot","region_id":"region-dhaka","status":"OPEN","dispatch_capacity_per_tick":12000,"capacity":{"DIESEL":90000,"PETROL":70000,"OCTANE":45000},"inventory":{"DIESEL":60000,"PETROL":45000,"OCTANE":26000}}

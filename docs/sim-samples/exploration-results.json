@@ -1,0 +1,4181 @@
+{
+  "records": [
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "health",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "73",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "database",
+          "simulation",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "instance",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "regions",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "144",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 2,
+        "first_item_keys": [
+          "demand_factor",
+          "id",
+          "name"
+        ]
+      }
+    },
+    {
+      "name": "depots",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "490",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 2,
+        "first_item_keys": [
+          "capacity",
+          "dispatch_capacity_per_tick",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "stations",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "1085",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 4,
+        "first_item_keys": [
+          "capacity",
+          "demand_multiplier",
+          "demand_profile",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "routes",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "1017",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 6,
+        "first_item_keys": [
+          "destination_station_id",
+          "id",
+          "max_shipment",
+          "source_depot_id",
+          "status",
+          "transit_ticks"
+        ]
+      }
+    },
+    {
+      "name": "supply-arrivals",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "3182",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 22,
+        "first_item_keys": [
+          "actual_tick",
+          "depot_id",
+          "fuel_type",
+          "id",
+          "planned_tick",
+          "quantity",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "events",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "2",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 0,
+        "first_item_keys": []
+      }
+    },
+    {
+      "name": "allocations",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "2",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 0,
+        "first_item_keys": []
+      }
+    },
+    {
+      "name": "demand-history",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "2",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 0,
+        "first_item_keys": []
+      }
+    },
+    {
+      "name": "metrics",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "122",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "allocation_failures",
+          "allocation_liters",
+          "served_demand_liters",
+          "service_level",
+          "unmet_demand_liters"
+        ]
+      }
+    },
+    {
+      "name": "admin-console",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "cache-control": "no-store, no-cache, must-revalidate",
+        "content-length": "21493",
+        "content-type": "text/html; charset=utf-8"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "text"
+        ]
+      }
+    },
+    {
+      "name": "admin-events",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "2",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 0,
+        "first_item_keys": []
+      }
+    },
+    {
+      "name": "admin-faults",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "2",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 0,
+        "first_item_keys": []
+      }
+    },
+    {
+      "name": "admin-audit",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "185",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 1,
+        "first_item_keys": [
+          "action",
+          "entity_id",
+          "entity_type",
+          "id",
+          "metadata_json",
+          "result",
+          "sim_time",
+          "tick",
+          "wall_time"
+        ]
+      }
+    },
+    {
+      "name": "depot-gazipur-detail",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "242",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "capacity",
+          "dispatch_capacity_per_tick",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "depot-patiya-detail",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "245",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "capacity",
+          "dispatch_capacity_per_tick",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "station-mirpur-detail",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "262",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "capacity",
+          "demand_multiplier",
+          "demand_profile",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "station-tongi-detail",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "266",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "capacity",
+          "demand_multiplier",
+          "demand_profile",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "station-karnaphuli-detail",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "275",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "capacity",
+          "demand_multiplier",
+          "demand_profile",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "station-coxsbazar-detail",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "277",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "capacity",
+          "demand_multiplier",
+          "demand_profile",
+          "id",
+          "inventory",
+          "name",
+          "region_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "stream",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "cache-control": "no-cache",
+        "content-type": "text/event-stream; charset=utf-8",
+        "transfer-encoding": "chunked"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "content_type",
+          "lines"
+        ]
+      }
+    },
+    {
+      "name": "step-01.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-02.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-03.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-04.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-05.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-06.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-07.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-08.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-09.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "step-10.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "instance-after-10-steps",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "150",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "routes-before-allocation",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "1017",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 6,
+        "first_item_keys": [
+          "destination_station_id",
+          "id",
+          "max_shipment",
+          "source_depot_id",
+          "status",
+          "transit_ticks"
+        ]
+      }
+    },
+    {
+      "name": "allocation-create.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "334",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "actual_arrival_tick",
+          "created_tick",
+          "departure_tick",
+          "destination_station_id",
+          "expected_arrival_tick",
+          "failure_reason",
+          "fuel_type",
+          "id",
+          "idempotency_key",
+          "quantity",
+          "route_id",
+          "source_depot_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "allocation-replay.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "334",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "actual_arrival_tick",
+          "created_tick",
+          "departure_tick",
+          "destination_station_id",
+          "expected_arrival_tick",
+          "failure_reason",
+          "fuel_type",
+          "id",
+          "idempotency_key",
+          "quantity",
+          "route_id",
+          "source_depot_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "allocation-key-mismatch.json",
+      "status_code": 409,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "118",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "detail"
+        ]
+      }
+    },
+    {
+      "name": "allocations",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "336",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 1,
+        "first_item_keys": [
+          "actual_arrival_tick",
+          "created_tick",
+          "departure_tick",
+          "destination_station_id",
+          "expected_arrival_tick",
+          "failure_reason",
+          "fuel_type",
+          "id",
+          "idempotency_key",
+          "quantity",
+          "route_id",
+          "source_depot_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "allocation-cancel.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "336",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "actual_arrival_tick",
+          "created_tick",
+          "departure_tick",
+          "destination_station_id",
+          "expected_arrival_tick",
+          "failure_reason",
+          "fuel_type",
+          "id",
+          "idempotency_key",
+          "quantity",
+          "route_id",
+          "source_depot_id",
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "event-demand_spike.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:40 GMT",
+        "server": "uvicorn",
+        "content-length": "95",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-demand_spike-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "event-route_disruption.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "99",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-route_disruption-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "event-station_outage.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "97",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-station_outage-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "event-depot_constraint.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "99",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-depot_constraint-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "event-shipment_delay.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "97",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-shipment_delay-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "event-supply_shortfall.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "99",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-supply_shortfall-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "past-event-advance.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "event-past-start-tick.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "95",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "event-past-start-step.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "events",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "94",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 1,
+        "first_item_keys": [
+          "end_tick",
+          "id",
+          "parameters",
+          "start_tick",
+          "status",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "instance-after-past-event",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "150",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-latency-created.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "173",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "active",
+          "end_wall_time",
+          "id",
+          "parameters",
+          "start_wall_time",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "fault-latency-response",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:41 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-latency-clear.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "20",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-unavailable-created.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "163",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "active",
+          "end_wall_time",
+          "id",
+          "parameters",
+          "start_wall_time",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "fault-unavailable-response",
+      "status_code": 503,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "86",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "error"
+        ]
+      }
+    },
+    {
+      "name": "fault-unavailable-clear.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "20",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-error_rate-created.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "172",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "active",
+          "end_wall_time",
+          "id",
+          "parameters",
+          "start_wall_time",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "fault-error_rate-response",
+      "status_code": 503,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "77",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "error"
+        ]
+      }
+    },
+    {
+      "name": "fault-error_rate-clear.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "20",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-stale_data-created.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "162",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "active",
+          "end_wall_time",
+          "id",
+          "parameters",
+          "start_wall_time",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "fault-stale_data-response",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json",
+        "x-simulator-stale": "true"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-stale_data-clear.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "20",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "fault-stream_disconnect-created.json",
+      "status_code": 201,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "169",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "active",
+          "end_wall_time",
+          "id",
+          "parameters",
+          "start_wall_time",
+          "type"
+        ]
+      }
+    },
+    {
+      "name": "fault-stream_disconnect-response",
+      "status_code": 503,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "36",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "content_type",
+          "lines"
+        ]
+      }
+    },
+    {
+      "name": "fault-stream_disconnect-clear.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "20",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "status"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "timing-start-instance",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-run.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:42 GMT",
+        "server": "uvicorn",
+        "content-length": "150",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause-after-timing.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:43 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "timing-end-instance",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:43 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-reset.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:43 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "admin-pause.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:43 GMT",
+        "server": "uvicorn",
+        "content-length": "149",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-001.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:43 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-002.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-003.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-004.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-005.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-006.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-007.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-008.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-009.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "43",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-010.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-011.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-012.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-013.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-014.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-015.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-016.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-017.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-018.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-019.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-020.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-021.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-022.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-023.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-024.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-025.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-026.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-027.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-028.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-029.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-030.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:45 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-031.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-032.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-033.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-034.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-035.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-036.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-037.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-038.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-039.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-040.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-041.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-042.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-043.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-044.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-045.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-046.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-047.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-048.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-049.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-050.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-051.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-052.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-053.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-054.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-055.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-056.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-057.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-058.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-059.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-060.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:46 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-061.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-062.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-063.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-064.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-065.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-066.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-067.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-068.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-069.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-070.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-071.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-072.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-073.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-074.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-075.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-076.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-077.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-078.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-079.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-080.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-081.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-082.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-083.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-084.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-085.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-086.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-087.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-088.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-089.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-090.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:47 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-091.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-092.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-093.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-094.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-095.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-step-096.json",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "44",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "sim_time",
+          "tick"
+        ]
+      }
+    },
+    {
+      "name": "demand-history",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "197764",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "array",
+        "length": 1152,
+        "first_item_keys": [
+          "demand_liters",
+          "fuel_type",
+          "id",
+          "served_liters",
+          "sim_time",
+          "station_id",
+          "tick",
+          "unmet_liters"
+        ]
+      }
+    },
+    {
+      "name": "instance-after-96-ticks",
+      "status_code": 200,
+      "headers": {
+        "date": "Thu, 19 Nov 2026 05:36:48 GMT",
+        "server": "uvicorn",
+        "content-length": "150",
+        "content-type": "application/json"
+      },
+      "body_shape": {
+        "type": "object",
+        "keys": [
+          "id",
+          "scenario_id",
+          "scenario_version",
+          "seed",
+          "sim_time",
+          "status",
+          "tick",
+          "tick_minutes"
+        ]
+      }
+    }
+  ],
+  "measurements": {
+    "after_10_steps": {
+      "id": 1,
+      "scenario_id": "baseline",
+      "scenario_version": "1.0",
+      "seed": 12345,
+      "sim_time": "2026-01-01T02:30:00",
+      "tick": 10,
+      "tick_minutes": 15,
+      "status": "PAUSED"
+    },
+    "allocation_replay": {
+      "create_status": 201,
+      "replay_status": 201,
+      "replay_same_allocation": true,
+      "different_body_status": 409,
+      "different_body_code": "IDEMPOTENCY_KEY_MISMATCH"
+    },
+    "event_statuses": {
+      "demand_spike": {
+        "inject_status": 201,
+        "step_status": 200
+      },
+      "route_disruption": {
+        "inject_status": 201,
+        "step_status": 200
+      },
+      "station_outage": {
+        "inject_status": 201,
+        "step_status": 200
+      },
+      "depot_constraint": {
+        "inject_status": 201,
+        "step_status": 200
+      },
+      "shipment_delay": {
+        "inject_status": 201,
+        "step_status": 200
+      },
+      "supply_shortfall": {
+        "inject_status": 201,
+        "step_status": 200
+      }
+    },
+    "past_event": {
+      "status": 201,
+      "body": {
+        "id": 1,
+        "type": "demand_spike",
+        "start_tick": 0,
+        "end_tick": 1,
+        "status": "SCHEDULED",
+        "parameters": {}
+      },
+      "step_status": 200,
+      "status_after_step": "ACTIVE",
+      "current_tick": 11
+    },
+    "fault_clear": {
+      "latency": {
+        "status": 200,
+        "body": {
+          "status": "cleared"
+        }
+      },
+      "unavailable": {
+        "status": 200,
+        "body": {
+          "status": "cleared"
+        }
+      },
+      "error_rate": {
+        "status": 200,
+        "body": {
+          "status": "cleared"
+        }
+      },
+      "stale_data": {
+        "status": 200,
+        "body": {
+          "status": "cleared"
+        }
+      },
+      "stream_disconnect": {
+        "status": 200,
+        "body": {
+          "status": "cleared"
+        }
+      }
+    },
+    "speed_probe": {
+      "wall_seconds": 1.252603084,
+      "ticks_advanced": 2,
+      "observed_ticks_per_second": 1.596674976731895
+    },
+    "demand_probe": {
+      "ticks": 96,
+      "tick_minutes": 15,
+      "observations": 1152,
+      "observations_by_station": {
+        "station-coxsbazar": 288,
+        "station-karnaphuli": 288,
+        "station-mirpur": 288,
+        "station-tongi": 288
+      },
+      "mean_demand_by_station_fuel": {
+        "station-coxsbazar:DIESEL": 80.739,
+        "station-coxsbazar:OCTANE": 40.384,
+        "station-coxsbazar:PETROL": 86.685,
+        "station-karnaphuli:DIESEL": 115.732,
+        "station-karnaphuli:OCTANE": 68.021,
+        "station-karnaphuli:PETROL": 119.533,
+        "station-mirpur:DIESEL": 83.566,
+        "station-mirpur:OCTANE": 55.42,
+        "station-mirpur:PETROL": 103.474,
+        "station-tongi:DIESEL": 145.863,
+        "station-tongi:OCTANE": 22.986,
+        "station-tongi:PETROL": 46.909
+      }
+    }
+  }
+}

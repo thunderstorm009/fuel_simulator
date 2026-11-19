@@ -1,0 +1,8 @@
+{
+  "database": "ok",
+  "simulation": {
+    "status": "PAUSED",
+    "tick": 0
+  },
+  "status": "ok"
+}

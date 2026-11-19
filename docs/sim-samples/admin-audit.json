@@ -1,0 +1,13 @@
+[
+  {
+    "action": "admin.pause",
+    "entity_id": null,
+    "entity_type": null,
+    "id": 1,
+    "metadata_json": {},
+    "result": "OK",
+    "sim_time": "2026-01-01T00:00:00",
+    "tick": 0,
+    "wall_time": "2026-11-19T05:36:41.202836"
+  }
+]

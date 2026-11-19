@@ -1,0 +1,36 @@
+[
+  {
+    "capacity": {
+      "DIESEL": 90000,
+      "OCTANE": 45000,
+      "PETROL": 70000
+    },
+    "dispatch_capacity_per_tick": 12000.0,
+    "id": "depot-gazipur",
+    "inventory": {
+      "DIESEL": 60000,
+      "OCTANE": 26000,
+      "PETROL": 45000
+    },
+    "name": "Gazipur Depot",
+    "region_id": "region-dhaka",
+    "status": "OPEN"
+  },
+  {
+    "capacity": {
+      "DIESEL": 85000,
+      "OCTANE": 40000,
+      "PETROL": 65000
+    },
+    "dispatch_capacity_per_tick": 11000.0,
+    "id": "depot-patiya",
+    "inventory": {
+      "DIESEL": 55000,
+      "OCTANE": 24000,
+      "PETROL": 42000
+    },
+    "name": "Patiya Depot",
+    "region_id": "region-chattogram",
+    "status": "OPEN"
+  }
+]

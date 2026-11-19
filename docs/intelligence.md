@@ -1,19 +1,37 @@
-# Intelligence design (planned; update to the exact code in Sprints 3-4 and 6)
+# Intelligence design — Sprint 3-4 implementation
 
-## Forecast
-Expected demand per tick = daily liters / (1440 / tick_minutes) x hour factor x station demand_multiplier. Calibrate with an EWMA ratio observed/expected (alpha 0.3, clamp 0.5-2.0). Project inventory forward tick by tick for 24 simulated hours with known arrivals; first tick at or below zero is the stockout. Do not divide inventory by current rate.
+## Demand and stock projection
 
-## Uncertainty and risk
-Monte Carlo, 300 runs, per-tick noise from the profile plus 10% rate uncertainty. Outputs P(stockout within 24h), P10/P50/P90 hours. Risk: critical under 6h, high under 12h, medium under 24h. Confidence drops with stale data, short history or unstable ratio; below 0.5 means needs human review.
+`backend/shared/core/world.py` defines daily liters and profile noise for urban-high, industrial, highway, and regional stations. Per-tick baseline demand is:
 
-## Allocation policy (heuristic)
-Rank pairs by urgency. Need = target (70% of capacity or 24h demand) minus projected inventory at arrival, capped by free station capacity. Prefer routes that arrive before stockout. Cap by max_shipment, depot inventory, remaining dispatch capacity; track reservations; split; cooldown for in-transit. Validate with core/validator.py.
+`daily_liters / (1440 / tick_minutes) * hour_factor(profile, sim_time) * max(0, multiplier)`
 
-## Explanation JSON
-drivers, constraints applied, risk before and after, alternatives with rejection reasons, confidence, policy used, data status, timestamp.
+The inclusive hour-factor boundaries are recorded from the simulator in `docs/sim-findings.md`. `tick_minutes` comes from each snapshot's instance. Historical `demand_liters` is compared with the baseline multiplier-1 demand. Calibration starts at 1.0 and applies `ratio = alpha * observed/expected + (1-alpha) * prior_ratio` for each sample, clamping each result to [0.5, 2.0] (alpha 0.3).
 
-## Evaluation
-scripts/scenario_runner.py compares do-nothing, naive (refill to 70% below 30%) and heuristic on service_level and unmet liters across baseline, spike, route and combined scenarios. Results live in docs/results. State seeds and limits honestly.
+Projection starts from station on-hand inventory, adds known station allocation quantities at their expected arrival ticks, then subtracts non-negative expected demand each tick for `ceil(1440 / tick_minutes)` future ticks. The first zero-or-lower projected level is the stockout tick. `IN_TRANSIT` uses `expected_arrival_tick`; `PENDING` assumes departure next tick plus the known route transit duration. Depot supply arrivals are not station inventory and are not treated as station allocation arrivals.
 
-## Fallbacks
-Remote predictor down: baseline forecast (static profile, confidence capped at 0.4, needs_review). Primary policy fails or times out: heuristic.
+## Uncertainty, risk and confidence
+
+The vectorized Monte Carlo runs 300 seeded paths by default. Each future tick multiplies the expected rate by independent non-negative normal factors `max(0, 1 + N(0, profile_noise))` and `max(0, 1 + N(0, 0.10))`. It reports the fraction with stockout in the horizon and P10/P50/P90 first-stockout hours. Paths without stockout are censored at 24 hours. The trajectory stores mean, P10, and P90 remaining inventory at each tick.
+
+The deterministic first-stockout hours are classified as critical below 6, high below 12, medium below 24, and ok at or above 24; probability zero is ok. When hours are `None`, probability at least 0.1 is medium, otherwise ok. Confidence is the product of a data-status factor (HEALTHY 1.0, DEGRADED 0.5, OFFLINE/unknown 0.2), `min(1, max(0, history_ticks)/6)`, and `min(1, max(0, 1 - population_stdev(observed/baseline ratios)))`. Stale snapshots are treated as degraded. Confidence below 0.5 sets `needs_review`.
+
+## Forecast job and metrics
+
+The worker calculates one forecast per station/fuel after each distinct snapshot signature and persists the forecast, trajectory, and explanatory drivers. The `forecast_error_liters` gauge is labeled by station and fuel and reports mean absolute error over the latest 12 available observations, comparing observed demand with the calibrated baseline. Forecast count and job failure counters are also exposed on the worker `/metrics` endpoint.
+
+High/critical transitions open or update a `stockout_risk` incident; leaving both levels resolves it. The API reads persisted forecasts only. It exposes the latest risk matrix and a per-pair projected inventory trajectory. The local Forecaster is replaceable through the worker interface; no remote predictor is used in Sprint 3.
+
+## Simulator event semantics
+
+The official integration guide says `demand_spike` changes affected station demand multipliers and `shipment_delay` changes scheduled depot supply arrival ticks. While the spike is active, expected demand includes the elevated station multiplier. When it resolves, the multiplier returns to its normal value; projected expected demand therefore moves toward normal. Historical EWMA calibration can retain some elevated observed-demand effect and converges as later observations arrive. Inventory consumed during the spike remains consumed. Risk is recalculated from remaining inventory and the now-normal multiplier; the previous stockout hours do not automatically return.
+
+A depot supply schedule is not station inventory or a station allocation. A shipment delay changes no station shortage projection when no allocation or projected station supply coverage depends on it. This implementation does not invent future dispatches. When a station allocation exists, projection uses its verified `expected_arrival_tick` (or, for a pending allocation, next-tick departure plus route transit); scheduled and in-transit depot supply is never counted as current station inventory.
+
+## Allocation policy and explanation
+
+Sprint 4 adds an urgency-first heuristic that considers station/fuel pairs under 24 hours to stockout or with at least 50% 24-hour stockout probability. It targets the lower of 70% station capacity and one day of forecast demand, using projected station inventory at route arrival. It accounts for open or constrained depots, available routes, route shipment limits, depot on-hand stock, current-tick dispatch budget, destination capacity, same-cycle reservations, and allocations already pending or in transit. It prefers routes arriving before forecast stockout, splits quantities across feasible shipments, and validates every candidate before persistence. It does not count scheduled depot arrivals as on-hand stock or automatically dispatch.
+
+The recommendation worker stores a permanent `rec-<uuid>` idempotency key together with its exact request body. The explanation records forecast drivers, applied limits, rejected route alternatives, before/after risk from re-running the forecast with the proposed known station arrival, confidence, policy, and snapshot status. The UI labels all values SIMULATED and requires an operator decision. Approvals and rejections are stored in the decision log; operator credentials exist only in browser memory.
+
+Forecasts still describe the do-nothing path plus already-known station allocation arrivals. Depot supply schedule changes affect station risk only when a verified station allocation depends on that supply; the current implementation does not invent future dispatches.
