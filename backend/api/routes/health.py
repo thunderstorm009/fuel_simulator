@@ -62,20 +62,30 @@ def _latency_summary() -> dict[str, float]:
 
 
 async def _predictor_status() -> str:
-    base_url = os.getenv("PREDICTOR_URL", "http://predictor:8103").rstrip("/")
-    try:
-        async with httpx.AsyncClient(timeout=0.5) as client:
-            response = await client.get(f"{base_url}/health")
-        if response.status_code != 200:
+    configured = os.getenv("PREDICTOR_URL", "http://predictor:8103").rstrip("/")
+    candidates = [configured]
+    if ":8100" in configured:
+        candidates.append(configured.replace(":8100", ":8103"))
+    elif ":8103" in configured:
+        candidates.append(configured.replace(":8103", ":8100"))
+
+    for base_url in candidates:
+        try:
+            async with httpx.AsyncClient(timeout=0.5) as client:
+                response = await client.get(f"{base_url}/health")
+            if response.status_code != 200:
+                return "DEGRADED"
+            payload = response.json()
+            if isinstance(payload, dict) and payload.get("status") == "ok":
+                return "HEALTHY"
             return "DEGRADED"
-        payload = response.json()
-        if isinstance(payload, dict) and payload.get("status") == "ok":
-            return "HEALTHY"
-        return "DEGRADED"
-    except httpx.HTTPError:
-        return "OFFLINE"
-    except ValueError:
-        return "DEGRADED"
+        except httpx.ConnectError:
+            continue
+        except httpx.HTTPError:
+            return "OFFLINE"
+        except ValueError:
+            return "DEGRADED"
+    return "OFFLINE"
 
 
 async def _component_from_heartbeat(

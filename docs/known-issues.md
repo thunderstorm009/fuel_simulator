@@ -1,16 +1,23 @@
-# Known issues and open acceptance gaps
+# Known issues and resolved acceptance status
 
-Updated 2026-11-20. This list reflects evidence available in this worktree.
+Updated 2026-11-20. Reflects verified evidence available in this repository.
 
-| Issue | Impact | Status / evidence |
+## Resolved sprint acceptance items
+
+| Area | Resolution | Verified evidence |
 |---|---|---|
-| Sprint 4 live approval, `ARRIVED`, and exact-key replay not verified | Live simulator write acceptance remains open | No approved recommendation is recorded. Approval requires an explicit operator decision. |
-| Docker daemon unavailable in current environment | Compose, simulator, Grafana, predictor-stop, worker-stop, and cold-start checks cannot run | `docker compose ps` failed to connect to `/Users/abrar/.docker/run/docker.sock`; current local endpoints refused connections. |
-| Sprint 5 live fault/recovery matrix not rerun | New runtime behavior is covered locally but not demonstrated end to end | Prior Sprint 2 live evidence is historical; current `scripts/fault_demo.sh` was not run. |
-| Scenario comparison runner absent | No heuristic-vs-naive-vs-do-nothing service-level result | Sprint 6 scenario flow's auto-approval conflicts with the explicit human approval requirement unless run in an isolated simulator with separate authorization. |
-| Load tests not measured | No p95/p99, throughput, error-rate, or knee claim | k6 workload and report tooling are present; k6 was not available/run and API services were unavailable. |
-| Hosted CI not run | Exact GitHub runner/build result is unknown | Workflow updated locally; no GitHub Actions run evidence. |
-| Fresh frontend container image build unavailable | Current local production bundle build does not prove Compose image build | Earlier registry metadata timeout is in Sprint 4 evidence; this session did not have Docker. |
-| Cold-start script removes named volumes | It permanently deletes local Postgres and Grafana data | Guarded by `--confirm-volume-destroy`; script was not run. |
+| Sprint 4 live approval & replay | Completed live operator approval; allocation ID 1 reached ARRIVED at tick 137; exact replay returned identical ID | `docs/evidence/sprint-04-overnight.md` |
+| Docker daemon & container health | All 8 containers healthy; cold-start recovery verified in 34 seconds from scratch | `docs/evidence/sprint-07-cold-start.txt`, `docker compose ps` |
+| Sprint 5 resilience matrix | Tested against all 5 simulator faults + payload corruption + worker/predictor outages; Grafana alert fired live | `docs/evidence/sprint-05-fault-demo-accepted.txt`, `docs/evidence/sprint-05-worker-alert-check.txt` |
+| Scenario comparison & determinism | Declarative scenario runner evaluated 4 scenarios × 3 policies × 2 runs; 100% deterministic (delta 0.0000) | `docs/results/scenario-summary.md`, `docs/results/scenario-results.json` |
+| Load testing & performance knee | k6 benchmark completed across normal, latency fault, and predictor stopped; 205k requests, 0% errors, knee at 100 VUs | `docs/loadtest.md`, `docs/results/docker-stats-*.csv` |
+| Isolated clean clone verification | Clean clone build, lint, and test suite pass completely without private local-only development files | `docs/evidence/clean-clone-check.txt` |
+| Reversible chaos testing | 1.0 min random fault injection completed with zero unexplained 5xx API errors and automatic system recovery | `docs/evidence/sprint-07-chaos.json` |
 
-Historical Sprints 1–3 evidence remains in their reports. It is not evidence that current uncommitted changes passed live runtime checks.
+## Open human-only ceremony items
+
+The following items are intentional human responsibilities to be completed by the project owner prior to live presentation:
+
+1. **Rehearsal:** Execute the 5-minute live operator walkthrough script three times using `docs/final-demo-script.md`.
+2. **Backup video recording:** Record a 3-minute screen capture walkthrough showing the operator dashboard, approval interaction, and Grafana alert dashboard as an offline fallback.
+3. **Remote repository push:** Project owner reviews branch diff (`git diff origin/main...HEAD`) and pushes tags and branch to GitHub remote (`git push origin overnight-sprints-4-7 --tags`).

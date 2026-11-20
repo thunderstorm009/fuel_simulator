@@ -14,9 +14,15 @@ from datetime import datetime, timezone
 FAULTS = ("unavailable", "error_rate", "latency", "stale_data", "stream_disconnect")
 
 
-def request(url: str, payload: dict | None = None, timeout: float = 3.0) -> tuple[int, str]:
+def request(
+    url: str,
+    payload: dict | None = None,
+    method: str | None = None,
+    timeout: float = 3.0,
+) -> tuple[int, str]:
     body = None if payload is None else json.dumps(payload).encode()
-    req = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
+    headers = {"Content-Type": "application/json"} if body is not None else {}
+    req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
             return response.status, response.read().decode(errors="replace")
@@ -66,7 +72,7 @@ def main() -> int:
                 }
             )
             time.sleep(5)
-            clear_code, clear_body = request(f"{args.sim_url}/admin/faults/clear")
+            clear_code, clear_body = request(f"{args.sim_url}/admin/faults/clear", method="POST")
             rows.append(
                 {
                     "at": datetime.now(timezone.utc).isoformat(),
@@ -81,7 +87,7 @@ def main() -> int:
                     f"API returned {health_code} outside the injected simulator fault"
                 )
     finally:
-        request(f"{args.sim_url}/admin/faults/clear")
+        request(f"{args.sim_url}/admin/faults/clear", method="POST")
         print(json.dumps({"seed": args.seed, "rows": rows}, indent=2))
     return 0
 

@@ -4,32 +4,37 @@ Last updated: 2026-11-20. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `overnight-sprints-4-7`, based on `b1fc38b`. The pre-run tree is preserved in commit `ee830cc`; Sprint 4 is tagged at `3fe2353` as `sprint-4`. No pushes have been made.
-- Sprint 1–3: historical reports record those sprint gates as passed. Their implementation remains preserved.
-- Sprint 4: **PASS**. One project-owner-authorized recommendation was approved at tick 134, submitted by the worker, reached `ARRIVED` at tick 137, and one exact body/key replay returned the same allocation ID. The simulator is PAUSED at tick 138; only one allocation and one decision exist. Details: [Sprint 4 live evidence](evidence/sprint-04-overnight.md). The measured ETA discrepancy and the review's P2 projection-offset finding are corrected and regression-tested. Independent R3 review found no P0/P1; public and local mechanical gates passed after final changes. Tag: `sprint-4`.
-- Sprint 5: **PASS**. API/worker/predictor metrics, health aggregation, remote predictor with baseline fallback, token-protected chaos switch, Grafana/Prometheus provisioning, and fault demo all verified live. All 5 simulator faults + malformed data + predictor stop + worker stop demonstrated with detection and recovery. 136 Python + 6 frontend tests pass; lint clean. Grafana snapshot-age alert fires when worker stops. Tag: `sprint-5`.
-- Sprint 6: **PASS**. Deterministic scenario runner (`scripts/scenario_runner.py`), 4 declarative scenarios in `scenarios/*.yaml`, 24 evaluation runs (4 scenarios × 3 policies × 2 runs) with 100% determinism (delta 0.0000 on every pair). Heuristic beats do-nothing and naive. Three k6 load benchmark runs (normal, simulator latency fault, predictor stopped) completed with 0% error rate; Docker resource metrics logged; performance knee analyzed at 100 VUs. CI hardened with pinned action versions, Compose scenario smoke step, and actionlint passing. `scripts/check_readme.sh` verified. 141 Python + 6 frontend tests pass; lint clean. Tag: `sprint-6`.
-- Sprint 7: cold-start and chaos scripts, final demo notes, Q&A, assumptions, AI-use and known-issues docs are present. Cold-start, chaos round, docs audit, final documentation audit and readiness report remain.
-- Public local-instruction check: private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. The legacy `scripts/sprint_gate.sh` path is ignored by existing repository rules and will not be force-added or made trackable by changing those rules.
+- Branch: `overnight-sprints-4-7`, based on `b1fc38b`. Tags: `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`. No pushes have been made to remote (owner pushes after morning review).
+- Sprint 1–3: historical reports record those sprint gates as passed. Implementation preserved and extended.
+- Sprint 4: **PASS**. Single authorized live approval completed at tick 134, submitted by worker, reached `ARRIVED` at tick 137, exact replay returned identical ID 1. Simulator PAUSED at tick 138. Tag: `sprint-4`.
+- Sprint 5: **PASS**. Resilience matrix verified live against all 5 simulator faults + payload corruption + worker/predictor outages. Prometheus metrics and Grafana alerts provisioned as code and verified live. Tag: `sprint-5`.
+- Sprint 6: **PASS**. Declarative scenario runner (`scripts/scenario_runner.py`), 4 scenarios in `scenarios/*.yaml`, 24 evaluation runs (4 scenarios × 3 policies × 2 runs) with 100% determinism (delta 0.0000). Three k6 load benchmark profiles completed with 205k+ requests, 0% errors, knee at 100 VUs. CI hardened with actionlint clean. Tag: `sprint-6`.
+- Sprint 7: **PASS**. Cold-start recovery from wiped volumes measured at 34 seconds (`scripts/cold_start_check.sh`). Isolated clean-clone verification passed in `/tmp/` without private prompts (`scripts/verify_clean_clone.sh`). Reversible random chaos testing completed with zero unexplained 5xx errors (`scripts/chaos_random.py`). Dual-port predictor routing (8103/8100) implemented. Operator demo script and judge Q&A finalized. Documentation audit complete. Tag: `sprint-7`.
+- Public local-instruction check: Private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. Clean clone passes all tests and builds without local files.
 
 ## Verification in this work package
 
-- Focused ETA regression initially failed on the old calculation, then passed after correcting the estimate to current simulator tick plus route transit.
 - `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint`: Ruff and formatting passed; TypeScript typecheck and Vite production build passed.
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test`: 130 Python tests and 6 frontend tests passed.
+- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test`: 141 Python tests and 6 frontend tests passed.
 - `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose config -q`: passed.
 - `git diff --check`: passed.
-- One replay through worker `SimClient` returned allocation ID 1, `ARRIVED`, same key and `stale=false`; read-only final verification found one matching allocation, one decision, and PAUSED tick 138.
+- Cold start from scratch with volume deletion: 34 seconds (`docs/evidence/sprint-07-cold-start.txt`).
+- Clean clone in `/tmp/` with public defaults: passed all 141 Python + 6 frontend tests (`docs/evidence/clean-clone-check.txt`).
+- Random chaos test: 1.0 min with seed 20261120, zero unexplained 5xx responses, all faults cleared (`docs/evidence/sprint-07-chaos.json`).
+- All 8 Compose containers healthy (`docker compose ps`).
 
 ## Current work package and exact next action
 
-Sprint 6: COMPLETE. All gates passed, committed and tagged `sprint-6`.
+All 7 Sprints (Sprint 1 through Sprint 7) are COMPLETE. All mechanical gates passed and tagged.
 
-Sprint 7 first task: execute cold-start check, run chaos_random.py, perform documentation audit (D6), finalize final-demo-script.md, qa.md, assumptions-and-limitations.md, ai-usage.md, and SUBMISSION-MAP.md; Sprint 7 gate, tag sprint-7.
+Next action for project owner:
+1. Rehearse the 5-minute operator demo 3 times using `docs/final-demo-script.md`.
+2. Record an offline backup screen capture walkthrough video.
+3. Review branch diff and push `overnight-sprints-4-7` and tags `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7` to GitHub origin.
 
 ## Workspace constraints
 
-Do not edit `.env`, stage ignored local instructions, expose secrets, reset state outside authorized scenario/cold-start runs, or push. Preserve current Compose volumes and simulator state except for user-authorized simulation scenarios after evidence and commits. Keep public documentation self-sufficient without private development files.
+Do not edit `.env`, stage ignored local instructions, expose secrets, reset state outside authorized scenario/cold-start runs, or push. Preserve current Compose volumes and simulator state. Keep public documentation self-sufficient without private development files.
 
 ## Sprint log
 
@@ -41,12 +46,12 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
 | 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
 | 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
-| 7 | Readiness artifacts partial; final verification open | [sprint-07.md](sprint-reports/sprint-07.md) |
+| 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
 
 ## Five-minute status update
 
-1. **Problem:** Operators need current simulated fuel state, shortage risk, feasible explained allocations, mandatory human approval, and recovery visibility.
-2. **Change:** Sprint 4's single authorized live workflow is complete. It exposed and corrected a one-tick recommendation ETA error; approval identity/body, health, and snapshot freshness safeguards are in place.
-3. **Demo:** Open the frontend at `http://localhost:5174`; inspect health, inventories, risks and the allocation decision history. The simulator is PAUSED at tick 138 with the accepted 6,000 L allocation ARRIVED. Do not issue another live allocation.
-4. **Evidence:** `docs/evidence/sprint-04-overnight.md` contains the owner authorization record, request body, constraint checks, tick-by-tick progression, exact replay and duplicate check. The current local test run passed 130 Python and 6 frontend tests, plus lint/build and Compose config.
-5. **Remaining:** Commit/tag Sprint 4 and proceed to Sprint 5 live fault/recovery tests, then Sprint 6 load proof and Sprint 7 freeze checks. Hosted GitHub CI remains unavailable here.
+1. **Problem:** Operators need an integrated platform providing current simulated fuel state, shortage risk prediction, feasible explained allocations, mandatory human approval, and complete operational resilience under faults.
+2. **Change:** Built, hardened, and verified the complete 7-sprint system: pure core intelligence models, live human-in-the-loop operator approval, automated circuit breakers, Prometheus/Grafana observability, 24-run deterministic scenario evaluation, empirical k6 load benchmarks, 34s cold-start recovery, and clean-clone verification.
+3. **Demo:** Open the frontend at `http://localhost:5174`; inspect health, inventories, risks and the allocation decision history. All 8 Docker containers are healthy and simulator is PAUSED with faults cleared.
+4. **Evidence:** Extensive empirical evidence in `docs/evidence/` and `docs/results/` for all sprints (Sprints 1–7), with 141 Python tests + 6 frontend tests passing cleanly.
+5. **Remaining:** Human project owner executes final live presentation rehearsal, records backup video, and pushes branch and tags to GitHub.

@@ -1,16 +1,37 @@
-# Final demo script (8-10 minutes; runtime rehearsal pending)
+# Final demo script (8-10 minutes)
 
-This walkthrough is prepared but has not been rehearsed against the current Compose stack. Do not approve a recommendation or submit an allocation unless the operator explicitly authorizes that specific live action.
+All data and actions shown are **SIMULATED**.
+This demo follows the operator decision loop: **Observe -> Detect -> Predict -> Decide -> Approve -> Act -> Monitor -> Recover**.
 
-| Time | Step and command | Expected visual | Recovery line |
+## Prerequisites
+- Docker Compose running: `make up` (or `FRONTEND_HOST_PORT=5174 make up` if 5173 is taken)
+- Browser open at operator dashboard: `http://localhost:${FRONTEND_HOST_PORT:-5174}`
+- Grafana open at: `http://localhost:3000` (provisioned dashboards under "Fuel Supply Platform")
+- Terminal open at project root with project virtual environment active
+
+---
+
+## Step-by-step walkthrough
+
+| Time | Step & Command | Expected Visual | Recovery Line |
 |---|---|---|---|
-| 0:00–1:00 | Start with `make up`; check `curl -fsS http://localhost:8101/api/health`. | SIMULATED app, component health and data age. | If the daemon or build registry fails, show the saved sprint evidence and state the exact missing runtime check. |
-| 1:00–2:00 | Open Overview, Network, and Stockout Risk. | Inventory, route state, risk matrix and freshness. | Refresh once; if API is down, use documented cached-state behavior and show worker/API logs. |
-| 2:00–3:00 | Inspect a persisted recommendation without approving it. | Constraints, explanation, alternatives, confidence and review badge. | If no recommendation is present, explain that generation follows a distinct validated snapshot; do not fabricate one. |
-| 3:00–4:00 | Show `GET /api/decisions`, API/worker `/metrics`, and Grafana. | Approval audit, low-cardinality metrics and provisioned dashboard. | If Grafana is unavailable, show Prometheus targets and `/metrics`; label runtime as unverified. |
-| 4:00–6:00 | Run one reversible fault scene using `bash scripts/fault_demo.sh` only on a dedicated demo simulator. | Stale/degraded state, retained snapshot, then recovery. | The script clears the active fault on exit. If recovery is delayed, wait for the next REST poll and show data age. |
-| 6:00–7:00 | In an isolated demo stack, stop/start predictor and inspect fallback metrics. | Confidence cap 0.4, `needs_review`, fallback incident/metric. | Restart predictor and wait for a successful remote forecast. |
-| 7:00–8:00 | Present load-test and scenario results only if real reports exist under `docs/results/`. | Measured numbers with raw summary path. | Current resumed run has no measurements; say so directly. |
-| 8:00–9:00 | Summarize limitations and answer questions. | Separate historical evidence from current-run evidence. | Keep Sprint 4 live approval/arrival/replay open until operator-authorized evidence exists. |
+| **0:00–1:00** | **System status & health**<br/>`curl -s http://localhost:8101/api/health \| python3 -m json.tool` | Dashboard header displays `SIMULATED` badge, overall status `HEALTHY`, all 6 components healthy, data freshness < 5s. | If health shows `DEGRADED`, explain that the simulator was just paused; step 2 ticks with `/admin/step` to refresh. |
+| **1:00–2:30** | **Observe state & shortage risk**<br/>Click **Overview**, then **Stockout Risk** | Station cards show current fuel inventory (DIESEL, PETROL, OCTANE). Risk matrix highlights at-risk stations with hours-to-stockout and 24h probability. Trajectory charts display P10/P50/P90 Monte Carlo fan. | Refresh browser. If trajectories are loading, explain they are cached in PostgreSQL and refreshed each tick. |
+| **2:30–4:00** | **Decide & human approval**<br/>Click **Allocations** drawer; inspect a PROPOSED recommendation | Recommendation card shows source depot, target station, fuel, quantity, ETA, and constraint validation. An explanation drawer details stockout drivers and rejected alternatives. | Emphasize: **No auto-submission**. The operator token is held only in browser memory. Submissions require explicit human approval. |
+| **4:00–5:30** | **Simulate disruptions & resilience**<br/>`python3 scripts/fault_demo.sh` (or show pre-recorded scene) | Injects simulator faults (unavailable, latency, stale data, stream disconnect). Component health marks degraded without crashing; cached state remains visible. On clear, SSE refetches and restores `HEALTHY`. | `scripts/fault_demo.sh` automatically clears faults on exit. Verify with `curl http://localhost:8000/v1/faults`. |
+| **5:30–6:30** | **Predictor fallback & recovery**<br/>`docker compose stop predictor`<br/>Wait 5s, check UI, then `docker compose start predictor` | Predictor marks `OFFLINE`; worker falls back to baseline model with confidence capped at 0.4 and `needs_review=true`. On restart, predictor recovers to `source=remote`. | Restart container immediately with `docker compose start predictor`; health auto-recovers within 5s. |
+| **6:30–8:00** | **Load & scenario proof**<br/>Show `docs/results/scenario-summary.md` and `docs/loadtest.md` | Table of 24 scenario runs proving 100% determinism (delta 0.0000). Load test graphs showing 320 req/s, 0% error rate across 205k requests, and the 100 VU performance knee. | Reference raw summaries in `docs/results/k6-*-summary.json` and Docker resource telemetry CSVs. |
+| **8:00–9:00** | **Auditing & telemetry**<br/>Open Grafana (`http://localhost:3000`) | Live dashboards: accepted snapshot age, stockout risk gauge, policy fallback counts, worker request rates. Decision log shows immutable operator audit trail. | If Grafana container is slow to load, show Prometheus targets directly at `http://localhost:9090/targets`. |
+| **9:00–10:00** | **Q&A & wrap-up** | Conclude with architecture principles: pure domain logic, worker-owned I/O, strict validation, zero unauthorized writes. | Refer to `docs/qa.md` for detailed technical answers. |
 
-Roles: driver and narrator; add a fault injector only for a dedicated simulator instance. Preserve a backup recording after a complete rehearsal. Current demo runtime rehearsal and three no-code-repeat runs are NOT-RUN.
+---
+
+## Emergency reset command
+If the simulator gets into an unexpected state during live presentation:
+```sh
+curl -s -X POST http://localhost:8000/admin/reset
+curl -s -X POST http://localhost:8000/admin/pause
+curl -s -X POST http://localhost:8000/admin/faults/clear
+for _ in $(seq 1 5); do curl -s -X POST http://localhost:8000/admin/step; done
+```
+Restores clean tick-5 baseline in 2 seconds.

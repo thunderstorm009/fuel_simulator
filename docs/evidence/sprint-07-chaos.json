@@ -1,0 +1,165 @@
+{
+  "seed": 20261120,
+  "rows": [
+    {
+      "at": "2026-11-20T11:54:13.681020+00:00",
+      "event": "inject",
+      "fault": "stale_data",
+      "status": 201,
+      "body": "{\"id\":1,\"type\":\"stale_data\",\"start_wall_time\":\"2026-11-20T11:54:13.668026+00:00\",\"end_wall_time\":\"2026-11-20T11:54:21.668026+00:00\",\"active\":true,\"parameters\":{}}"
+    },
+    {
+      "at": "2026-11-20T11:54:16.726749+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"DEGRADED\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":4.049109},\"simulator\":{\"status\":\"HEALTHY\",\"age_seconds\":4.052422},\"decision_engine\":{\"status\":\"DEGRADED\",\"age_seconds\":19.125712}},\"last_check_at\":\"2026-11-20T11:54:16.698065+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:54:21.758842+00:00",
+      "event": "clear",
+      "fault": "stale_data",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:54:21.769530+00:00",
+      "event": "inject",
+      "fault": "stream_disconnect",
+      "status": 201,
+      "body": "{\"id\":2,\"type\":\"stream_disconnect\",\"start_wall_time\":\"2026-11-20T11:54:21.762813+00:00\",\"end_wall_time\":\"2026-11-20T11:54:29.762813+00:00\",\"active\":true,\"parameters\":{}}"
+    },
+    {
+      "at": "2026-11-20T11:54:24.817495+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"HEALTHY\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":2.037167},\"simulator\":{\"status\":\"HEALTHY\",\"age_seconds\":2.138593},\"decision_engine\":{\"status\":\"HEALTHY\",\"age_seconds\":2.038922}},\"last_check_at\":\"2026-11-20T11:54:24.783547+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:54:29.839781+00:00",
+      "event": "clear",
+      "fault": "stream_disconnect",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:54:29.850724+00:00",
+      "event": "inject",
+      "fault": "stream_disconnect",
+      "status": 201,
+      "body": "{\"id\":3,\"type\":\"stream_disconnect\",\"start_wall_time\":\"2026-11-20T11:54:29.843783+00:00\",\"end_wall_time\":\"2026-11-20T11:54:37.843783+00:00\",\"active\":true,\"parameters\":{}}"
+    },
+    {
+      "at": "2026-11-20T11:54:32.888575+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"HEALTHY\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":0.191512},\"simulator\":{\"status\":\"HEALTHY\",\"age_seconds\":0.194067},\"decision_engine\":{\"status\":\"HEALTHY\",\"age_seconds\":10.112384}},\"last_check_at\":\"2026-11-20T11:54:32.864301+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:54:37.917272+00:00",
+      "event": "clear",
+      "fault": "stream_disconnect",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:54:37.925343+00:00",
+      "event": "inject",
+      "fault": "stale_data",
+      "status": 201,
+      "body": "{\"id\":4,\"type\":\"stale_data\",\"start_wall_time\":\"2026-11-20T11:54:37.919869+00:00\",\"end_wall_time\":\"2026-11-20T11:54:45.919869+00:00\",\"active\":true,\"parameters\":{}}"
+    },
+    {
+      "at": "2026-11-20T11:54:40.954558+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"DEGRADED\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":3.260059},\"simulator\":{\"status\":\"HEALTHY\",\"age_seconds\":3.262666},\"decision_engine\":{\"status\":\"DEGRADED\",\"age_seconds\":18.177715}},\"last_check_at\":\"2026-11-20T11:54:40.928627+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:54:45.970569+00:00",
+      "event": "clear",
+      "fault": "stale_data",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:54:45.981194+00:00",
+      "event": "inject",
+      "fault": "latency",
+      "status": 201,
+      "body": "{\"id\":5,\"type\":\"latency\",\"start_wall_time\":\"2026-11-20T11:54:45.973777+00:00\",\"end_wall_time\":\"2026-11-20T11:54:53.973777+00:00\",\"active\":true,\"parameters\":{\"delay_ms\":250}}"
+    },
+    {
+      "at": "2026-11-20T11:54:49.014034+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"HEALTHY\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":0.70433},\"simulator\":{\"status\":\"HEALTHY\",\"age_seconds\":0.796397},\"decision_engine\":{\"status\":\"HEALTHY\",\"age_seconds\":0.705716}},\"last_check_at\":\"2026-11-20T11:54:48.985762+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:54:54.028923+00:00",
+      "event": "clear",
+      "fault": "latency",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:54:54.035488+00:00",
+      "event": "inject",
+      "fault": "error_rate",
+      "status": 201,
+      "body": "{\"id\":6,\"type\":\"error_rate\",\"start_wall_time\":\"2026-11-20T11:54:54.031261+00:00\",\"end_wall_time\":\"2026-11-20T11:55:02.031261+00:00\",\"active\":true,\"parameters\":{\"rate\":1.0}}"
+    },
+    {
+      "at": "2026-11-20T11:54:57.079735+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"HEALTHY\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":3.850746},\"simulator\":{\"status\":\"HEALTHY\",\"age_seconds\":3.854164},\"decision_engine\":{\"status\":\"HEALTHY\",\"age_seconds\":8.772653}},\"last_check_at\":\"2026-11-20T11:54:57.049437+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:55:02.107825+00:00",
+      "event": "clear",
+      "fault": "error_rate",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:55:02.121049+00:00",
+      "event": "inject",
+      "fault": "error_rate",
+      "status": 201,
+      "body": "{\"id\":7,\"type\":\"error_rate\",\"start_wall_time\":\"2026-11-20T11:55:02.113380+00:00\",\"end_wall_time\":\"2026-11-20T11:55:10.113380+00:00\",\"active\":true,\"parameters\":{\"rate\":1.0}}"
+    },
+    {
+      "at": "2026-11-20T11:55:05.157563+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"DEGRADED\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":2.499256},\"simulator\":{\"status\":\"DEGRADED\",\"age_seconds\":11.932756},\"decision_engine\":{\"status\":\"DEGRADED\",\"age_seconds\":16.851232}},\"last_check_at\":\"2026-11-20T11:55:05.133623+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:55:10.171563+00:00",
+      "event": "clear",
+      "fault": "error_rate",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    },
+    {
+      "at": "2026-11-20T11:55:10.178219+00:00",
+      "event": "inject",
+      "fault": "stale_data",
+      "status": 201,
+      "body": "{\"id\":8,\"type\":\"stale_data\",\"start_wall_time\":\"2026-11-20T11:55:10.173286+00:00\",\"end_wall_time\":\"2026-11-20T11:55:18.173286+00:00\",\"active\":true,\"parameters\":{}}"
+    },
+    {
+      "at": "2026-11-20T11:55:13.217786+00:00",
+      "event": "health",
+      "status": 200,
+      "body": "{\"status\":\"DEGRADED\",\"components\":{\"backend\":{\"status\":\"HEALTHY\",\"age_seconds\":0.0},\"predictor\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"database\":{\"status\":\"HEALTHY\",\"age_seconds\":null},\"worker\":{\"status\":\"HEALTHY\",\"age_seconds\":0.542737},\"simulator\":{\"status\":\"DEGRADED\",\"age_seconds\":19.990707},\"decision_engine\":{\"status\":\"DEGRADED\",\"age_seconds\":24.909206}},\"last_check_at\":\"2026-11-20T11:55:13.186496+00:00\",\"latency\":{\"p95_seconds\":0.05,\"error_rate\":0.0},\"simulated\":true}"
+    },
+    {
+      "at": "2026-11-20T11:55:18.245739+00:00",
+      "event": "clear",
+      "fault": "stale_data",
+      "status": 200,
+      "body": "{\"status\":\"cleared\"}"
+    }
+  ]
+}

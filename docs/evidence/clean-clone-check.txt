@@ -1,0 +1,107 @@
+=== 1. Cloning repository into temporary folder ===
+Cloning into '/tmp/fuel_sim_clean_verify_1795175115'...
+done.
+=== 2. Verifying ignored development files are absent ===
+CONFIRMED ABSENT: .env
+CONFIRMED ABSENT: AGENTS.md
+CONFIRMED ABSENT: CLAUDE.md
+CONFIRMED ABSENT: GEMINI.md
+CONFIRMED ABSENT: .agents
+CONFIRMED ABSENT: .claude
+CONFIRMED ABSENT: .local
+CONFIRMED ABSENT: prompts
+=== 3. Validating Compose model with public defaults (.env.example) ===
+PASS: database credentials and predictor URL match Compose services
+=== 4. Installing frontend dependencies in clean clone ===
+
+added 186 packages, and audited 193 packages in 3s
+
+29 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+=== 5. Running public mechanical gate ===
+SKIP: local-only file absent (AGENTS.md)
+SKIP: local-only file absent (.local/prompts/SPRINT-06.md)
+SKIP: local-only file absent (.agents/skills)
+ruff check .
+All checks passed!
+ruff format --check .
+65 files already formatted
+npm --prefix web run typecheck
+
+> fuel-supply-platform-frontend@0.1.0 typecheck
+> tsc -b --pretty false
+
+npm --prefix web run build
+
+> fuel-supply-platform-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.6 building for production...
+transforming...
+✓ 500 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                             0.46 kB │ gzip:   0.30 kB
+dist/assets/index-BPQOJBOr.css             17.46 kB │ gzip:   4.76 kB
+dist/assets/index-DjC2C-bZ.js             252.50 kB │ gzip:  77.95 kB
+dist/assets/TrajectoryDrawer-nrl6CBXB.js  426.04 kB │ gzip: 122.33 kB
+✓ built in 1.67s
+pytest
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.3.5, pluggy-1.6.0
+rootdir: /private/tmp/fuel_sim_clean_verify_1795175115
+configfile: pyproject.toml
+testpaths: tests
+plugins: anyio-4.12.1, respx-0.22.0, asyncio-0.26.0
+asyncio: mode=auto, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 141 items
+
+tests/integration/test_chaos_api.py .                                    [  0%]
+tests/integration/test_compose_config.py .                               [  1%]
+tests/integration/test_health_api.py .....                               [  4%]
+tests/integration/test_ingest.py ........                                [ 10%]
+tests/integration/test_predictor.py ...                                  [ 12%]
+tests/integration/test_read_api.py .....                                 [ 16%]
+tests/integration/test_recommendation_api.py ...                         [ 18%]
+tests/integration/test_resilience.py .....                               [ 21%]
+tests/integration/test_risk_api.py ...                                   [ 24%]
+tests/integration/test_services.py .                                     [ 24%]
+tests/integration/test_sim_client.py ............                        [ 33%]
+tests/integration/test_sse.py ...                                        [ 35%]
+tests/scenarios/test_explorer.py .                                       [ 36%]
+tests/scenarios/test_sample_contract.py .............                    [ 45%]
+tests/unit/test_api_recommendation_mapping.py ...                        [ 47%]
+tests/unit/test_compose_env_check.py ...                                 [ 49%]
+tests/unit/test_executor.py .....                                        [ 53%]
+tests/unit/test_explain.py .                                             [ 53%]
+tests/unit/test_forecast.py ...........                                  [ 61%]
+tests/unit/test_forecast_job.py ...                                      [ 63%]
+tests/unit/test_loadtest_report.py .                                     [ 64%]
+tests/unit/test_models.py ..........                                     [ 71%]
+tests/unit/test_policy.py ........                                       [ 77%]
+tests/unit/test_recommend_job.py ......                                  [ 81%]
+tests/unit/test_risk.py .....                                            [ 85%]
+tests/unit/test_scenario_runner.py .....                                 [ 88%]
+tests/unit/test_store_snapshot.py ..                                     [ 90%]
+tests/unit/test_validator.py ..............                              [100%]
+
+============================= 141 passed in 1.77s ==============================
+npm --prefix web run test
+
+> fuel-supply-platform-frontend@0.1.0 test
+> vitest run
+
+
+ RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795175115/web
+
+ ✓ tests/App.test.tsx (6 tests) 201ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  17:45:28
+   Duration  1.02s (environment 46%, tests 22%, transform 15%, setup 9%, import 8%)
+
+MECHANICAL GATE: PASS (Sprint 6)
+=== Clean clone verification PASSED ===
