@@ -19,6 +19,12 @@ snapshot_rejected = Counter(
     "snapshot_rejected_total", "Snapshots rejected before persistence", ["reason"]
 )
 snapshot_age = Gauge("snapshot_age_seconds", "Age of the latest accepted snapshot")
+worker_last_ingest_timestamp = Gauge(
+    "worker_last_ingest_timestamp_seconds", "Unix timestamp of the latest accepted snapshot"
+)
+snapshot_stale = Gauge(
+    "snapshot_stale", "Whether the latest accepted simulator snapshot is marked stale"
+)
 forecasts_computed = Counter("forecasts_computed_total", "Forecasts calculated", ["risk_level"])
 hours_to_stockout_gauge = Gauge(
     "hours_to_stockout", "Deterministic hours until station/fuel stockout", ["station", "fuel"]

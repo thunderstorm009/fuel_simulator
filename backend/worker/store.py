@@ -149,6 +149,7 @@ class PostgresStore:
                             confidence = EXCLUDED.confidence,
                             risk_level = EXCLUDED.risk_level,
                             needs_review = EXCLUDED.needs_review,
+                            source = EXCLUDED.source,
                             trajectory = EXCLUDED.trajectory,
                             drivers = EXCLUDED.drivers
                         """,

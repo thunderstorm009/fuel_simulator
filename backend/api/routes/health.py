@@ -66,9 +66,16 @@ async def _predictor_status() -> str:
     try:
         async with httpx.AsyncClient(timeout=0.5) as client:
             response = await client.get(f"{base_url}/health")
-        return "HEALTHY" if response.status_code == 200 else "DEGRADED"
+        if response.status_code != 200:
+            return "DEGRADED"
+        payload = response.json()
+        if isinstance(payload, dict) and payload.get("status") == "ok":
+            return "HEALTHY"
+        return "DEGRADED"
     except httpx.HTTPError:
         return "OFFLINE"
+    except ValueError:
+        return "DEGRADED"
 
 
 async def _component_from_heartbeat(

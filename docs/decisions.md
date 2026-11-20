@@ -195,3 +195,17 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** The overnight execution log and morning handoff can contain environment-specific operational details and are not product documentation. The repository intentionally keeps local prompts and instructions out of the public tree.
 - **Decision:** Ignore only `docs/OVERNIGHT-LOG.md` and `docs/MORNING-TODO.md` for the overnight run; keep reusable, redacted execution evidence and sprint results in tracked `docs/evidence/` and sprint reports.
 - **Trade-off:** These two handoff files exist only in the local workspace; repository progress and evidence remain the shared source of truth.
+
+### ADR-029 — Validate resolved Compose service credentials without exposing values
+
+- **Status:** ACCEPTED
+- **Context:** The local `.env` differs from the public Compose defaults for database credentials and predictor port. Editing that local file is prohibited, and a mismatch otherwise appears later as a confusing service startup failure.
+- **Decision:** Add a smoke preflight that parses resolved Compose JSON and compares API/worker database credentials with PostgreSQL and the worker predictor URL with the predictor's internal port. Diagnostics identify only the mismatched variable names and redact values. Accept `--env-file` so clean-clone defaults can be verified explicitly. Keep `.env.example` and Compose defaults authoritative for public setup.
+- **Trade-off:** The smoke preflight intentionally fails in this local checkout until its owner aligns local settings; clean public defaults remain testable without changing local secrets.
+
+### ADR-030 — Alert on the age of the last successful ingestion
+
+- **Status:** ACCEPTED
+- **Context:** `snapshot_age_seconds` only changes when ingestion succeeds and therefore cannot age during a prolonged worker outage. A scrape may continue succeeding while simulator polling is failing, leaving that gauge falsely low.
+- **Decision:** Export `worker_last_ingest_timestamp_seconds` only on a successfully persisted snapshot. Alert when `time()` minus that timestamp exceeds 30 seconds, alert on stale snapshot markers, and treat a missing worker ingestion timestamp as a stale condition. Predictor health requires both HTTP 200 and the documented `status: ok` response body.
+- **Trade-off:** Alerting now distinguishes worker process availability from successful simulator ingestion; a worker that stays alive while ingest is stuck can no longer look current based on a stale gauge.

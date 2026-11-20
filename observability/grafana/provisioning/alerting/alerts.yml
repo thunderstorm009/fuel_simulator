@@ -3,20 +3,33 @@ groups:
   - orgId: 1
     name: Fuel Supply Platform
     folder: Fuel Supply Platform
-    interval: 1m
+    interval: 10s
     rules:
       - uid: snapshot-age-high
-        title: Snapshot age over 30 seconds
+        title: Accepted simulator snapshot older than 30 seconds
         condition: A
         data:
           - refId: A
             relativeTimeRange: {from: 300, to: 0}
             datasourceUid: prometheus
-            model: {expr: "snapshot_age_seconds > 30", instant: true, refId: A, datasource: {type: prometheus, uid: prometheus}, intervalMs: 1000, maxDataPoints: 43200}
-        noDataState: NoData
+            model: {expr: "(time() - worker_last_ingest_timestamp_seconds{job=\"worker\"} > 30) or absent(worker_last_ingest_timestamp_seconds{job=\"worker\"})", instant: true, refId: A, datasource: {type: prometheus, uid: prometheus}, intervalMs: 1000, maxDataPoints: 43200}
+        noDataState: OK
         execErrState: Error
-        for: 1m
+        for: 30s
         annotations: {summary: "The latest accepted simulator snapshot is older than 30 seconds."}
+        labels: {severity: warning}
+      - uid: simulator-snapshot-stale
+        title: Simulator marked the latest snapshot stale
+        condition: A
+        data:
+          - refId: A
+            relativeTimeRange: {from: 300, to: 0}
+            datasourceUid: prometheus
+            model: {expr: "snapshot_stale{job=\"worker\"} == 1", instant: true, refId: A, datasource: {type: prometheus, uid: prometheus}, intervalMs: 1000, maxDataPoints: 43200}
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations: {summary: "The simulator response marks the latest accepted snapshot as stale."}
         labels: {severity: warning}
       - uid: simulator-breaker-open
         title: Simulator circuit breaker open
@@ -26,7 +39,7 @@ groups:
             relativeTimeRange: {from: 300, to: 0}
             datasourceUid: prometheus
             model: {expr: "sim_breaker_state{state=\"OPEN\"} == 1", instant: true, refId: A, datasource: {type: prometheus, uid: prometheus}, intervalMs: 1000, maxDataPoints: 43200}
-        noDataState: NoData
+        noDataState: OK
         execErrState: Error
         for: 1m
         annotations: {summary: "The worker simulator client breaker is open."}
@@ -39,7 +52,7 @@ groups:
             relativeTimeRange: {from: 300, to: 0}
             datasourceUid: prometheus
             model: {expr: "sum(rate(http_requests_total{status_class=\"5xx\"}[5m])) > 1", instant: true, refId: A, datasource: {type: prometheus, uid: prometheus}, intervalMs: 1000, maxDataPoints: 43200}
-        noDataState: NoData
+        noDataState: OK
         execErrState: Error
         for: 2m
         annotations: {summary: "The API is returning more than one 5xx response per second."}
@@ -52,7 +65,7 @@ groups:
             relativeTimeRange: {from: 300, to: 0}
             datasourceUid: prometheus
             model: {expr: "increase(policy_fallback_total[5m]) > 0", instant: true, refId: A, datasource: {type: prometheus, uid: prometheus}, intervalMs: 1000, maxDataPoints: 43200}
-        noDataState: NoData
+        noDataState: OK
         execErrState: Error
         for: 0s
         annotations: {summary: "A forecast or policy used its fallback path in the last five minutes."}

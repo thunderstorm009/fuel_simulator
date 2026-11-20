@@ -107,3 +107,16 @@ def test_stale_decision_engine_degrades_health_without_marking_simulator_offline
     assert report["components"]["worker"]["status"] == "HEALTHY"
     assert report["components"]["simulator"]["status"] == "HEALTHY"
     assert report["components"]["decision_engine"]["status"] == "DEGRADED"
+
+
+@respx.mock
+def test_predictor_health_requires_healthy_response_body(monkeypatch) -> None:
+    monkeypatch.setenv("PREDICTOR_URL", "http://predictor.test")
+    respx.get("http://predictor.test/health").mock(
+        return_value=Response(200, json={"status": "degraded"})
+    )
+    with TestClient(app) as client:
+        app.state.repository = HealthRepository()
+        response = client.get("/api/health")
+
+    assert response.json()["components"]["predictor"]["status"] == "DEGRADED"

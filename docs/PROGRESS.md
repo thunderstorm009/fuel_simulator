@@ -7,7 +7,7 @@ Last updated: 2026-11-20. Resume point for the shared repository worktree.
 - Branch: `overnight-sprints-4-7`, based on `b1fc38b`. The pre-run tree is preserved in commit `ee830cc`; Sprint 4 is tagged at `3fe2353` as `sprint-4`. No pushes have been made.
 - Sprint 1–3: historical reports record those sprint gates as passed. Their implementation remains preserved.
 - Sprint 4: **PASS**. One project-owner-authorized recommendation was approved at tick 134, submitted by the worker, reached `ARRIVED` at tick 137, and one exact body/key replay returned the same allocation ID. The simulator is PAUSED at tick 138; only one allocation and one decision exist. Details: [Sprint 4 live evidence](evidence/sprint-04-overnight.md). The measured ETA discrepancy and the review's P2 projection-offset finding are corrected and regression-tested. Independent R3 review found no P0/P1; public and local mechanical gates passed after final changes. Tag: `sprint-4`.
-- Sprint 5: API/worker/predictor metrics, health aggregation, remote predictor with baseline fallback, token-protected chaos switch, Grafana/Prometheus provisioning, and fault demo are present. Local unit/integration tests and builds passed earlier; live fault/recovery evidence is still required.
+- Sprint 5: **PASS**. API/worker/predictor metrics, health aggregation, remote predictor with baseline fallback, token-protected chaos switch, Grafana/Prometheus provisioning, and fault demo all verified live. All 5 simulator faults + malformed data + predictor stop + worker stop demonstrated with detection and recovery. 136 Python + 6 frontend tests pass; lint clean. Grafana snapshot-age alert fires when worker stops. Tag: `sprint-5`.
 - Sprint 6: k6 workload, stats collector, report renderer, docs/quickstart checks and CI changes are present. Deterministic scenario runner, three measured load runs, and local CI validation remain.
 - Sprint 7: cold-start and chaos scripts, final demo notes, Q&A, assumptions, AI-use and known-issues docs are present. Cold-start, chaos round, docs audit, final documentation audit and readiness report remain.
 - Public local-instruction check: private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. The legacy `scripts/sprint_gate.sh` path is ignored by existing repository rules and will not be force-added or made trackable by changing those rules.
@@ -23,7 +23,9 @@ Last updated: 2026-11-20. Resume point for the shared repository worktree.
 
 ## Current work package and exact next action
 
-Sprint 5 first task: inspect its complete requirements/report/evidence and current Compose health, then run the latency fault scene with recovery while keeping simulator PAUSED and preserving allocation ID 1. Do not add another live operator-app approval or simulator allocation.
+Sprint 5: COMPLETE. All gates passed, committed and tagged `sprint-5`.
+
+Sprint 6 first task: run deterministic scenario_runner.py for all 4 scenarios × 3 policies × 2 runs; then run k6 load tests for 3 conditions; validate CI workflow; finalise D1-D5 documentation; R5 review; gate; tag sprint-6.
 
 ## Workspace constraints
 
@@ -37,7 +39,7 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | 2 | Passed historically with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
 | 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
 | 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
-| 5 | Implementation present; runtime fault gate open | [sprint-05.md](sprint-reports/sprint-05.md) |
+| 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
 | 6 | Tooling partial; scenarios and measurements open | [sprint-06.md](sprint-reports/sprint-06.md) |
 | 7 | Readiness artifacts partial; final verification open | [sprint-07.md](sprint-reports/sprint-07.md) |
 

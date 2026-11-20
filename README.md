@@ -36,7 +36,7 @@ The platform has six independently running services:
 | API | Database-backed operator reads and approval/rejection records; no simulator reads | `http://localhost:8101` |
 | Worker | Simulator REST/SSE, validation, persistence, forecasting, recommendation and approved execution jobs | `http://localhost:8102` |
 | Predictor | Validated forecast endpoint; worker timeout/breaker and review-required baseline fallback | `http://localhost:8103` |
-| Frontend | React + TypeScript operator interface | `http://localhost:5173` |
+| Frontend | React + TypeScript operator interface | `http://localhost:${FRONTEND_HOST_PORT:-5173}` |
 | Prometheus | Scrapes API, worker and predictor metrics | `http://localhost:9090` |
 | Grafana | Provisioned Prometheus data source | `http://localhost:3000` |
 
@@ -62,9 +62,10 @@ docs/                    Architecture, decisions, evidence and sprint reports
 
 ## Run locally
 
-1. Copy `.env.example` to `.env` and configure `DATABASE_URL` and `POSTGRES_PASSWORD` to match. Set `OPERATOR_TOKEN` for approval/rejection actions. The defaults are for local development only.
-2. Start the stack with `make up`. If host port 5173 is occupied, set `FRONTEND_HOST_PORT=5174` and `CORS_ORIGIN=http://localhost:5174` in `.env`.
-3. Check service health at each service's `/health` endpoint, and open the frontend URL above.
+1. Copy `.env.example` to `.env`. For approval/rejection actions, set a local `OPERATOR_TOKEN`; never commit `.env`. The defaults are for local simulated development.
+2. Start the stack with `make up`. If host port 5173 is occupied, set `FRONTEND_HOST_PORT=5174` and `CORS_ORIGIN=http://localhost:5174` in `.env` before startup.
+3. Run `python3 scripts/check_compose_env.py` to catch database or predictor endpoint mismatches before startup. Clean-clone defaults can be checked without a local `.env` using `python3 scripts/check_compose_env.py --env-file .env.example`.
+4. Check service health at each service's `/health` endpoint, and open the configured frontend URL.
 
 `make down` stops containers and preserves volumes. Do not use `docker compose down -v` unless you intend to delete local database and Grafana data.
 
@@ -86,6 +87,6 @@ See `.env.example` for supported environment variables and [docs/operations.md](
 
 ## Development status
 
-Sprints 1–3 have historical local acceptance evidence. Sprint 4 code and local checks are present, while its live acceptance gate remains open: an operator-approved allocation reaching `ARRIVED` and an identical body/key replay have not been verified, and no simulator allocation was submitted. Sprint 5 predictor, fallback, health UI, and dashboard code is present; its live resilience gate remains unverified in the current environment. Sprints 6–7 still require scenario and performance evidence, CI execution, and a cold-start/demo rehearsal. See [the current progress record](docs/PROGRESS.md) and [final execution report](docs/FINAL-EXECUTION-REPORT.md).
+Sprints 1–4 have acceptance evidence, including one explicitly authorized Sprint 4 allocation that reached `ARRIVED` and an exact body/key replay. Sprint 5's simulator fault, predictor fallback/recovery, worker recovery, and monitoring checks are recorded in [the resilience report](docs/resilience.md). Sprints 6–7 remain in progress; see [the current progress record](docs/PROGRESS.md) and [final execution report](docs/FINAL-EXECUTION-REPORT.md).
 
 The consolidated engineering update is [Day 1 Engineering Progress — Sprints 1–4](docs/DAY-1-UPDATE.md).

@@ -16,7 +16,7 @@ Metric definitions are in `backend/shared/core/metrics.py`; route and job instru
 | `service_health_checks_total` | Health endpoint requests by service |
 | `sim_client_requests_total`, `sim_client_retries_total`, `sim_client_failures_total` | Worker simulator request outcome, retries, and failures |
 | `sim_breaker_state` | Simulator circuit breaker state |
-| `worker_ingest_success_total`, `worker_ingest_failures_total`, `snapshot_rejected_total`, `snapshot_age_seconds` | Ingestion and accepted-data freshness |
+| `worker_ingest_success_total`, `worker_ingest_failures_total`, `snapshot_rejected_total`, `snapshot_age_seconds`, `worker_last_ingest_timestamp_seconds` | Ingestion and accepted-data freshness; the timestamp advances only after successful persistence |
 | `forecasts_computed_total`, `forecast_job_failures_total`, `forecast_error_liters` | Forecast work, failures, and observed demand forecast error |
 | `recommendations_created_total`, `recommendation_fallbacks_total`, `recommendation_job_failures_total` | Recommendation job outcomes |
 | `allocation_executor_failures_total`, `simulator_allocation_rejections_total` | Approved-allocation executor and simulator rejections |
@@ -32,4 +32,6 @@ Python services log operational errors and job events using JSON records for rel
 
 ## Verification and gaps
 
-The sprint reports and `docs/evidence/` contain service health, scrape/metric, and runtime observations from the runs that were actually available. Current Grafana runtime and panel movement under fault injection have not been rechecked in this resumed session because Docker is unavailable. Do not treat configuration presence as proof that a dashboard loaded or an alert fired.
+Live verification on 2026-11-20 found API, worker, and predictor Prometheus targets all `up`; Grafana `/api/health` returned database `ok` on version 11.6.0. The provisioned dashboard was found by UID `fuel-supply-platform`. During a one-tick simulated demand-spike event, the Grafana-backed `hours_to_stockout{station="station-coxsbazar",fuel="DIESEL"}` query changed from 19.5 to 19.25; the event later resolved. See [Grafana event evidence](evidence/sprint-05-grafana-event.txt) and [fault/recovery evidence](evidence/sprint-05-fault-demo-accepted.txt).
+
+Alert rules are provisioned and evaluating, but outbound notification delivery is not configured: Grafana logs report SMTP is unconfigured. No email notification delivery is claimed. Metric values are process-local and may reset after a service restart.

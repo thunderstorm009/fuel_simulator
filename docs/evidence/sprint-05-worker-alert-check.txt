@@ -1,0 +1,17 @@
+Sprint 5 alert regression — 2026-11-20 UTC
+
+Procedure: with simulator PAUSED, stopped only this Compose project's worker for 55 seconds. Queried Prometheus and Grafana while it was stopped, then restarted worker and checked API component health.
+
+Observed output:
+
+start 2026-11-20T10:55:34Z
+docker compose stop worker -> stopped
+Prometheus query `up{job="worker"}` -> 0
+Grafana alert API -> Accepted simulator snapshot older than 30 seconds, state active
+docker compose start worker -> started
+API component health after recovery -> worker HEALTHY, simulator HEALTHY, predictor HEALTHY
+end 2026-11-20T10:56:33Z
+
+The active alert was driven by the missing/stale `worker_last_ingest_timestamp_seconds{job="worker"}` signal. A separate target-down rule was tried but did not appear in the active alert list during this run, so it was removed from the final provisioning. The accepted freshness alert covers both stale ingestion and disappearance of the worker metric. SMTP remains unconfigured, so this proves alert evaluation/state, not outbound notification delivery.
+
+No simulator ticks were advanced; no faults, events, or allocations were changed.

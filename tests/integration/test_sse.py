@@ -1,12 +1,18 @@
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from typing import Any
 
 import pytest
-from worker.sse import SSEConsumer
+from worker.sse import SSEConsumer, logger
 
 from core.sim_client import SimUnavailable
+
+
+def test_sse_connection_logs_are_enabled_at_info_level() -> None:
+    assert logger.isEnabledFor(logging.INFO)
+    assert logger.handlers
 
 
 class FakeClient:
@@ -47,7 +53,8 @@ async def test_stream_event_refresh_is_rate_limited_and_keepalive_is_ignored() -
 
 
 @pytest.mark.asyncio
-async def test_reconnect_uses_backoff_and_refetches_after_successful_reconnect() -> None:
+async def test_reconnect_uses_backoff_and_refetches_after_successful_reconnect(caplog) -> None:
+    caplog.set_level(logging.INFO, logger="fuel_simulator.worker.sse")
     refreshes = 0
     delays: list[float] = []
 
@@ -69,3 +76,4 @@ async def test_reconnect_uses_backoff_and_refetches_after_successful_reconnect()
     assert client.connections == 2
     assert delays == [0.5]
     assert refreshes == 1
+    assert '"event": "simulator_stream_connected"' in caplog.text

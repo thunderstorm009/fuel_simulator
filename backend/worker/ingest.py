@@ -14,8 +14,10 @@ from core.metrics import (
     sim_service_level,
     snapshot_age,
     snapshot_rejected,
+    snapshot_stale,
     worker_ingest_failures,
     worker_ingest_success,
+    worker_last_ingest_timestamp,
 )
 from core.models import DataStatus, Snapshot
 from core.sim_client import BreakerState, SimClient
@@ -135,6 +137,8 @@ class SnapshotIngestor:
             )
             await self.store.prune_snapshots(self.keep_snapshots)
             snapshot_age.set(max(0.0, (self._now() - snapshot.fetched_at).total_seconds()))
+            worker_last_ingest_timestamp.set(snapshot.fetched_at.timestamp())
+            snapshot_stale.set(1 if snapshot.stale else 0)
             sim_service_level.set(snapshot.metrics.service_level)
             worker_ingest_success.inc()
             logger.info(
