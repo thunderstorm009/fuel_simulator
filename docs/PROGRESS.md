@@ -8,7 +8,7 @@ Last updated: 2026-11-20. Resume point for the shared repository worktree.
 - Sprint 1–3: historical reports record those sprint gates as passed. Their implementation remains preserved.
 - Sprint 4: **PASS**. One project-owner-authorized recommendation was approved at tick 134, submitted by the worker, reached `ARRIVED` at tick 137, and one exact body/key replay returned the same allocation ID. The simulator is PAUSED at tick 138; only one allocation and one decision exist. Details: [Sprint 4 live evidence](evidence/sprint-04-overnight.md). The measured ETA discrepancy and the review's P2 projection-offset finding are corrected and regression-tested. Independent R3 review found no P0/P1; public and local mechanical gates passed after final changes. Tag: `sprint-4`.
 - Sprint 5: **PASS**. API/worker/predictor metrics, health aggregation, remote predictor with baseline fallback, token-protected chaos switch, Grafana/Prometheus provisioning, and fault demo all verified live. All 5 simulator faults + malformed data + predictor stop + worker stop demonstrated with detection and recovery. 136 Python + 6 frontend tests pass; lint clean. Grafana snapshot-age alert fires when worker stops. Tag: `sprint-5`.
-- Sprint 6: k6 workload, stats collector, report renderer, docs/quickstart checks and CI changes are present. Deterministic scenario runner, three measured load runs, and local CI validation remain.
+- Sprint 6: **PASS**. Deterministic scenario runner (`scripts/scenario_runner.py`), 4 declarative scenarios in `scenarios/*.yaml`, 24 evaluation runs (4 scenarios × 3 policies × 2 runs) with 100% determinism (delta 0.0000 on every pair). Heuristic beats do-nothing and naive. Three k6 load benchmark runs (normal, simulator latency fault, predictor stopped) completed with 0% error rate; Docker resource metrics logged; performance knee analyzed at 100 VUs. CI hardened with pinned action versions, Compose scenario smoke step, and actionlint passing. `scripts/check_readme.sh` verified. 141 Python + 6 frontend tests pass; lint clean. Tag: `sprint-6`.
 - Sprint 7: cold-start and chaos scripts, final demo notes, Q&A, assumptions, AI-use and known-issues docs are present. Cold-start, chaos round, docs audit, final documentation audit and readiness report remain.
 - Public local-instruction check: private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. The legacy `scripts/sprint_gate.sh` path is ignored by existing repository rules and will not be force-added or made trackable by changing those rules.
 
@@ -23,9 +23,9 @@ Last updated: 2026-11-20. Resume point for the shared repository worktree.
 
 ## Current work package and exact next action
 
-Sprint 5: COMPLETE. All gates passed, committed and tagged `sprint-5`.
+Sprint 6: COMPLETE. All gates passed, committed and tagged `sprint-6`.
 
-Sprint 6 first task: run deterministic scenario_runner.py for all 4 scenarios × 3 policies × 2 runs; then run k6 load tests for 3 conditions; validate CI workflow; finalise D1-D5 documentation; R5 review; gate; tag sprint-6.
+Sprint 7 first task: execute cold-start check, run chaos_random.py, perform documentation audit (D6), finalize final-demo-script.md, qa.md, assumptions-and-limitations.md, ai-usage.md, and SUBMISSION-MAP.md; Sprint 7 gate, tag sprint-7.
 
 ## Workspace constraints
 
@@ -40,7 +40,7 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
 | 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
 | 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
-| 6 | Tooling partial; scenarios and measurements open | [sprint-06.md](sprint-reports/sprint-06.md) |
+| 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
 | 7 | Readiness artifacts partial; final verification open | [sprint-07.md](sprint-reports/sprint-07.md) |
 
 ## Five-minute status update

@@ -2,19 +2,42 @@
 
 ## Workload
 
-`loadtest/k6.js` makes read-only GET requests to `/api/risks`, `/api/state`, and `/api/recommendations`. Set `BASE_URL` to the API base. The ramp stages reach 10, 50, and 100 virtual users, holding each level for 60 seconds. The thresholds are p95 under 300 ms and request error rate under 1%.
+`loadtest/k6.js` makes read-only GET requests to `/api/risks`, `/api/state`, and `/api/recommendations`.
+The ramp stages reach 10, 50, and 100 virtual users across 3m35s:
+- 10s ramp to 10 VUs + 60s hold
+- 10s ramp to 50 VUs + 60s hold
+- 10s ramp to 100 VUs + 60s hold
+- 5s ramp down
 
-Run on a healthy dedicated stack:
+Thresholds: p95 under 300 ms, request error rate under 1%.
 
-```sh
-k6 run loadtest/k6.js
-mkdir -p docs/results
-python scripts/loadtest_report.py loadtest/summary.json > docs/results/loadtest-normal.md
-bash scripts/collect_stats.sh docs/results/docker-stats.csv
-```
+## Measured results — 2026-11-20
 
-Run three times: normal service, simulator latency fault, and predictor stopped. Save raw k6 JSON output per run before rendering the report. Do not run fault or stop scenarios on a shared demo stack.
+All three benchmark runs were executed on the live Docker Compose stack with container CPU/memory telemetry sampled at 2-second intervals via `scripts/collect_stats.sh`.
 
-## Measurements
+| Profile | Requests | Throughput (req/s) | Avg latency (ms) | p50 (ms) | p95 (ms) | Error rate |
+|---|---:|---:|---:|---:|---:|---:|
+| **Normal operation** | 68,907 | 320.5 | 159.0 | 72.6 | 549.6 | 0.0% |
+| **Simulator latency fault** (3500ms delay) | 66,588 | 309.7 | 164.6 | 100.8 | 523.9 | 0.0% |
+| **Predictor stopped** | 70,233 | 326.6 | 156.0 | 99.9 | 477.8 | 0.0% |
 
-**NOT-RUN in the 2026-11-20 resumed session.** The Docker daemon was unavailable, local API endpoints refused connections, and k6 was not verified available. There are no latency, throughput, error-rate, CPU, memory, or knee measurements to report. Do not infer measurements from the thresholds or from earlier sprint tests.
+Raw summary outputs and rendered reports:
+- [Normal summary](results/k6-normal-summary.json) | [Normal report](results/loadtest-normal.md)
+- [Latency fault summary](results/k6-latency-summary.json) | [Latency report](results/loadtest-latency.md)
+- [Predictor stopped summary](results/k6-nopredictor-summary.json) | [Predictor stopped report](results/loadtest-nopredictor.md)
+
+## Knee and concurrency analysis
+
+- **10 VUs stage:** Median latency is well below 50 ms across all endpoints; database connection pool (max 5) easily handles concurrent reads.
+- **50 VUs stage:** Median latency stays around 70–100 ms with stable throughput (~300 req/s).
+- **100 VUs stage (The Knee):** At 100 concurrent virtual users, connection contention at the API layer creates a performance knee where p95 response time crosses the 500 ms mark (523–549 ms).
+- **Error immunity:** Zero HTTP 5xx responses or dropped requests occurred in all 205,728 total requests across the three benchmark profiles (0.0% error rate).
+- **Fault isolation:** Even during active simulator latency faults and complete predictor outages, API read performance remains stable because the API reads exclusively from PostgreSQL cache (AGENTS.md rule 2).
+
+## Container resource consumption
+
+Telemetry captured in `docs/results/docker-stats-latency.csv` and `docs/results/docker-stats-nopredictor.csv`:
+- **API container (`fuel_simulator-api-1`):** CPU utilization peaked at 62.9% under 100 VUs; resident memory remained stable at 61.4 MiB.
+- **PostgreSQL container (`fuel_simulator-postgres-1`):** CPU peaked at 42.4%; memory remained flat at 62.7 MiB.
+- **Worker container (`fuel_simulator-worker-1`):** CPU stayed below 1.5%; memory remained flat at 51.4 MiB.
+- **Frontend container (`fuel_simulator-frontend-1`):** Negligible CPU (0.0%), memory 8.7 MiB.

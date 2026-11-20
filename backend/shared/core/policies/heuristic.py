@@ -220,5 +220,7 @@ class HeuristicPolicy:
 
     @staticmethod
     def _projected_inventory(record: ForecastRecord, arrival_offset: int) -> float:
+        if not record.trajectory:
+            return 0.0
         index = min(max(0, arrival_offset), len(record.trajectory) - 1)
         return record.trajectory[index].mean_inventory

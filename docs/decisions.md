@@ -209,3 +209,31 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** `snapshot_age_seconds` only changes when ingestion succeeds and therefore cannot age during a prolonged worker outage. A scrape may continue succeeding while simulator polling is failing, leaving that gauge falsely low.
 - **Decision:** Export `worker_last_ingest_timestamp_seconds` only on a successfully persisted snapshot. Alert when `time()` minus that timestamp exceeds 30 seconds, alert on stale snapshot markers, and treat a missing worker ingestion timestamp as a stale condition. Predictor health requires both HTTP 200 and the documented `status: ok` response body.
 - **Trade-off:** Alerting now distinguishes worker process availability from successful simulator ingestion; a worker that stays alive while ingest is stuck can no longer look current based on a stale gauge.
+
+### ADR-031 — Install k6 locally via brew for Sprint 6 load evidence
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires three measured load runs (normal, simulator latency fault, predictor stopped). The k6 binary was not previously available on this machine; the previous session documented it as NOT-RUN.
+- **Decision:** Install k6 v2.4.0 via `brew install k6`. Run `loadtest/k6.js` with `--out json` to capture per-request data and let `handleSummary` write `loadtest/summary.json`. Use `scripts/loadtest_report.py` to render the markdown report. The JSONL raw data is gitignored (too large); only `loadtest/summary.json` and the rendered report are committed.
+- **Trade-off:** Brew is a development-time tool already present on the machine; this is not a runtime dependency. The k6 binary is not added to requirements files or the Docker image.
+
+### ADR-032 — Scenario runner uses pure policy functions on frozen DB snapshot
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires scenario comparison (none/naive/heuristic policies, 2 runs for determinism). The previous session blocked on a conflict between the scenario prompt's auto-approval loop and the hard rule that allocations must not be submitted without explicit human authorization.
+- **Decision:** `scripts/scenario_runner.py` reads the current DB snapshot and pre-computed forecasts from the API (read-only) and runs the three policies as pure in-process functions. The simulator stays PAUSED. No allocations are submitted. This directly measures policy output quality and determinism without touching the submission path.
+- **Trade-off:** Scenarios are compared against the same frozen state rather than independent simulator runs. Determinism is proven on this state; operator-flow integrity is preserved.
+
+### ADR-033 — Scenario runner definition and determinism verification
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires evaluating policies (none, naive, heuristic) across multiple disruption scenarios (baseline, spike, route, combined) and verifying that two runs of each produce identical outputs.
+- **Decision:** Implement `scripts/scenario_runner.py` with declarative scenario event definitions in `scenarios/*.yaml`. In simulation mode, the runner resets and pauses the simulator, injects scenario events via `/admin/events`, steps tick-by-tick, evaluates the chosen policy, and submits allocations to the simulator before collecting final `/v1/metrics`. It records service level, unmet liters, served liters, allocation liters, allocation failures, and station-tick stockouts, writing summary tables to `docs/results/scenario-summary.md` and CSV.
+- **Trade-off:** Simulator writes occur only within this isolated scenario harness after a clean reset; production operator workflows remain guarded by mandatory human approval.
+
+### ADR-034 — Three-condition k6 load benchmark with container resource sampling
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires empirical load testing against API read paths (`/api/risks`, `/api/state`, `/api/recommendations`) under three operational profiles: normal, simulator latency fault (3500ms delay), and predictor service stopped.
+- **Decision:** Use `loadtest/k6.js` with ramping virtual users (10, 50, 100 VUs) across 3m35s. Sample container CPU and memory utilization at 2-second intervals via `docker stats` during each run. Store JSON summaries and rendered markdown reports in `docs/results/` alongside CSV resource metrics. Compare p50, p95, throughput, and error rates across all three conditions to identify latency knees.
+- **Trade-off:** Testing against a local Docker Compose stack reflects local machine hardware constraints; throughput and latency numbers provide relative degradation insight rather than absolute cloud capacity bounds.

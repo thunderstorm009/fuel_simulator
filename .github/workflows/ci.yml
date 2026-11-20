@@ -43,7 +43,7 @@ jobs:
         run: |
           docker compose up --build -d
           for service in simulator postgres api worker predictor frontend prometheus grafana; do
-            for attempt in $(seq 1 60); do
+            for _ in $(seq 1 60); do
               state="$(docker compose ps --format json "$service" | python3 -c 'import json,sys; rows=[json.loads(x) for x in sys.stdin if x.strip()]; print(rows[0].get("Health", "") if rows else "")')"
               [ "$state" = healthy ] && break
               sleep 2
@@ -51,6 +51,10 @@ jobs:
             [ "$state" = healthy ] || { echo "$service did not become healthy"; exit 1; }
           done
           curl --fail --silent --show-error http://localhost:8101/api/health
+      - name: Run scenario runner smoke
+        run: |
+          pip install -r requirements-dev.txt pyyaml
+          python3 scripts/scenario_runner.py --scenario baseline --policy heuristic --ticks 5
       - name: Save Compose logs on failure
         if: failure()
         run: docker compose logs --no-color > compose-failure.log

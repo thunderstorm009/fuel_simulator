@@ -1,0 +1,31 @@
+{
+  "workload": "GET /api/risks, /api/state, /api/recommendations",
+  "vus": [
+    10,
+    50,
+    100
+  ],
+  "stages": "10s ramp + 60s hold per level; 5s ramp down",
+  "http_req_duration": {
+    "p(95)": 523.8732,
+    "avg": 164.62087337057648,
+    "min": 3.868,
+    "med": 100.7835,
+    "max": 2221.307,
+    "p(90)": 429.2321
+  },
+  "http_reqs": {
+    "count": 66588,
+    "rate": 309.6929109316993
+  },
+  "request_errors": {
+    "rate": 0,
+    "passes": 0,
+    "fails": 66588
+  },
+  "checks": {
+    "passes": 66588,
+    "fails": 0,
+    "rate": 1
+  }
+}
