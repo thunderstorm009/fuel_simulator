@@ -23,10 +23,12 @@ docker compose config -q
 
 ## GitHub Actions
 
-`.github/workflows/ci.yml` runs Python lint/tests, frontend install/typecheck/tests/build, and a Compose image build on GitHub Actions. It does not launch the live simulator stack. The hosted workflow has not yet been triggered for this work; local command results are reported separately in `docs/PROGRESS.md` and sprint evidence.
+`.github/workflows/ci.yml` pins action release tags, caches Python/frontend dependencies, runs Python lint/tests and frontend typecheck/tests/build, then builds and starts the Compose stack, waits for health, curls `/api/health`, and uploads Compose logs on failure. The hosted workflow has not been triggered for this work. Its Compose job has not been exercised locally in this resumed session because Docker is unavailable.
 
 ## Current evidence and limits
 
-After the repository moves, the local suite reported 108 passing Python tests and 2 passing frontend tests. Frontend typecheck and production build passed. Sprint reports record earlier per-sprint counts, which reflect their respective code snapshots. The live Sprint 4 approval-to-`ARRIVED` and exact-key replay scenario has not been run; ordinary automated tests do not establish that live write acceptance. The source-inventory-exhaustion replay probe is also still open.
+136 Python tests (unit + integration) and 6 frontend tests pass locally. Frontend typecheck and production build pass. `make lint` (ruff + tsc + vite) is clean. `actionlint` reports no errors on `.github/workflows/ci.yml`. Load test results are present in `docs/results/`; see `docs/loadtest.md`.
 
-No load-test tool or measured load report is currently present. A future CI change should add it only with a defined deterministic environment and a report containing real measured output.
+The hosted GitHub Actions workflow has not been triggered. It cannot be triggered from this environment. The local equivalent commands (Python lint/test, frontend test/typecheck/build, `docker compose config -q`) all pass.
+
+The read-only k6 workload (`loadtest/k6.js`) runs against the live stack; see `docs/results/` for the measured summaries. No load measurements are invented.

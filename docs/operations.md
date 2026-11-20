@@ -47,4 +47,4 @@ To restore normal operation after a simulator fault, clear the simulator fault u
 
 ## Deployment limitations
 
-This is a local hackathon/demo Compose deployment. Hosted CI has not been triggered, production secrets management and external deployment are not configured, and Grafana dashboards/alerts remain unfinished. See `docs/PROGRESS.md` for environment-specific notes and open acceptance items.
+This is a local hackathon/demo Compose deployment. Hosted CI has not been triggered, production secrets management and external deployment are not configured. Grafana dashboard and alert provisioning exists, but current runtime loading and panel movement have not been reverified. See `docs/PROGRESS.md` for environment-specific notes and open acceptance items.

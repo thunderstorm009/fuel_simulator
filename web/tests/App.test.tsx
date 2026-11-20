@@ -14,7 +14,14 @@ const recommendation = {
   fuel_type: "DIESEL",
   quantity: 3000,
   idempotency_key: "rec-test-key",
-  request_body: { idempotency_key: "rec-test-key" },
+  request_body: {
+    source_depot_id: "depot-gazipur",
+    destination_station_id: "station-mirpur",
+    route_id: "route-gazipur-mirpur",
+    fuel_type: "DIESEL",
+    quantity: 3000,
+    idempotency_key: "rec-test-key",
+  },
   explanation_json: {
     drivers: { arrival_tick: 10, demand_multiplier: 1, recent_ratio: 1, delayed_supply: [] },
     constraints_applied: [],
@@ -68,6 +75,19 @@ describe("operator application", () => {
       if (url.endsWith("/api/state")) return jsonResponse(stateResponse());
       if (url.endsWith("/api/events")) return jsonResponse({ events: [], incidents: [], data_status: "HEALTHY", data_age_seconds: 0, simulated: true });
       if (url.endsWith("/api/risks")) return jsonResponse({ forecasts: [], data_status: "HEALTHY", data_age_seconds: 0, stale: false, simulated: true });
+      if (url.endsWith("/api/health")) return jsonResponse({
+        status: "DEGRADED",
+        components: {
+          backend: { status: "HEALTHY", age_seconds: 0 },
+          database: { status: "HEALTHY", age_seconds: null },
+          simulator: { status: "DEGRADED", age_seconds: 19 },
+          predictor: { status: "OFFLINE", age_seconds: null },
+          decision_engine: { status: "HEALTHY", age_seconds: 1 },
+        },
+        last_check_at: "2026-01-01T00:00:00Z",
+        latency: { p95_seconds: 0.02, error_rate: 0.01 },
+        simulated: true,
+      });
       if (url.endsWith("/api/recommendations")) return jsonResponse({ recommendations });
       if (url.endsWith("/api/decisions")) return jsonResponse({ decisions });
       if (url.endsWith("/approve") && init?.method === "POST") {
@@ -123,5 +143,88 @@ describe("operator application", () => {
     expect(confirm).toHaveBeenCalledOnce();
     expect(window.localStorage.getItem("operator-token")).toBeNull();
     expect(await screen.findByText("Recommendation approved.")).toBeInTheDocument();
+  });
+
+  it("shows each recommendation ID beside its exact persisted request quantity and key", async () => {
+    const primary = {
+      ...recommendation,
+      id: "1cb05b67-3440-45e5-a6d8-398482678d8c",
+      quantity: 6000,
+      depot_id: "depot-patiya",
+      station_id: "station-coxsbazar",
+      route_id: "route-patiya-coxsbazar",
+      fuel_type: "DIESEL",
+      idempotency_key: "rec-cd2db2c8-5d87-4bc7-876c-d06373049a8a",
+      request_body: {
+        source_depot_id: "depot-patiya",
+        destination_station_id: "station-coxsbazar",
+        route_id: "route-patiya-coxsbazar",
+        fuel_type: "DIESEL",
+        quantity: 6000,
+        idempotency_key: "rec-cd2db2c8-5d87-4bc7-876c-d06373049a8a",
+      },
+    };
+    const sibling = {
+      ...primary,
+      id: "dab6db72-4f94-4b09-a167-d1dea8c1f2fc",
+      quantity: 1543.5502472239223,
+      idempotency_key: "rec-9a2da662-644a-4256-ab25-41695ffb753e",
+      request_body: {
+        ...primary.request_body,
+        quantity: 1543.5502472239223,
+        idempotency_key: "rec-9a2da662-644a-4256-ab25-41695ffb753e",
+      },
+    };
+    recommendations = [primary, sibling];
+    renderApp();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Recommendations" }));
+    expect(await screen.findByText(primary.id)).toBeInTheDocument();
+    expect(screen.getByText(sibling.id)).toBeInTheDocument();
+    expect(screen.getByText("6,000 L from depot-patiya · Route route-patiya-coxsbazar")).toBeInTheDocument();
+    expect(screen.getByText("1,543.5502472239223 L from depot-patiya · Route route-patiya-coxsbazar")).toBeInTheDocument();
+    expect(screen.getByText(primary.idempotency_key)).toBeInTheDocument();
+    expect(screen.getByText(sibling.idempotency_key)).toBeInTheDocument();
+    const primaryCard = screen.getByText(primary.id).closest("article");
+    expect(primaryCard).not.toBeNull();
+    fireEvent.click(primaryCard!.querySelector("button.text-button")!);
+    expect(primaryCard!.querySelector("pre")?.textContent).toBe(JSON.stringify(primary.request_body, null, 2));
+  });
+
+  it("blocks operator decisions when stored summary fields differ from the persisted request", async () => {
+    recommendations = [{
+      ...recommendation,
+      quantity: 6000,
+      request_body: { ...recommendation.request_body, quantity: 1543.5502472239223 },
+    }];
+    renderApp();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Recommendations" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("do not match its allocation request");
+    expect(screen.queryByRole("button", { name: "Approve allocation" })).not.toBeInTheDocument();
+  });
+
+  it("fails closed without crashing when an API recommendation has a malformed request body", async () => {
+    recommendations = [{
+      ...recommendation,
+      request_body: null as unknown as typeof recommendation.request_body,
+    }];
+    renderApp();
+
+    fireEvent.click(await screen.findByRole("button", { name: "Recommendations" }));
+    expect(await screen.findByText("Allocation request unavailable")).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent("do not match its allocation request");
+    expect(screen.queryByRole("button", { name: "Approve allocation" })).not.toBeInTheDocument();
+  });
+
+  it("shows component status and performance on the system health page", async () => {
+    renderApp();
+    await screen.findByRole("heading", { name: "Supply overview" });
+    expect(screen.getByText("System is degraded.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "System health" }));
+    expect(await screen.findByRole("heading", { name: "System health" })).toBeInTheDocument();
+    expect(screen.getByText("Predictor")).toBeInTheDocument();
+    expect(screen.getByText("OFFLINE")).toBeInTheDocument();
+    expect(screen.getByText(/5xx error rate: 1.00%/)).toBeInTheDocument();
   });
 });

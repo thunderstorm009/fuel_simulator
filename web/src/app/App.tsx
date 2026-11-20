@@ -5,7 +5,8 @@ import PageNavigation, { type Page } from "../components/layout/PageNavigation";
 import DashboardPage from "../features/dashboard/DashboardPage";
 import RecommendationsPage from "../features/allocations/RecommendationsPage";
 import ShortageRiskPage from "../features/shortage-risk/ShortageRiskPage";
-import { fetchEvents, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
+import HealthPage from "../features/system-health/HealthPage";
+import { fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
 import type { Fuel } from "../types/api";
 import { localTime } from "../lib/format";
 
@@ -16,6 +17,7 @@ export default function App() {
   const stateQuery = useQuery({ queryKey: ["state"], queryFn: fetchState, refetchInterval: 3000 });
   const eventsQuery = useQuery({ queryKey: ["events"], queryFn: fetchEvents, refetchInterval: 3000 });
   const risksQuery = useQuery({ queryKey: ["risks"], queryFn: fetchRisks, refetchInterval: 3000 });
+  const healthQuery = useQuery({ queryKey: ["health"], queryFn: fetchHealth, refetchInterval: 5000 });
   const trajectoryQuery = useQuery({
     queryKey: ["trajectory", selected?.stationId, selected?.fuel],
     queryFn: () => fetchTrajectory(selected!.stationId, selected!.fuel),
@@ -34,12 +36,15 @@ export default function App() {
       <Header status={state?.data_status} ageSeconds={state?.data_age_seconds} />
       <PageNavigation page={page} onChange={setPage} />
       {apiUnavailable && <div className="notice notice-warning" role="status"><strong>API unreachable.</strong> Showing the last received state while polling continues.</div>}
+      {healthQuery.data && healthQuery.data.status !== "HEALTHY" && <div className="notice notice-degraded" role="status"><strong>System is {healthQuery.data.status.toLowerCase()}.</strong> Review the System health view for component status and data age.</div>}
       {state && (state.stale || state.data_status !== "HEALTHY") && (
         <div className="notice notice-degraded" role="status">
           <strong>Data is {state.data_status.toLowerCase()}.</strong> The snapshot is {Math.floor(state.data_age_seconds)} seconds old{state.stale ? " and marked stale by the simulator" : ""}.
         </div>
       )}
-      {!snapshot ? (
+      {page === "health" ? (
+        <HealthPage report={healthQuery.data} loading={healthQuery.isLoading} error={healthQuery.isError} />
+      ) : !snapshot ? (
         <section className="empty-state panel">
           <p className="eyebrow">LIVE SIMULATOR SNAPSHOT</p>
           <h2>{apiUnavailable ? "API unreachable" : "Waiting for the first snapshot"}</h2>

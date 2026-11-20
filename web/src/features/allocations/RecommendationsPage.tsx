@@ -6,13 +6,27 @@ import {
   fetchRecommendations,
   rejectRecommendation,
 } from "../../services/api";
-import type { Recommendation } from "../../types/api";
+import type { AllocationRequest, Recommendation } from "../../types/api";
 
-const liters = new Intl.NumberFormat("en-BD", { maximumFractionDigits: 0 });
+const liters = new Intl.NumberFormat("en-BD", { maximumFractionDigits: 20 });
 
 function hoursToStockout(item: Recommendation): number {
   const hours = item.explanation_json.risk_before.hours_to_stockout;
   return typeof hours === "number" ? hours : Number.POSITIVE_INFINITY;
+}
+
+function isAllocationRequest(value: unknown): value is AllocationRequest {
+  if (typeof value !== "object" || value === null) return false;
+  const body = value as Record<string, unknown>;
+  return typeof body.source_depot_id === "string"
+    && typeof body.destination_station_id === "string"
+    && typeof body.route_id === "string"
+    && ["DIESEL", "PETROL", "OCTANE"].includes(String(body.fuel_type))
+    && typeof body.quantity === "number"
+    && Number.isFinite(body.quantity)
+    && body.quantity > 0
+    && typeof body.idempotency_key === "string"
+    && body.idempotency_key.length > 0;
 }
 
 function RecommendationCard({
@@ -28,14 +42,27 @@ function RecommendationCard({
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
   const queryClient = useQueryClient();
-  const canDecide = item.status === "PROPOSED";
+  const request = isAllocationRequest(item.request_body) ? item.request_body : null;
+  const requestMismatch = !request || item.quantity !== request.quantity
+    || item.idempotency_key !== request.idempotency_key
+    || item.depot_id !== request.source_depot_id
+    || item.station_id !== request.destination_station_id
+    || item.route_id !== request.route_id
+    || item.fuel_type !== request.fuel_type;
+  const canDecide = item.status === "PROPOSED" && !requestMismatch;
 
   async function decide(action: "approve" | "reject") {
     if (!token.trim()) {
       notify("Enter the operator token to record a decision.");
       return;
     }
-    if (action === "approve" && !window.confirm(`Approve ${liters.format(item.quantity)} L of ${item.fuel_type} for ${item.station_id}?`)) return;
+    if (action === "approve") {
+      if (!request) {
+        notify("This recommendation has no valid persisted allocation request.");
+        return;
+      }
+      if (!window.confirm(`Approve recommendation ${item.id}: ${liters.format(request.quantity)} L of ${request.fuel_type} for ${request.destination_station_id}?`)) return;
+    }
     if (action === "reject" && !reason.trim()) {
       notify("Enter a reason before rejecting this recommendation.");
       return;
@@ -73,7 +100,9 @@ function RecommendationCard({
             <span className={`status-pill status-${item.status.toLowerCase().replaceAll("_", "-")}`}>{item.status}</span>
             {canDecide && <span className="review-badge">Needs review</span>}
           </div>
-          <p className="muted">{liters.format(item.quantity)} L from {item.depot_id} · Route {item.route_id}</p>
+          <p className="muted">{request ? `${liters.format(request.quantity)} L from ${request.source_depot_id} · Route ${request.route_id}` : "Allocation request unavailable"}</p>
+          <p className="recommendation-id">Recommendation ID <code>{item.id}</code></p>
+          <p className="recommendation-id">Idempotency key <code>{request?.idempotency_key ?? "Unavailable"}</code></p>
         </div>
         <div className="recommendation-meta">
           <span>{item.policy_used}{item.fallback_used ? " · fallback" : ""}</span>
@@ -87,6 +116,8 @@ function RecommendationCard({
       </button>
 
       {expanded && <div className="recommendation-details">
+        <h4>Exact persisted allocation request</h4>
+        <pre className="allocation-request-body">{JSON.stringify(item.request_body, null, 2)}</pre>
         <div className="risk-comparison">
           {[ ["Before", before], ["After", after] ].map(([label, risk]) => {
             const values = risk as Record<string, unknown>;
@@ -112,6 +143,8 @@ function RecommendationCard({
         <h4>Rejected alternatives</h4>
         {alternatives.length ? <ul className="detail-list">{alternatives.map((alternative, index) => <li key={index}>{Object.entries(alternative).map(([key, value]) => `${key.replaceAll("_", " ")}: ${String(value)}`).join(" · ")}</li>)}</ul> : <p className="empty-note">No alternatives were rejected.</p>}
       </div>}
+
+      {requestMismatch && <p className="notice notice-warning" role="alert">Stored recommendation fields do not match its allocation request. Operator decisions are disabled until the record is corrected.</p>}
 
       {canDecide && <div className="decision-controls">
         <label>Rejection reason<textarea value={reason} maxLength={500} onChange={(event) => setReason(event.target.value)} placeholder="Required to reject" /></label>

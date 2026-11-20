@@ -10,6 +10,8 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from api.database import PostgresReadRepository
+from api.routes.chaos import router as chaos_router
+from api.routes.health import router as health_router
 from api.routes.read import router as read_router
 from api.routes.recommendations import router as recommendations_router
 from core.metrics import api_http_request_duration, api_http_requests, health_checks
@@ -34,17 +36,24 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Fuel Supply Platform API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        origin.strip()
-        for origin in os.getenv("CORS_ORIGIN", "http://localhost:5173").split(",")
-        if origin.strip()
-    ],
+    allow_origins=list(
+        {
+            origin.strip()
+            for origin in os.getenv(
+                "CORS_ORIGIN", "http://localhost:5173,http://localhost:5174"
+            ).split(",")
+            if origin.strip()
+        }
+        | {"http://localhost:5173", "http://localhost:5174"}
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 app.include_router(read_router)
+app.include_router(health_router)
 app.include_router(recommendations_router)
+app.include_router(chaos_router)
 
 
 @app.middleware("http")

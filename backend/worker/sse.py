@@ -7,11 +7,17 @@ import json
 import logging
 import time
 from collections.abc import Awaitable, Callable
+from datetime import datetime, timezone
 
 from core.metrics import sse_events, sse_reconnects
 from core.sim_client import SimClient
 
 logger = logging.getLogger("fuel_simulator.worker.sse")
+logger.setLevel(logging.INFO)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(handler)
 
 
 class SSEConsumer:
@@ -44,6 +50,18 @@ class SSEConsumer:
             sse_reconnects.inc()
             try:
                 async with self.client.stream() as lines:
+                    logger.info(
+                        json.dumps(
+                            {
+                                "timestamp": datetime.now(timezone.utc).isoformat(),
+                                "level": "info",
+                                "service": "worker",
+                                "event": "simulator_stream_connected",
+                                "tick": None,
+                                "correlation_id": None,
+                            }
+                        )
+                    )
                     await self._refresh_if_due()
                     backoff_s = 0.5
                     async for line in lines:
@@ -58,8 +76,13 @@ class SSEConsumer:
                 logger.warning(
                     json.dumps(
                         {
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "level": "warning",
+                            "service": "worker",
                             "event": "simulator_stream_disconnected",
                             "error_type": type(exc).__name__,
+                            "tick": None,
+                            "correlation_id": None,
                         }
                     )
                 )

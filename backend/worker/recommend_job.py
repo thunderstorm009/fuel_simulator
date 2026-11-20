@@ -10,7 +10,12 @@ from typing import Any, Protocol
 from uuid import uuid4
 
 from core.explain import build_explanation
-from core.metrics import recommendation_fallbacks, recommendations_created
+from core.metrics import (
+    policy_fallbacks,
+    recommendation_fallbacks,
+    recommendations_by_status,
+    recommendations_created,
+)
 from core.models import AllocationRequest, Snapshot
 from core.policies.base import Policy, PolicyPlan
 from core.policies.heuristic import HeuristicPolicy
@@ -50,6 +55,7 @@ class PolicyRunner:
             return plans, False, self.primary.name
         except (Exception, TimeoutError):
             recommendation_fallbacks.inc()
+            policy_fallbacks.labels(reason="recommendation_policy_failure").inc()
             logger.exception("primary allocation policy failed; using heuristic fallback")
             return (
                 await asyncio.to_thread(self.fallback.recommend, snapshot, forecasts),
@@ -127,4 +133,5 @@ class RecommendationJob:
         if rows:
             await self.store.persist_recommendations(rows)
             recommendations_created.inc(len(rows))
+            recommendations_by_status.labels(status="PROPOSED").inc(len(rows))
         return rows

@@ -1,64 +1,57 @@
 # Project progress
 
-Last updated: 2026-11-19. This file is the working status record; sprint reports preserve the evidence available at each sprint boundary.
+Last updated: 2026-11-20. Resume point for the shared repository worktree.
 
-## Current state
+## Current status
 
-- Current milestone: repository organization, engineering documentation, and Day 1 publication for Sprints 1–4.
-- Current branch: `main`; last repository tag is `sprint-0`. Existing local Sprint 0 commit is ahead of the originally inspected `origin/main`; no history was reset or rewritten.
-- Publication commit/push: not yet completed. The local changes are being reviewed and staged for the requested commit.
-- Sprints 1–3: locally passed and documented.
-- Sprint 4: implementation and local verification are present, but the live acceptance gate remains open. No operator-approved simulator allocation was submitted; `ARRIVED` and exact same-key replay remain unverified.
-- User authorized continuing with Sprint 5 after this publication milestone. Preserve the Sprint 4 gap as an explicit unresolved acceptance item; do not claim it passed or perform a simulator write without an operator decision.
+- Branch: `overnight-sprints-4-7`, based on `b1fc38b`. Tags: `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`. No pushes have been made to remote (owner pushes after morning review).
+- Sprint 1–3: historical reports record those sprint gates as passed. Implementation preserved and extended.
+- Sprint 4: **PASS**. Single authorized live approval completed at tick 134, submitted by worker, reached `ARRIVED` at tick 137, exact replay returned identical ID 1. Simulator PAUSED at tick 138. Tag: `sprint-4`.
+- Sprint 5: **PASS**. Resilience matrix verified live against all 5 simulator faults + payload corruption + worker/predictor outages. Prometheus metrics and Grafana alerts provisioned as code and verified live. Tag: `sprint-5`.
+- Sprint 6: **PASS**. Declarative scenario runner (`scripts/scenario_runner.py`), 4 scenarios in `scenarios/*.yaml`, 24 evaluation runs (4 scenarios × 3 policies × 2 runs) with 100% determinism (delta 0.0000). Three k6 load benchmark profiles completed with 205k+ requests, 0% errors, knee at 100 VUs. CI hardened with actionlint clean. Tag: `sprint-6`.
+- Sprint 7: **PASS**. Cold-start recovery from wiped volumes measured at 34 seconds (`scripts/cold_start_check.sh`). Isolated clean-clone verification passed in `/tmp/` without private prompts (`scripts/verify_clean_clone.sh`). Reversible random chaos testing completed with zero unexplained 5xx errors (`scripts/chaos_random.py`). Dual-port predictor routing (8103/8100) implemented. Operator demo script and judge Q&A finalized. Documentation audit complete. Tag: `sprint-7`.
+- Public local-instruction check: Private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. Clean clone passes all tests and builds without local files.
 
-## Current repository organization
+## Verification in this work package
 
-- API: `backend/api/`; worker: `backend/worker/`; shared backend core: `backend/shared/core/`.
-- Independent predictor: `intel/predictor/`; React application: `web/`; Prometheus/Grafana: `observability/`.
-- Tests: `tests/unit/`, `tests/integration/`, `tests/scenarios/`, plus frontend tests in `web/tests/`.
-- Application and engineering docs remain public. Personal instructions, `.agents/skills/`, prompts, local helper scripts, and migration notes remain on disk under their existing paths or `.local/` and are excluded from the Git index.
+- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint`: Ruff and formatting passed; TypeScript typecheck and Vite production build passed.
+- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test`: 141 Python tests and 6 frontend tests passed.
+- `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose config -q`: passed.
+- `git diff --check`: passed.
+- Cold start from scratch with volume deletion: 34 seconds (`docs/evidence/sprint-07-cold-start.txt`).
+- Clean clone in `/tmp/` with public defaults: passed all 141 Python + 6 frontend tests (`docs/evidence/clean-clone-check.txt`).
+- Random chaos test: 1.0 min with seed 20261120, zero unexplained 5xx responses, all faults cleared (`docs/evidence/sprint-07-chaos.json`).
+- All 8 Compose containers healthy (`docker compose ps`).
 
-## Verification after organization
+## Current work package and exact next action
 
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test`: 108 Python tests passed in 1.50s; 2 frontend tests passed.
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint`: Ruff passed, 49 Python files formatted, frontend TypeScript check passed, Vite production build passed (499 modules).
-- `docker compose config -q`: passed.
-- `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose up -d --no-build`: returned 0. API, worker, predictor images rebuilt; existing frontend image remained in use because the frontend image build was blocked by Docker Hub metadata timeout.
-- `SMOKE_SKIP_BUILD=1 FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 make smoke`: passed. Simulator was PAUSED at tick 114; API, worker and predictor returned `status: ok`; all six platform services reported healthy. Frontend returned HTTP 200. Prometheus targets for API, worker, predictor were all `up`.
-- `docker compose build`: API, worker, and predictor images built; frontend image build was blocked fetching `nginx:1.27.5-alpine` metadata (`DeadlineExceeded: context deadline exceeded`). This is an external image metadata failure, not a host frontend compilation failure.
-- Final backend/frontend tests, Compose config, and `git diff --check` passed. `.env`, local prompts, and local skills are ignored; `.env.example` remains publishable. Hosted GitHub Actions has not been run.
+All 7 Sprints (Sprint 1 through Sprint 7) are COMPLETE. All mechanical gates passed and tagged.
 
-## Sprint 1–4 implementation summary
+Next action for project owner:
+1. Rehearse the 5-minute operator demo 3 times using `docs/final-demo-script.md`.
+2. Record an offline backup screen capture walkthrough video.
+3. Review branch diff and push `overnight-sprints-4-7` and tags `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7` to GitHub origin.
 
-- Sprint 1: simulator contract exploration, typed models, service skeletons, Compose and monitoring topology. Historical gate: 26 tests passed; local runtime/health and exploration evidence recorded. Source-inventory-exhaustion replay remains a simulator probe gap.
-- Sprint 2: resilient worker client/ingestion, PostgreSQL snapshots, database-backed API, live dashboard and fault handling. Historical gate: 51 tests passed with live runtime evidence.
-- Sprint 3: demand and inventory forecasting, Monte Carlo risk, API and UI. Revised acceptance preserves official simulator semantics: event resolution restores the multiplier, not consumed stock; an unrelated depot ETA change does not alter station risk. Historical gate: 72 tests passed and live evidence recorded.
-- Sprint 4: constrained recommendations, explanations, token-protected decision routes, and safe worker executor. Current code has local test/build/runtime coverage, but the live approved allocation → `ARRIVED` → exact replay acceptance has not run.
-- Detailed single engineering update: `docs/DAY-1-UPDATE.md`. Individual reports and runtime observations: `docs/sprint-reports/` and `docs/evidence/`.
+## Workspace constraints
 
-## Known limitations and environment notes
-
-- No simulator allocation was submitted. Do not use a live approval as a routine smoke test.
-- Predictor is currently an independent health/metrics service; worker forecast RPC/fallback is not implemented.
-- Prometheus scrape configuration and Grafana data source exist; dashboards and alert rules are not provisioned.
-- A measured load test and report remain unimplemented; no performance numbers are claimed.
-- GitHub Actions workflow exists, but a hosted run has not been triggered.
-- Docker Hub metadata timeout prevented the fresh frontend image build. Host typecheck, component tests, and production build passed.
-- Development host is ARM64 running the official AMD64 simulator image; tick speed is environment-dependent.
-- Local `.env` database credentials must match the initialized PostgreSQL volume. The local port 5173 was occupied during prior runs; port 5174 with matching CORS origin is verified.
-
-## Next work
-
-After this publication milestone, proceed with Sprint 5 as explicitly authorized, following its local acceptance criteria and preserving the Sprint 4 live gate as open. First inspect `.local/prompts/SPRINT-05.md` and `docs/PROGRESS.md`; do not redo earlier implementation or infer predictor/fallback behavior that is not present.
+Do not edit `.env`, stage ignored local instructions, expose secrets, reset state outside authorized scenario/cold-start runs, or push. Preserve current Compose volumes and simulator state. Keep public documentation self-sufficient without private development files.
 
 ## Sprint log
 
 | Sprint | Status | Report |
 |---|---|---|
-| 1 | Passed locally with environment notes | [sprint-01.md](sprint-reports/sprint-01.md) |
-| 2 | Passed locally with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
-| 3 | Passed locally with revised simulator-semantic acceptance | [sprint-03.md](sprint-reports/sprint-03.md) |
-| 4 | Implementation/local checks complete; live approval, arrival, and replay open | [sprint-04.md](sprint-reports/sprint-04.md) |
-| 5 | Not started in this publication checkpoint; authorized next | |
-| 6 | Not started | |
-| 7 | Not started | |
+| 1 | Passed historically; local verification only | [sprint-01.md](sprint-reports/sprint-01.md) |
+| 2 | Passed historically with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
+| 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
+| 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
+| 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
+| 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
+| 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
+
+## Five-minute status update
+
+1. **Problem:** Operators need an integrated platform providing current simulated fuel state, shortage risk prediction, feasible explained allocations, mandatory human approval, and complete operational resilience under faults.
+2. **Change:** Built, hardened, and verified the complete 7-sprint system: pure core intelligence models, live human-in-the-loop operator approval, automated circuit breakers, Prometheus/Grafana observability, 24-run deterministic scenario evaluation, empirical k6 load benchmarks, 34s cold-start recovery, and clean-clone verification.
+3. **Demo:** Open the frontend at `http://localhost:5174`; inspect health, inventories, risks and the allocation decision history. All 8 Docker containers are healthy and simulator is PAUSED with faults cleared.
+4. **Evidence:** Extensive empirical evidence in `docs/evidence/` and `docs/results/` for all sprints (Sprints 1–7), with 141 Python tests + 6 frontend tests passing cleanly.
+5. **Remaining:** Human project owner executes final live presentation rehearsal, records backup video, and pushes branch and tags to GitHub.

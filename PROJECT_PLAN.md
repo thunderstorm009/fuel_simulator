@@ -7,7 +7,7 @@ An operator-facing platform that shows live simulated fuel state, forecasts hour
 Stations are refilled only by our allocations. Depots are refilled by 22 scheduled supply arrivals. With no action, stations run dry in roughly a simulated day. The platform's value is measured against that do-nothing baseline.
 
 ## 3. Architecture (current implementation)
-The six platform services remain separate: simulator REST/SSE feeds the worker; the worker persists validated state and domain results in PostgreSQL; the API serves database-backed operator routes; the React frontend calls the API; Prometheus scrapes API, worker and predictor; Grafana uses Prometheus. The predictor currently exposes health/metrics only. Forecasting runs in the worker with shared core logic; a remote predictor/fallback path is not yet implemented.
+The six platform services remain separate: simulator REST/SSE feeds the worker; the worker persists validated state and domain results in PostgreSQL; the API serves database-backed operator routes; the React frontend calls the API; Prometheus scrapes API, worker and predictor; Grafana uses Prometheus. The predictor exposes `POST /predict`; the worker calls it through a bounded client with an independent breaker and profile-only fallback. Predictor, health, Grafana, resilience, and Sprint 6–7 runtime acceptance still require the evidence listed in `docs/PROGRESS.md`.
 
 - `backend/api/`: API, routes, database access and schema.
 - `backend/worker/`: ingestion, forecast/recommendation jobs, SSE and approved execution.

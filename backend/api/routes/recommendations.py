@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from api.database import ReadRepository
 from api.routes.read import RepositoryDep
+from core.metrics import recommendations_by_status
 
 router = APIRouter(prefix="/api")
 
@@ -65,6 +66,8 @@ async def _decide(
     if result is None:
         raise HTTPException(status_code=404, detail="Recommendation not found")
     recommendation = result["recommendation"]
+    if result["decision_recorded"]:
+        recommendations_by_status.labels(status=recommendation["status"]).inc()
     if recommendation["status"] == "EXPIRED":
         raise HTTPException(status_code=409, detail="Recommendation has expired")
     return {

@@ -228,6 +228,31 @@ async def test_stream_fault_is_typed_for_reconnect_owner() -> None:
 
 
 @pytest.mark.asyncio
+async def test_stream_read_timeout_exceeds_documented_keepalive_interval() -> None:
+    timeouts = []
+
+    async def handler(request: httpx.Request) -> httpx.Response:
+        timeouts.append(request.extensions["timeout"])
+        return httpx.Response(200, text=": connected\n")
+
+    async with httpx.AsyncClient(
+        base_url="http://sim.test",
+        transport=httpx.MockTransport(handler),
+        timeout=httpx.Timeout(3.0),
+    ) as http_client:
+        async with SimClient(
+            "http://sim.test",
+            http_client=http_client,
+            read_timeout_s=3.0,
+            stream_read_timeout_s=20.0,
+        ) as client:
+            async with client.stream() as lines:
+                assert [line async for line in lines] == [": connected"]
+
+    assert timeouts[0]["read"] >= 20.0
+
+
+@pytest.mark.asyncio
 @respx.mock
 async def test_stream_reconnects_do_not_restart_open_breaker_cooldown() -> None:
     now = [0.0]

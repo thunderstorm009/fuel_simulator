@@ -1,0 +1,6 @@
+event_created {"end_tick": 144, "id": 4, "parameters": {"multiplier": 1.8, "region_ids": ["region-chattogram"]}, "start_tick": 143, "status": "SCHEDULED", "type": "demand_spike"}
+step_1 {"from": 142, "result": {"sim_time": "2026-01-02T11:45:00", "tick": 143}, "to": 143}
+event_after_step_1 [{"end_tick": 144, "id": 4, "parameters": {"multiplier": 1.8, "region_ids": ["region-chattogram"]}, "start_tick": 143, "status": "SCHEDULED", "type": "demand_spike"}]
+grafana_panel_promql {"before": "19.5", "query": "hours_to_stockout{station=\"station-coxsbazar\",fuel=\"DIESEL\"}", "while_event_active": "19.25"}
+resolution_steps [{"from": 143, "result": {"sim_time": "2026-01-02T12:00:00", "tick": 144}, "status": "ACTIVE", "to": 144}, {"from": 144, "result": {"sim_time": "2026-01-02T12:15:00", "tick": 145}, "status": "RESOLVED", "to": 145}]
+final {"active_events": 0, "active_faults": 0, "allocation_count": 1, "event_status": "RESOLVED", "instance": {"id": 1, "scenario_id": "baseline", "scenario_version": "1.0", "seed": 12345, "sim_time": "2026-01-02T12:15:00", "status": "PAUSED", "tick": 145, "tick_minutes": 15}}

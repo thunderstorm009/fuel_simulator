@@ -23,6 +23,10 @@ class ReadRepository(Protocol):
 
     async def get_decisions(self) -> list[dict[str, Any]]: ...
 
+    async def check_database(self) -> bool: ...
+
+    async def get_heartbeat(self, component: str) -> dict[str, Any] | None: ...
+
     async def decide_recommendation(
         self, recommendation_id: str, action: str, reason: str | None, actor: str
     ) -> dict[str, Any] | None: ...
@@ -126,6 +130,21 @@ class PostgresReadRepository:
         )
         return [dict(row) for row in rows]
 
+    async def check_database(self) -> bool:
+        return int(await self.pool.fetchval("SELECT 1")) == 1
+
+    async def get_heartbeat(self, component: str) -> dict[str, Any] | None:
+        row = await self.pool.fetchrow(
+            "SELECT component, last_seen, detail FROM heartbeats WHERE component = $1",
+            component,
+        )
+        if row is None:
+            return None
+        result = dict(row)
+        if isinstance(result.get("detail"), str):
+            result["detail"] = json.loads(result["detail"])
+        return result
+
     async def decide_recommendation(
         self, recommendation_id: str, action: str, reason: str | None, actor: str
     ) -> dict[str, Any] | None:
@@ -138,6 +157,10 @@ class PostgresReadRepository:
                 if row is None:
                     return None
                 recommendation = self._decode_recommendation(row)
+                if action == "approve" and not self._request_matches_body(recommendation):
+                    raise ValueError(
+                        "stored recommendation fields do not match the allocation request"
+                    )
                 if recommendation["status"] == "APPROVED" and action == "approve":
                     return {"recommendation": recommendation, "decision_recorded": False}
                 if recommendation["status"] != "PROPOSED":
@@ -182,6 +205,23 @@ class PostgresReadRepository:
             if isinstance(result.get(column), str):
                 result[column] = json.loads(result[column])
         return result
+
+    @staticmethod
+    def _request_matches_body(recommendation: dict[str, Any]) -> bool:
+        body = recommendation.get("request_body")
+        if not isinstance(body, dict):
+            return False
+        return all(
+            recommendation.get(column) == body.get(request_field)
+            for column, request_field in (
+                ("depot_id", "source_depot_id"),
+                ("station_id", "destination_station_id"),
+                ("route_id", "route_id"),
+                ("fuel_type", "fuel_type"),
+                ("quantity", "quantity"),
+                ("idempotency_key", "idempotency_key"),
+            )
+        )
 
     @staticmethod
     def _decode_json_column(row: dict[str, Any], column: str) -> dict[str, Any]:

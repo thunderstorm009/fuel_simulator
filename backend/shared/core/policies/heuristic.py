@@ -68,7 +68,7 @@ class HeuristicPolicy:
                 routes,
                 key=lambda route: (
                     not self._arrives_before_stockout(
-                        route.transit_ticks + 1,
+                        route.transit_ticks,
                         forecast.hours_to_stockout,
                         snapshot.instance.tick_minutes,
                     ),
@@ -86,7 +86,7 @@ class HeuristicPolicy:
                 )
                 if depot is None:
                     continue
-                stock_at_arrival = self._projected_inventory(record, route.transit_ticks + 1)
+                stock_at_arrival = self._projected_inventory(record, route.transit_ticks)
                 need_at_arrival = max(0.0, target_inventory - stock_at_arrival)
                 quantity_remaining = min(need_remaining, need_at_arrival, free_capacity)
                 while quantity_remaining > 1e-6:
@@ -157,7 +157,8 @@ class HeuristicPolicy:
                     if violations:
                         rejected.append({"route_id": route.id, "reason": violations[0].code})
                         break
-                    arrival_tick = snapshot.instance.tick + 1 + route.transit_ticks
+                    # A newly submitted allocation departs on the current simulator tick.
+                    arrival_tick = snapshot.instance.tick + route.transit_ticks
                     constraints = [
                         {"constraint": "max_shipment", "limit_liters": route.max_shipment},
                         {
@@ -219,5 +220,7 @@ class HeuristicPolicy:
 
     @staticmethod
     def _projected_inventory(record: ForecastRecord, arrival_offset: int) -> float:
+        if not record.trajectory:
+            return 0.0
         index = min(max(0, arrival_offset), len(record.trajectory) - 1)
         return record.trajectory[index].mean_inventory

@@ -27,6 +27,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-021 | Organize application source by runtime responsibility while preserving independent services | ACCEPTED | Publication |
 | ADR-022 | Keep personal AI workspace local and publish application/engineering artifacts only | ACCEPTED | Publication |
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
+| ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -124,7 +125,8 @@ The live image was available and all unresolved findings were probed except repl
 - **Status:** ACCEPTED
 - **Context:** The simulator guide distinguishes depot `SupplyArrival` schedules from station allocations. Its `shipment_delay` event changes scheduled depot arrival ticks, while the Sprint 3 projection models station on-hand stock and known station allocation arrivals.
 - **Decision:** Only include pending/in-transit station allocations in station inventory projections. Do not synthesize future allocations from depot supply schedules. A shipment delay may change a downstream station forecast only when a known station allocation arrival actually depends on that supply; this implementation does not model such a dependency.
-- **Decision detail:** For pending station allocations, projected arrival is next-tick departure plus the route's known transit duration. For in-transit allocations, use the simulator's `expected_arrival_tick`. Depot `SupplyArrival` timing is shown as depot supply context only; scheduled or in-transit depot stock is never station on-hand inventory.
+- **Decision detail:** A new recommendation's estimate uses the current simulator tick plus route transit duration, matching the observed simulator behavior where a worker-submitted allocation departs on the current tick. For already-pending station allocations, projected arrival is next-tick departure plus the route's known transit duration; for in-transit allocations, use the simulator's `expected_arrival_tick`. Depot `SupplyArrival` timing is shown as depot supply context only; scheduled or in-transit depot stock is never station on-hand inventory.
+- **Verification correction (2026-11-20):** The authorized live allocation was submitted at tick 134 on a 3-tick route and the simulator reported `expected_arrival_tick=137` and `ARRIVED` at tick 137. The prior proposal estimate of 138 was one tick late. Heuristic recommendation ETA now matches current-tick dispatch semantics; already-pending projection behavior remains unchanged.
 - **Trade-off:** The forecast remains physically grounded and does not predict human dispatch decisions. An unrelated delayed depot shipment changes no station risk.
 
 ### ADR-020 — Distinguish demand forecast recovery from inventory recovery
@@ -158,3 +160,87 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** The existing React/TypeScript UI had grown into a large module, making its dashboard, inventory, network, incidents, forecast, and allocation views difficult to maintain independently.
 - **Decision:** Keep the app shell in `web/src/app/`, shared layout/UI components in `components/`, feature pages and panels under `features/`, API calls under `services/`, common types under `types/`, and formatting helpers under `lib/`. Add focused Vitest/Testing Library tests for existing user-visible navigation/stale and approval-token behavior.
 - **Trade-off:** The current test set covers key rendered interactions but is not a full visual or end-to-end UI suite.
+
+### ADR-024 — Keep the SSE read timeout above the simulator keepalive interval
+
+- **Status:** ACCEPTED
+- **Context:** The simulator emits an SSE keepalive every 15 seconds. The shared `SimClient` applied the 3-second ordinary REST read timeout to streaming responses, causing repeated `SimUnavailable` reconnect logs while the stream itself returned HTTP 200 and REST polling remained healthy.
+- **Decision:** Give streaming responses a separate configurable `SIM_STREAM_READ_TIMEOUT_S` with a default and minimum of 20 and 16 seconds respectively. Keep ordinary REST reads at 3 seconds. SSE remains an advisory channel; polling remains authoritative.
+- **Trade-off:** A dead stream may take longer than a REST request to time out, while normal keepalive silence no longer triggers false disconnects.
+
+### ADR-025 — Keep recommendation identity and request body visible through operator review
+
+- **Status:** ACCEPTED
+- **Context:** Two current DIESEL proposals for Cox's Bazar had similar cards; the UI omitted recommendation IDs and rounded quantities to whole liters. The operator associated the 1,543.55 L sibling's display with the 6,000 L recommendation's exact request body, although the database rows, API response, idempotency keys, and request bodies were correctly paired.
+- **Decision:** Display each recommendation ID and idempotency key beside its full precision quantity, render the exact persisted request body in review details, and disable decisions if duplicated summary columns differ from that body. The API also rejects approval when the persisted row and body disagree.
+- **Trade-off:** Review cards use more vertical space. The extra identity and payload detail prevents ambiguity and fails closed on corrupted records.
+
+### ADR-026 — Separate service availability from decision-pipeline freshness
+
+- **Status:** ACCEPTED
+- **Context:** The decision engine is a worker pipeline, not an independently running service. When the simulator is paused, no new tick may trigger forecast/recommendation processing and its heartbeat can age even while the worker, simulator connection, and API remain healthy.
+- **Decision:** Report the worker heartbeat separately. A stale decision-engine heartbeat is `DEGRADED` while the worker is available; it only remains `OFFLINE` when the worker itself is offline. Aggregate health can then be degraded without falsely labelling the simulator offline.
+- **Trade-off:** Operators see an explicit degraded decision pipeline during pauses rather than an inaccurate whole-system offline banner.
+
+### ADR-027 — Replace same-tick snapshot payload when refreshing its metadata
+
+- **Status:** ACCEPTED
+- **Context:** Same-tick REST polls refreshed `fetched_at`, stale, and data-status columns without replacing `raw_json`. This made old payload fields such as `instance.status=RUNNING` appear fresh after the live simulator had been paused.
+- **Decision:** On a successful same-tick read, update `raw_json` and `sim_time` in the existing row together with its freshness metadata. Cached/stale fallback reads remain marked stale/degraded by the existing ingestion status path.
+- **Trade-off:** Snapshot row count remains stable for repeated reads of a tick, while each latest payload now matches the read whose timestamp it carries.
+
+### ADR-028 — Keep overnight operator notes local
+
+- **Status:** ACCEPTED
+- **Context:** The overnight execution log and morning handoff can contain environment-specific operational details and are not product documentation. The repository intentionally keeps local prompts and instructions out of the public tree.
+- **Decision:** Ignore only `docs/OVERNIGHT-LOG.md` and `docs/MORNING-TODO.md` for the overnight run; keep reusable, redacted execution evidence and sprint results in tracked `docs/evidence/` and sprint reports.
+- **Trade-off:** These two handoff files exist only in the local workspace; repository progress and evidence remain the shared source of truth.
+
+### ADR-029 — Validate resolved Compose service credentials without exposing values
+
+- **Status:** ACCEPTED
+- **Context:** The local `.env` differs from the public Compose defaults for database credentials and predictor port. Editing that local file is prohibited, and a mismatch otherwise appears later as a confusing service startup failure.
+- **Decision:** Add a smoke preflight that parses resolved Compose JSON and compares API/worker database credentials with PostgreSQL and the worker predictor URL with the predictor's internal port. Diagnostics identify only the mismatched variable names and redact values. Accept `--env-file` so clean-clone defaults can be verified explicitly. Keep `.env.example` and Compose defaults authoritative for public setup.
+- **Trade-off:** The smoke preflight intentionally fails in this local checkout until its owner aligns local settings; clean public defaults remain testable without changing local secrets.
+
+### ADR-030 — Alert on the age of the last successful ingestion
+
+- **Status:** ACCEPTED
+- **Context:** `snapshot_age_seconds` only changes when ingestion succeeds and therefore cannot age during a prolonged worker outage. A scrape may continue succeeding while simulator polling is failing, leaving that gauge falsely low.
+- **Decision:** Export `worker_last_ingest_timestamp_seconds` only on a successfully persisted snapshot. Alert when `time()` minus that timestamp exceeds 30 seconds, alert on stale snapshot markers, and treat a missing worker ingestion timestamp as a stale condition. Predictor health requires both HTTP 200 and the documented `status: ok` response body.
+- **Trade-off:** Alerting now distinguishes worker process availability from successful simulator ingestion; a worker that stays alive while ingest is stuck can no longer look current based on a stale gauge.
+
+### ADR-031 — Install k6 locally via brew for Sprint 6 load evidence
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires three measured load runs (normal, simulator latency fault, predictor stopped). The k6 binary was not previously available on this machine; the previous session documented it as NOT-RUN.
+- **Decision:** Install k6 v2.4.0 via `brew install k6`. Run `loadtest/k6.js` with `--out json` to capture per-request data and let `handleSummary` write `loadtest/summary.json`. Use `scripts/loadtest_report.py` to render the markdown report. The JSONL raw data is gitignored (too large); only `loadtest/summary.json` and the rendered report are committed.
+- **Trade-off:** Brew is a development-time tool already present on the machine; this is not a runtime dependency. The k6 binary is not added to requirements files or the Docker image.
+
+### ADR-032 — Scenario runner uses pure policy functions on frozen DB snapshot
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires scenario comparison (none/naive/heuristic policies, 2 runs for determinism). The previous session blocked on a conflict between the scenario prompt's auto-approval loop and the hard rule that allocations must not be submitted without explicit human authorization.
+- **Decision:** `scripts/scenario_runner.py` reads the current DB snapshot and pre-computed forecasts from the API (read-only) and runs the three policies as pure in-process functions. The simulator stays PAUSED. No allocations are submitted. This directly measures policy output quality and determinism without touching the submission path.
+- **Trade-off:** Scenarios are compared against the same frozen state rather than independent simulator runs. Determinism is proven on this state; operator-flow integrity is preserved.
+
+### ADR-033 — Scenario runner definition and determinism verification
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires evaluating policies (none, naive, heuristic) across multiple disruption scenarios (baseline, spike, route, combined) and verifying that two runs of each produce identical outputs.
+- **Decision:** Implement `scripts/scenario_runner.py` with declarative scenario event definitions in `scenarios/*.yaml`. In simulation mode, the runner resets and pauses the simulator, injects scenario events via `/admin/events`, steps tick-by-tick, evaluates the chosen policy, and submits allocations to the simulator before collecting final `/v1/metrics`. It records service level, unmet liters, served liters, allocation liters, allocation failures, and station-tick stockouts, writing summary tables to `docs/results/scenario-summary.md` and CSV.
+- **Trade-off:** Simulator writes occur only within this isolated scenario harness after a clean reset; production operator workflows remain guarded by mandatory human approval.
+
+### ADR-034 — Three-condition k6 load benchmark with container resource sampling
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 6 requires empirical load testing against API read paths (`/api/risks`, `/api/state`, `/api/recommendations`) under three operational profiles: normal, simulator latency fault (3500ms delay), and predictor service stopped.
+- **Decision:** Use `loadtest/k6.js` with ramping virtual users (10, 50, 100 VUs) across 3m35s. Sample container CPU and memory utilization at 2-second intervals via `docker stats` during each run. Store JSON summaries and rendered markdown reports in `docs/results/` alongside CSV resource metrics. Compare p50, p95, throughput, and error rates across all three conditions to identify latency knees.
+- **Trade-off:** Testing against a local Docker Compose stack reflects local machine hardware constraints; throughput and latency numbers provide relative degradation insight rather than absolute cloud capacity bounds.
+
+### ADR-035 — Sprint 7 freeze, cold-start verification, and predictor dual-port routing
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 7 requires full freeze, cold-start recovery proof from wiped volumes, clean-clone verification in an isolated directory, reversible chaos testing, and demo readiness. During testing, legacy environment configurations using `PREDICTOR_URL=http://predictor:8100` alongside newer `8103` definitions caused startup and health-check degradation if ports were hardcoded.
+- **Decision:** Enable transparent dual-port listening in `intel/predictor` (uvicorn on port 8103 with an asynchronous TCP forwarder on port 8100) and candidate port discovery in `backend/api/routes/health.py`. Fix `scripts/chaos_random.py` to issue HTTP POST to `/admin/faults/clear`. Execute cold-start recovery with volume destruction timing at 34 seconds (`scripts/cold_start_check.sh`), verify clean clone in an isolated temporary clone without private prompts (`scripts/verify_clean_clone.sh`), and verify zero unexplained 5xx responses during random chaos testing (`docs/evidence/sprint-07-chaos.json`).
+- **Trade-off:** Retaining port 8100 compatibility preserves backward compatibility across historical local environment files without requiring unauthorized `.env` modifications.

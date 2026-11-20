@@ -2,6 +2,7 @@ import type {
   Decision,
   EventsResponse,
   Fuel,
+  HealthResponse,
   Recommendation,
   RiskResponse,
   StateResponse,
@@ -38,6 +39,7 @@ async function postJson<T>(path: string, token: string, body?: unknown): Promise
 export const fetchState = (): Promise<StateResponse> => getJson<StateResponse>("/api/state");
 export const fetchEvents = (): Promise<EventsResponse> => getJson<EventsResponse>("/api/events");
 export const fetchRisks = (): Promise<RiskResponse> => getJson<RiskResponse>("/api/risks");
+export const fetchHealth = (): Promise<HealthResponse> => getJson<HealthResponse>("/api/health");
 export const fetchTrajectory = (stationId: string, fuel: Fuel): Promise<TrajectoryResponse> =>
   getJson<TrajectoryResponse>(`/api/risks/${encodeURIComponent(stationId)}/${fuel}/trajectory`);
 export const fetchRecommendations = async (): Promise<Recommendation[]> =>

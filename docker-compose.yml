@@ -42,6 +42,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql://fuel:fuel-local@postgres:5432/fuel}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       OPERATOR_TOKEN: ${OPERATOR_TOKEN:-}
+      PREDICTOR_URL: ${PREDICTOR_URL:-http://predictor:8103}
     ports:
       - "8101:8101"
     depends_on:
@@ -67,8 +68,13 @@ services:
       SIM_MAX_RETRIES: ${SIM_MAX_RETRIES:-3}
       SIM_CONNECT_TIMEOUT_S: ${SIM_CONNECT_TIMEOUT_S:-2}
       SIM_READ_TIMEOUT_S: ${SIM_READ_TIMEOUT_S:-3}
+      SIM_STREAM_READ_TIMEOUT_S: ${SIM_STREAM_READ_TIMEOUT_S:-20}
       SIM_BREAKER_FAILURE_THRESHOLD: ${SIM_BREAKER_FAILURE_THRESHOLD:-5}
       SIM_BREAKER_RESET_S: ${SIM_BREAKER_RESET_S:-10}
+      PREDICTOR_URL: ${PREDICTOR_URL:-http://predictor:8103}
+      PREDICTOR_TIMEOUT_S: ${PREDICTOR_TIMEOUT_S:-1.5}
+      PREDICTOR_BREAKER_FAILURE_THRESHOLD: ${PREDICTOR_BREAKER_FAILURE_THRESHOLD:-5}
+      PREDICTOR_BREAKER_RESET_S: ${PREDICTOR_BREAKER_RESET_S:-10}
     ports:
       - "8102:8102"
     depends_on:
@@ -87,6 +93,8 @@ services:
       context: .
       dockerfile: intel/predictor/Dockerfile
     command: [uvicorn, app.main:app, --host, 0.0.0.0, --port, "8103"]
+    environment:
+      OPERATOR_TOKEN: ${OPERATOR_TOKEN:-}
     ports:
       - "8103:8103"
     healthcheck:

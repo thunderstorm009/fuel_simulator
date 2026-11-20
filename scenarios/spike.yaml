@@ -1,0 +1,10 @@
+name: spike
+description: Regional demand surge in Dhaka region.
+events:
+  - type: demand_spike
+    start_tick: 4
+    end_tick: 14
+    parameters:
+      region_ids:
+        - region-dhaka
+      multiplier: 1.8

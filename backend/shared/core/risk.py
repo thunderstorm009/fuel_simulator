@@ -43,6 +43,7 @@ class ForecastRecord:
     forecast: Forecast
     trajectory: list[TrajectoryPoint]
     drivers: dict[str, object]
+    source: str = "local"
 
 
 def monte_carlo(

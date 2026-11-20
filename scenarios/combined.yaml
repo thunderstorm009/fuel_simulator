@@ -1,0 +1,16 @@
+name: combined
+description: Simultaneous demand spike in Chattogram and route disruption to Cox's Bazar.
+events:
+  - type: demand_spike
+    start_tick: 4
+    end_tick: 14
+    parameters:
+      region_ids:
+        - region-chattogram
+      multiplier: 1.8
+  - type: route_disruption
+    start_tick: 6
+    end_tick: 16
+    parameters:
+      route_ids:
+        - route-patiya-coxsbazar

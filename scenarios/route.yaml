@@ -1,0 +1,9 @@
+name: route
+description: Route disruption between Gazipur depot and Mirpur station.
+events:
+  - type: route_disruption
+    start_tick: 4
+    end_tick: 14
+    parameters:
+      route_ids:
+        - route-gazipur-mirpur

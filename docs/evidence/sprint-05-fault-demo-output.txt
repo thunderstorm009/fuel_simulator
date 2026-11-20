@@ -1,0 +1,179 @@
+Preflight: PAUSED at tick 138; no active faults
+Scene: unavailable — expected: simulator-client failure/stale signal; cached state remains visible; no allocation write.
+{"id":6,"type":"unavailable","start_wall_time":"2026-11-20T10:00:40.015816+00:00","end_wall_time":"2026-11-20T10:01:40.015816+00:00","active":true,"parameters":{}}
+Probe unavailable: HTTP 503; response {"error":{"code":"FAULT_INJECTED","message":"Simulator API temporarily unavailable."}}
+During unavailable data-health: {"fetched_at":"2026-11-20T10:00:36.827168+00:00","data_age_seconds":11.259772,"data_status":"DEGRADED","stale":false,"simulated":true}
+During unavailable worker signals:
+sim_client_retries_total{endpoint="/v1/instance"} 3.0
+sim_client_retries_total{endpoint="/v1/regions"} 3.0
+sim_client_retries_total{endpoint="/v1/routes"} 3.0
+sim_client_retries_total{endpoint="/v1/allocations"} 3.0
+sim_client_retries_total{endpoint="/v1/stations"} 3.0
+sim_client_retries_total{endpoint="/v1/supply-arrivals"} 3.0
+sim_client_retries_total{endpoint="/v1/metrics"} 3.0
+sim_client_retries_total{endpoint="/v1/events"} 3.0
+sim_client_retries_total{endpoint="/v1/depots"} 3.0
+sim_client_failures_total{endpoint="/v1/metrics"} 1.0
+sim_client_failures_total{endpoint="/v1/allocations"} 1.0
+sim_client_failures_total{endpoint="/v1/supply-arrivals"} 1.0
+sim_client_failures_total{endpoint="/v1/routes"} 1.0
+sim_client_failures_total{endpoint="/v1/instance"} 1.0
+sim_client_failures_total{endpoint="/v1/depots"} 1.0
+sim_client_failures_total{endpoint="/v1/regions"} 1.0
+sim_client_failures_total{endpoint="/v1/events"} 1.0
+sim_client_failures_total{endpoint="/v1/stations"} 1.0
+sim_breaker_state{state="closed"} 0.0
+sim_breaker_state{state="open"} 1.0
+sim_breaker_state{state="half_open"} 0.0
+snapshot_rejected_total{reason="SimUnavailable"} 2.0
+worker_sse_reconnects_total 1.0
+Cleared unavailable; waiting for an accepted non-stale REST snapshot.
+Recovery verified: {"fetched_at":"2026-11-20T10:01:01.844817+00:00","data_age_seconds":0.277758,"data_status":"HEALTHY","stale":false,"simulated":true}
+Scene: error_rate — expected: simulator-client failure/stale signal; cached state remains visible; no allocation write.
+{"id":7,"type":"error_rate","start_wall_time":"2026-11-20T10:01:02.183388+00:00","end_wall_time":"2026-11-20T10:02:02.183388+00:00","active":true,"parameters":{"rate":1.0}}
+Probe error_rate: HTTP 503; response {"error":{"code":"FAULT_INJECTED","message":"Injected transient API error."}}
+During error_rate data-health: {"fetched_at":"2026-11-20T10:01:01.844817+00:00","data_age_seconds":8.416481,"data_status":"DEGRADED","stale":false,"simulated":true}
+During error_rate worker signals:
+sim_client_retries_total{endpoint="/v1/instance"} 6.0
+sim_client_retries_total{endpoint="/v1/regions"} 6.0
+sim_client_retries_total{endpoint="/v1/routes"} 6.0
+sim_client_retries_total{endpoint="/v1/allocations"} 6.0
+sim_client_retries_total{endpoint="/v1/stations"} 6.0
+sim_client_retries_total{endpoint="/v1/supply-arrivals"} 6.0
+sim_client_retries_total{endpoint="/v1/metrics"} 6.0
+sim_client_retries_total{endpoint="/v1/events"} 6.0
+sim_client_retries_total{endpoint="/v1/depots"} 6.0
+sim_client_failures_total{endpoint="/v1/metrics"} 2.0
+sim_client_failures_total{endpoint="/v1/allocations"} 2.0
+sim_client_failures_total{endpoint="/v1/supply-arrivals"} 2.0
+sim_client_failures_total{endpoint="/v1/routes"} 2.0
+sim_client_failures_total{endpoint="/v1/instance"} 2.0
+sim_client_failures_total{endpoint="/v1/depots"} 2.0
+sim_client_failures_total{endpoint="/v1/regions"} 2.0
+sim_client_failures_total{endpoint="/v1/events"} 2.0
+sim_client_failures_total{endpoint="/v1/stations"} 2.0
+sim_breaker_state{state="closed"} 0.0
+sim_breaker_state{state="open"} 1.0
+sim_breaker_state{state="half_open"} 0.0
+snapshot_rejected_total{reason="SimUnavailable"} 5.0
+worker_sse_reconnects_total 1.0
+Cleared error_rate; waiting for an accepted non-stale REST snapshot.
+Recovery verified: {"fetched_at":"2026-11-20T10:01:26.872380+00:00","data_age_seconds":0.621596,"data_status":"HEALTHY","stale":false,"simulated":true}
+Scene: latency — expected: simulator-client failure/stale signal; cached state remains visible; no allocation write.
+{"id":8,"type":"latency","start_wall_time":"2026-11-20T10:01:27.545901+00:00","end_wall_time":"2026-11-20T10:02:27.545901+00:00","active":true,"parameters":{"delay_ms":3500}}
+Probe latency: HTTP response received in 3.513999s (fault injects 3500ms; client read timeout is 3s)
+During latency data-health: {"fetched_at":"2026-11-20T10:01:26.872380+00:00","data_age_seconds":12.287306,"data_status":"HEALTHY","stale":false,"simulated":true}
+During latency worker signals:
+sim_client_retries_total{endpoint="/v1/instance"} 8.0
+sim_client_retries_total{endpoint="/v1/regions"} 8.0
+sim_client_retries_total{endpoint="/v1/routes"} 8.0
+sim_client_retries_total{endpoint="/v1/allocations"} 8.0
+sim_client_retries_total{endpoint="/v1/stations"} 8.0
+sim_client_retries_total{endpoint="/v1/supply-arrivals"} 8.0
+sim_client_retries_total{endpoint="/v1/metrics"} 8.0
+sim_client_retries_total{endpoint="/v1/events"} 8.0
+sim_client_retries_total{endpoint="/v1/depots"} 8.0
+sim_client_failures_total{endpoint="/v1/metrics"} 2.0
+sim_client_failures_total{endpoint="/v1/allocations"} 2.0
+sim_client_failures_total{endpoint="/v1/supply-arrivals"} 2.0
+sim_client_failures_total{endpoint="/v1/routes"} 2.0
+sim_client_failures_total{endpoint="/v1/instance"} 2.0
+sim_client_failures_total{endpoint="/v1/depots"} 2.0
+sim_client_failures_total{endpoint="/v1/regions"} 2.0
+sim_client_failures_total{endpoint="/v1/events"} 2.0
+sim_client_failures_total{endpoint="/v1/stations"} 2.0
+sim_breaker_state{state="closed"} 1.0
+sim_breaker_state{state="open"} 0.0
+sim_breaker_state{state="half_open"} 0.0
+snapshot_rejected_total{reason="SimUnavailable"} 8.0
+worker_sse_reconnects_total 1.0
+Cleared latency; waiting for an accepted non-stale REST snapshot.
+Recovery verified: {"fetched_at":"2026-11-20T10:01:26.872380+00:00","data_age_seconds":12.358256,"data_status":"HEALTHY","stale":false,"simulated":true}
+Scene: stale_data — expected: simulator-client failure/stale signal; cached state remains visible; no allocation write.
+{"id":9,"type":"stale_data","start_wall_time":"2026-11-20T10:01:39.282191+00:00","end_wall_time":"2026-11-20T10:02:39.282191+00:00","active":true,"parameters":{}}
+Probe stale_data: HTTP 200; x-simulator-stale: true
+During stale_data data-health: {"fetched_at":"2026-11-20T10:01:43.620457+00:00","data_age_seconds":3.752663,"data_status":"DEGRADED","stale":true,"simulated":true}
+During stale_data worker signals:
+sim_client_retries_total{endpoint="/v1/instance"} 9.0
+sim_client_retries_total{endpoint="/v1/regions"} 9.0
+sim_client_retries_total{endpoint="/v1/routes"} 9.0
+sim_client_retries_total{endpoint="/v1/allocations"} 9.0
+sim_client_retries_total{endpoint="/v1/stations"} 9.0
+sim_client_retries_total{endpoint="/v1/supply-arrivals"} 9.0
+sim_client_retries_total{endpoint="/v1/metrics"} 9.0
+sim_client_retries_total{endpoint="/v1/events"} 9.0
+sim_client_retries_total{endpoint="/v1/depots"} 9.0
+sim_client_failures_total{endpoint="/v1/metrics"} 2.0
+sim_client_failures_total{endpoint="/v1/allocations"} 2.0
+sim_client_failures_total{endpoint="/v1/supply-arrivals"} 2.0
+sim_client_failures_total{endpoint="/v1/routes"} 2.0
+sim_client_failures_total{endpoint="/v1/instance"} 2.0
+sim_client_failures_total{endpoint="/v1/depots"} 2.0
+sim_client_failures_total{endpoint="/v1/regions"} 2.0
+sim_client_failures_total{endpoint="/v1/events"} 2.0
+sim_client_failures_total{endpoint="/v1/stations"} 2.0
+sim_breaker_state{state="closed"} 1.0
+sim_breaker_state{state="open"} 0.0
+sim_breaker_state{state="half_open"} 0.0
+snapshot_rejected_total{reason="SimUnavailable"} 8.0
+worker_sse_reconnects_total 1.0
+Cleared stale_data; waiting for an accepted non-stale REST snapshot.
+Recovery verified: {"fetched_at":"2026-11-20T10:01:48.635513+00:00","data_age_seconds":0.946016,"data_status":"HEALTHY","stale":false,"simulated":true}
+Scene: stream_disconnect — expected: simulator-client failure/stale signal; cached state remains visible; no allocation write.
+{"id":10,"type":"stream_disconnect","start_wall_time":"2026-11-20T10:01:49.631849+00:00","end_wall_time":"2026-11-20T10:02:49.631849+00:00","active":true,"parameters":{}}
+Probe stream_disconnect: HTTP 503; response {"detail":{"code":"FAULT_INJECTED"}}
+During stream_disconnect data-health: {"fetched_at":"2026-11-20T10:01:53.694543+00:00","data_age_seconds":4.014936,"data_status":"HEALTHY","stale":false,"simulated":true}
+During stream_disconnect worker signals:
+sim_client_retries_total{endpoint="/v1/instance"} 9.0
+sim_client_retries_total{endpoint="/v1/regions"} 9.0
+sim_client_retries_total{endpoint="/v1/routes"} 9.0
+sim_client_retries_total{endpoint="/v1/allocations"} 9.0
+sim_client_retries_total{endpoint="/v1/stations"} 9.0
+sim_client_retries_total{endpoint="/v1/supply-arrivals"} 9.0
+sim_client_retries_total{endpoint="/v1/metrics"} 9.0
+sim_client_retries_total{endpoint="/v1/events"} 9.0
+sim_client_retries_total{endpoint="/v1/depots"} 9.0
+sim_client_failures_total{endpoint="/v1/metrics"} 2.0
+sim_client_failures_total{endpoint="/v1/allocations"} 2.0
+sim_client_failures_total{endpoint="/v1/supply-arrivals"} 2.0
+sim_client_failures_total{endpoint="/v1/routes"} 2.0
+sim_client_failures_total{endpoint="/v1/instance"} 2.0
+sim_client_failures_total{endpoint="/v1/depots"} 2.0
+sim_client_failures_total{endpoint="/v1/regions"} 2.0
+sim_client_failures_total{endpoint="/v1/events"} 2.0
+sim_client_failures_total{endpoint="/v1/stations"} 2.0
+sim_breaker_state{state="closed"} 1.0
+sim_breaker_state{state="open"} 0.0
+sim_breaker_state{state="half_open"} 0.0
+snapshot_rejected_total{reason="SimUnavailable"} 8.0
+worker_sse_reconnects_total 1.0
+Cleared stream_disconnect; waiting for an accepted non-stale REST snapshot.
+Recovery verified: {"fetched_at":"2026-11-20T10:01:53.694543+00:00","data_age_seconds":4.089849,"data_status":"HEALTHY","stale":false,"simulated":true}
+Scene: malformed simulator data — test-only malformed response; simulator state is unchanged.
+.                                                                        [100%]
+1 passed, 4 deselected in 0.25s
+Scene: predictor unavailable — expected baseline fallback, low confidence, incident and fallback metric.
+ Container fuel_simulator-predictor-1 Stopping 
+ Container fuel_simulator-predictor-1 Stopped 
+{"status":"OFFLINE","components":{"backend":{"status":"HEALTHY","age_seconds":0.0},"predictor":{"status":"OFFLINE","age_seconds":null},"database":{"status":"HEALTHY","age_seconds":null},"worker":{"status":"HEALTHY","age_seconds":1.049937},"simulator":{"status":"HEALTHY","age_seconds":1.060675},"decision_engine":{"status":"HEALTHY","age_seconds":10.98583}},"last_check_at":"2026-11-20T10:01:59.176841+00:00","latency":{"p95_seconds":0.05,"error_rate":0.0},"simulated":true}
+Stepped simulator once to produce a new forecast input while predictor was stopped.
+Predictor fallback counter before=0 after=12
+{"events":[{"id":3,"type":"shipment_delay","status":"RESOLVED","end_tick":113,"parameters":{"depot_ids":["depot-gazipur"],"fuel_types":["PETROL"],"delay_ticks":5},"start_tick":112},{"id":2,"type":"shipment_delay","status":"RESOLVED","end_tick":110,"parameters":{"depot_ids":["depot-gazipur"],"fuel_types":["DIESEL"],"delay_ticks":5},"start_tick":109},{"id":1,"type":"demand_spike","status":"RESOLVED","end_tick":107,"parameters":{"multiplier":1.8,"region_ids":["region-dhaka"]},"start_tick":103}],"incidents":[{"id":15,"type":"predictor_fallback","severity":"high","detected_at":"2026-11-20T10:01:59.916880Z","resolved_at":null,"detail":{"reason":"unavailable"}},{"id":1,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"DIESEL","risk_level":"critical","station_id":"station-mirpur"}},{"id":2,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"PETROL","risk_level":"critical","station_id":"station-mirpur"}},{"id":3,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"OCTANE","risk_level":"critical","station_id":"station-mirpur"}},{"id":4,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"DIESEL","risk_level":"critical","station_id":"station-tongi"}},{"id":5,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"PETROL","risk_level":"critical","station_id":"station-tongi"}},{"id":6,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"OCTANE","risk_level":"critical","station_id":"station-tongi"}},{"id":7,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"DIESEL","risk_level":"critical","station_id":"station-karnaphuli"}},{"id":8,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"PETROL","risk_level":"critical","station_id":"station-karnaphuli"}},{"id":9,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"OCTANE","risk_level":"critical","station_id":"station-karnaphuli"}},{"id":11,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"PETROL","risk_level":"critical","station_id":"station-coxsbazar"}},{"id":12,"type":"stockout_risk","severity":"critical","detected_at":"2026-11-19T06:49:06.145083Z","resolved_at":null,"detail":{"fuel_type":"OCTANE","risk_level":"critical","station_id":"station-coxsbazar"}}],"fetched_at":"2026-11-20T10:02:03.640894+00:00","data_age_seconds":4.228297,"data_status":"HEALTHY","stale":false,"simulated":true}
+ Container fuel_simulator-predictor-1 Starting 
+ Container fuel_simulator-predictor-1 Started 
+Stepped simulator once after predictor recovery to produce a remote forecast input.
+{"status":"HEALTHY","components":{"backend":{"status":"HEALTHY","age_seconds":0.0},"predictor":{"status":"HEALTHY","age_seconds":null},"database":{"status":"HEALTHY","age_seconds":null},"worker":{"status":"HEALTHY","age_seconds":2.538209},"simulator":{"status":"HEALTHY","age_seconds":2.545338},"decision_engine":{"status":"HEALTHY","age_seconds":7.936188}},"last_check_at":"2026-11-20T10:02:16.163858+00:00","latency":{"p95_seconds":0.05,"error_rate":0.0},"simulated":true}
+Scene: worker unavailable — API and frontend remain reachable while snapshot age advances.
+ Container fuel_simulator-worker-1 Stopping 
+ Container fuel_simulator-worker-1 Stopped 
+{"status":"DEGRADED","components":{"backend":{"status":"HEALTHY","age_seconds":0.0},"predictor":{"status":"HEALTHY","age_seconds":null},"database":{"status":"HEALTHY","age_seconds":null},"worker":{"status":"DEGRADED","age_seconds":21.162491},"simulator":{"status":"DEGRADED","age_seconds":21.169643},"decision_engine":{"status":"DEGRADED","age_seconds":26.560431}},"last_check_at":"2026-11-20T10:02:34.788276+00:00","latency":{"p95_seconds":0.05,"error_rate":0.0},"simulated":true}
+{"fetched_at":"2026-11-20T10:02:13.649380+00:00","data_age_seconds":21.196824,"data_status":"DEGRADED","stale":false,"simulated":true}
+Frontend HTTP 200 while worker is stopped.
+ Container fuel_simulator-simulator-1 Waiting 
+ Container fuel_simulator-postgres-1 Waiting 
+ Container fuel_simulator-simulator-1 Healthy 
+ Container fuel_simulator-postgres-1 Healthy 
+ Container fuel_simulator-worker-1 Starting 
+ Container fuel_simulator-worker-1 Started 
+Recovery verified: {"fetched_at":"2026-11-20T10:02:36.657223+00:00","data_age_seconds":0.031096,"data_status":"HEALTHY","stale":false,"simulated":true}
+Final state: PAUSED tick 140; faults clear; events resolved

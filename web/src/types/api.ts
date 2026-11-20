@@ -1,6 +1,19 @@
 export type Fuel = "DIESEL" | "PETROL" | "OCTANE";
 export type DataStatus = "HEALTHY" | "DEGRADED" | "OFFLINE";
 
+export interface HealthComponent {
+  status: DataStatus;
+  age_seconds: number | null;
+}
+
+export interface HealthResponse {
+  status: DataStatus;
+  components: Record<string, HealthComponent>;
+  last_check_at: string;
+  latency: { p95_seconds: number; error_rate: number };
+  simulated: true;
+}
+
 export interface InventoryEntity {
   id: string;
   name: string;
@@ -119,6 +132,15 @@ export interface TrajectoryResponse extends RiskForecast {
   simulated: true;
 }
 
+export interface AllocationRequest {
+  source_depot_id: string;
+  destination_station_id: string;
+  route_id: string;
+  fuel_type: Fuel;
+  quantity: number;
+  idempotency_key: string;
+}
+
 export interface Recommendation {
   id: string;
   status: string;
@@ -130,7 +152,7 @@ export interface Recommendation {
   fuel_type: Fuel;
   quantity: number;
   idempotency_key: string;
-  request_body: Record<string, unknown>;
+  request_body: AllocationRequest;
   explanation_json: {
     drivers: Record<string, unknown>;
     constraints_applied: Array<Record<string, unknown>>;

@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from worker.ingest import SnapshotIngestor
 
+from core.metrics import snapshot_stale, worker_last_ingest_timestamp
 from core.models import (
     Allocation,
     DataStatus,
@@ -150,6 +151,8 @@ async def test_ingest_builds_one_snapshot_and_limits_each_history_request() -> N
     assert all(limit == 100 for _, limit in client.history_limits)
     assert store.heartbeats == 1
     assert store.prunes == 1
+    assert worker_last_ingest_timestamp._value.get() == now.timestamp()
+    assert snapshot_stale._value.get() == 0
 
 
 @pytest.mark.asyncio
@@ -213,6 +216,7 @@ async def test_stale_response_marks_snapshot_degraded() -> None:
 
     assert store.snapshots[0].stale is True
     assert store.snapshots[0].data_status is DataStatus.DEGRADED
+    assert snapshot_stale._value.get() == 1
 
 
 @pytest.mark.asyncio
@@ -224,6 +228,7 @@ async def test_partial_fetch_failure_keeps_last_good_snapshot_and_logs_event() -
     )
     await ingestor.run_once()
     last_good = store.snapshots[0]
+    last_success = worker_last_ingest_timestamp._value.get()
     client.failure_method = "get_routes"
 
     inserted = await ingestor.run_once()
@@ -232,6 +237,7 @@ async def test_partial_fetch_failure_keeps_last_good_snapshot_and_logs_event() -
     assert store.snapshots == [last_good]
     assert store.latest_status == "DEGRADED"
     assert store.events[-1]["kind"] == "snapshot_rejected"
+    assert worker_last_ingest_timestamp._value.get() == last_success
 
 
 @pytest.mark.asyncio
