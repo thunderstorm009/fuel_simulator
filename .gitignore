@@ -21,6 +21,8 @@
 # Local-only planning reference and duplicate output from the old explorer run.
 /reference/Fuel Supply Intelligence & Resilience Platform 28-Hour Build Guide.pdf
 /docs/sim-samples/*.json.json
+/docs/OVERNIGHT-LOG.md
+/docs/MORNING-TODO.md
 
 # Python and test artifacts.
 __pycache__/

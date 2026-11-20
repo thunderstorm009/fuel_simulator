@@ -187,3 +187,10 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** Same-tick REST polls refreshed `fetched_at`, stale, and data-status columns without replacing `raw_json`. This made old payload fields such as `instance.status=RUNNING` appear fresh after the live simulator had been paused.
 - **Decision:** On a successful same-tick read, update `raw_json` and `sim_time` in the existing row together with its freshness metadata. Cached/stale fallback reads remain marked stale/degraded by the existing ingestion status path.
 - **Trade-off:** Snapshot row count remains stable for repeated reads of a tick, while each latest payload now matches the read whose timestamp it carries.
+
+### ADR-028 — Keep overnight operator notes local
+
+- **Status:** ACCEPTED
+- **Context:** The overnight execution log and morning handoff can contain environment-specific operational details and are not product documentation. The repository intentionally keeps local prompts and instructions out of the public tree.
+- **Decision:** Ignore only `docs/OVERNIGHT-LOG.md` and `docs/MORNING-TODO.md` for the overnight run; keep reusable, redacted execution evidence and sprint results in tracked `docs/evidence/` and sprint reports.
+- **Trade-off:** These two handoff files exist only in the local workspace; repository progress and evidence remain the shared source of truth.
