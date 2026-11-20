@@ -153,6 +153,7 @@ class SimClient:
         max_retries: int = 3,
         connect_timeout_s: float = 2.0,
         read_timeout_s: float = 3.0,
+        stream_read_timeout_s: float = 20.0,
         breaker_failure_threshold: int = 5,
         breaker_reset_after_s: float = 10.0,
     ) -> None:
@@ -160,14 +161,18 @@ class SimClient:
         self._sleep = sleep
         self._jitter = jitter or (lambda upper: random.uniform(0.0, upper))
         self.max_retries = max_retries
+        self.connect_timeout_s = max(0.1, connect_timeout_s)
+        self.read_timeout_s = max(0.1, read_timeout_s)
+        # The simulator sends an SSE keepalive every 15s; give it room to arrive.
+        self.stream_read_timeout_s = max(16.0, stream_read_timeout_s)
         self._owns_client = http_client is None
         self._http = http_client or httpx.AsyncClient(
             base_url=self.base_url,
             timeout=httpx.Timeout(
-                connect=connect_timeout_s,
-                read=read_timeout_s,
-                write=read_timeout_s,
-                pool=connect_timeout_s,
+                connect=self.connect_timeout_s,
+                read=self.read_timeout_s,
+                write=self.read_timeout_s,
+                pool=self.connect_timeout_s,
             ),
         )
         self.breaker = CircuitBreaker(
@@ -256,7 +261,13 @@ class SimClient:
         endpoint = "/v1/stream"
         await self.breaker.before_request()
         try:
-            async with self._http.stream("GET", endpoint) as response:
+            stream_timeout = httpx.Timeout(
+                connect=self.connect_timeout_s,
+                read=self.stream_read_timeout_s,
+                write=self.read_timeout_s,
+                pool=self.connect_timeout_s,
+            )
+            async with self._http.stream("GET", endpoint, timeout=stream_timeout) as response:
                 if response.is_error:
                     content = await response.aread()
                     error_response = httpx.Response(

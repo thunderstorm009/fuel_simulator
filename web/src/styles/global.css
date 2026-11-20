@@ -107,6 +107,17 @@ tbody th { padding-left: 0; }
 .page-navigation { display: flex; gap: 8px; padding: 14px 0 2px; border-bottom: 1px solid var(--border); }
 .page-navigation button, .close-button { border: 1px solid transparent; border-radius: 9px; background: transparent; color: var(--muted); padding: 9px 12px; cursor: pointer; font-size: 11px; font-weight: 750; }
 .page-navigation button.active { border-color: #31516b; background: #15273a; color: #a9d6fa; }
+.health-page { display: grid; gap: 16px; padding-top: 20px; }
+.health-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.health-card { display: grid; gap: 12px; padding: 16px; }
+.health-card > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.health-card p, .health-summary p, .health-summary small { color: var(--muted); font-size: 11px; }
+.health-overall { width: fit-content; border: 1px solid; border-radius: 999px; padding: 5px 8px; font-size: 9px; font-weight: 800; }
+.health-healthy { color: #8fe4b8; border-color: #326653; background: #143629; }
+.health-degraded { color: #ffcc77; border-color: #735b32; background: #302617; }
+.health-offline { color: #ffaaa5; border-color: #704144; background: #341d26; }
+.health-summary { display: grid; gap: 8px; padding: 16px; }
+.health-summary h3 { color: #e6edf7; }
 .recommendation-list { display: grid; gap: 12px; }
 .recommendation-card { padding: 18px; }
 .recommendation-main { display: flex; align-items: start; justify-content: space-between; gap: 18px; }
@@ -114,6 +125,9 @@ tbody th { padding-left: 0; }
 .recommendation-title h3 { color: #e6edf7; }
 .review-badge { color: #f5d49b; border: 1px solid #735b32; background: #302617; padding: 5px 8px; border-radius: 999px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
 .recommendation-meta { display: grid; justify-items: end; gap: 5px; color: var(--muted); font-size: 10px; text-align: right; }
+.recommendation-id { margin: 4px 0 0; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.recommendation-id code { color: #dce8f8; }
+.allocation-request-body { max-height: 260px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .text-button { margin-top: 14px; border: 0; background: transparent; color: #8fdaca; padding: 4px 0; cursor: pointer; font-size: 11px; font-weight: 750; }
 .recommendation-details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 16px; }
 .recommendation-details h4 { margin: 15px 0 8px; color: #9bb0c8; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }

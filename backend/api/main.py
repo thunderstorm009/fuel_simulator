@@ -10,6 +10,8 @@ from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from api.database import PostgresReadRepository
+from api.routes.chaos import router as chaos_router
+from api.routes.health import router as health_router
 from api.routes.read import router as read_router
 from api.routes.recommendations import router as recommendations_router
 from core.metrics import api_http_request_duration, api_http_requests, health_checks
@@ -44,7 +46,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(read_router)
+app.include_router(health_router)
 app.include_router(recommendations_router)
+app.include_router(chaos_router)
 
 
 @app.middleware("http")

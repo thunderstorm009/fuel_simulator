@@ -20,11 +20,26 @@ snapshot_rejected = Counter(
 )
 snapshot_age = Gauge("snapshot_age_seconds", "Age of the latest accepted snapshot")
 forecasts_computed = Counter("forecasts_computed_total", "Forecasts calculated", ["risk_level"])
+hours_to_stockout_gauge = Gauge(
+    "hours_to_stockout", "Deterministic hours until station/fuel stockout", ["station", "fuel"]
+)
+stockout_probability = Gauge(
+    "stockout_probability", "24-hour stockout probability", ["station", "fuel"]
+)
+forecast_mape = Gauge(
+    "forecast_mape", "Mean absolute percentage demand forecast error", ["station", "fuel"]
+)
 forecast_job_failures = Counter("forecast_job_failures_total", "Failed forecast jobs")
 recommendations_created = Counter("recommendations_created_total", "Recommendations created")
 recommendation_fallbacks = Counter(
     "recommendation_fallbacks_total", "Heuristic recommendation fallbacks"
 )
+policy_fallbacks = Counter("policy_fallback_total", "Fallback invocations by cause", ["reason"])
+recommendations_by_status = Gauge(
+    "recommendations_total", "Recommendation lifecycle events by status", ["status"]
+)
+alerts_active = Gauge("alerts_active", "Active stockout risk incidents by severity", ["severity"])
+sim_service_level = Gauge("sim_service_level", "Latest simulator service level")
 recommendation_job_failures = Counter(
     "recommendation_job_failures_total", "Failed recommendation jobs"
 )

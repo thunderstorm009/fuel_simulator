@@ -27,6 +27,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-021 | Organize application source by runtime responsibility while preserving independent services | ACCEPTED | Publication |
 | ADR-022 | Keep personal AI workspace local and publish application/engineering artifacts only | ACCEPTED | Publication |
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
+| ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -158,3 +159,31 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** The existing React/TypeScript UI had grown into a large module, making its dashboard, inventory, network, incidents, forecast, and allocation views difficult to maintain independently.
 - **Decision:** Keep the app shell in `web/src/app/`, shared layout/UI components in `components/`, feature pages and panels under `features/`, API calls under `services/`, common types under `types/`, and formatting helpers under `lib/`. Add focused Vitest/Testing Library tests for existing user-visible navigation/stale and approval-token behavior.
 - **Trade-off:** The current test set covers key rendered interactions but is not a full visual or end-to-end UI suite.
+
+### ADR-024 — Keep the SSE read timeout above the simulator keepalive interval
+
+- **Status:** ACCEPTED
+- **Context:** The simulator emits an SSE keepalive every 15 seconds. The shared `SimClient` applied the 3-second ordinary REST read timeout to streaming responses, causing repeated `SimUnavailable` reconnect logs while the stream itself returned HTTP 200 and REST polling remained healthy.
+- **Decision:** Give streaming responses a separate configurable `SIM_STREAM_READ_TIMEOUT_S` with a default and minimum of 20 and 16 seconds respectively. Keep ordinary REST reads at 3 seconds. SSE remains an advisory channel; polling remains authoritative.
+- **Trade-off:** A dead stream may take longer than a REST request to time out, while normal keepalive silence no longer triggers false disconnects.
+
+### ADR-025 — Keep recommendation identity and request body visible through operator review
+
+- **Status:** ACCEPTED
+- **Context:** Two current DIESEL proposals for Cox's Bazar had similar cards; the UI omitted recommendation IDs and rounded quantities to whole liters. The operator associated the 1,543.55 L sibling's display with the 6,000 L recommendation's exact request body, although the database rows, API response, idempotency keys, and request bodies were correctly paired.
+- **Decision:** Display each recommendation ID and idempotency key beside its full precision quantity, render the exact persisted request body in review details, and disable decisions if duplicated summary columns differ from that body. The API also rejects approval when the persisted row and body disagree.
+- **Trade-off:** Review cards use more vertical space. The extra identity and payload detail prevents ambiguity and fails closed on corrupted records.
+
+### ADR-026 — Separate service availability from decision-pipeline freshness
+
+- **Status:** ACCEPTED
+- **Context:** The decision engine is a worker pipeline, not an independently running service. When the simulator is paused, no new tick may trigger forecast/recommendation processing and its heartbeat can age even while the worker, simulator connection, and API remain healthy.
+- **Decision:** Report the worker heartbeat separately. A stale decision-engine heartbeat is `DEGRADED` while the worker is available; it only remains `OFFLINE` when the worker itself is offline. Aggregate health can then be degraded without falsely labelling the simulator offline.
+- **Trade-off:** Operators see an explicit degraded decision pipeline during pauses rather than an inaccurate whole-system offline banner.
+
+### ADR-027 — Replace same-tick snapshot payload when refreshing its metadata
+
+- **Status:** ACCEPTED
+- **Context:** Same-tick REST polls refreshed `fetched_at`, stale, and data-status columns without replacing `raw_json`. This made old payload fields such as `instance.status=RUNNING` appear fresh after the live simulator had been paused.
+- **Decision:** On a successful same-tick read, update `raw_json` and `sim_time` in the existing row together with its freshness metadata. Cached/stale fallback reads remain marked stale/degraded by the existing ingestion status path.
+- **Trade-off:** Snapshot row count remains stable for repeated reads of a tick, while each latest payload now matches the read whose timestamp it carries.

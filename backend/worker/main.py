@@ -14,6 +14,7 @@ from core.metrics import health_checks, recommendation_job_failures
 from core.sim_client import SimClient
 from worker.executor import Executor
 from worker.forecast_job import ForecastJob
+from worker.forecaster import RemoteForecaster
 from worker.ingest import SnapshotIngestor
 from worker.recommend_job import RecommendationJob
 from worker.sse import SSEConsumer
@@ -50,10 +51,17 @@ async def lifespan(app: FastAPI):
         max_retries=max(0, int(os.getenv("SIM_MAX_RETRIES", "3"))),
         connect_timeout_s=max(0.1, float(os.getenv("SIM_CONNECT_TIMEOUT_S", "2"))),
         read_timeout_s=max(0.1, float(os.getenv("SIM_READ_TIMEOUT_S", "3"))),
+        stream_read_timeout_s=max(16.0, float(os.getenv("SIM_STREAM_READ_TIMEOUT_S", "20"))),
         breaker_failure_threshold=max(1, int(os.getenv("SIM_BREAKER_FAILURE_THRESHOLD", "5"))),
         breaker_reset_after_s=max(0.1, float(os.getenv("SIM_BREAKER_RESET_S", "10"))),
     )
-    forecast_job = ForecastJob(store)
+    predictor = RemoteForecaster(
+        os.getenv("PREDICTOR_URL", "http://predictor:8103"),
+        timeout_s=max(0.1, float(os.getenv("PREDICTOR_TIMEOUT_S", "1.5"))),
+        failure_threshold=max(1, int(os.getenv("PREDICTOR_BREAKER_FAILURE_THRESHOLD", "5"))),
+        reset_after_s=max(0.1, float(os.getenv("PREDICTOR_BREAKER_RESET_S", "10"))),
+    )
+    forecast_job = ForecastJob(store, predictor)
     recommendation_job = RecommendationJob(store)
 
     async def process_snapshot(snapshot):
@@ -61,6 +69,10 @@ async def lifespan(app: FastAPI):
         if forecasts:
             try:
                 await recommendation_job.run(snapshot, forecasts)
+                await store.heartbeat(
+                    "decision_engine",
+                    {"tick": snapshot.instance.tick, "status": "ok"},
+                )
             except Exception as exc:
                 recommendation_job_failures.inc()
                 logger.exception(
@@ -92,6 +104,7 @@ async def lifespan(app: FastAPI):
         for task in (poll_task, sse_task, executor_task):
             task.cancel()
         await asyncio.gather(poll_task, sse_task, return_exceptions=True)
+        await predictor.close()
         await client.close()
         await store.close()
 

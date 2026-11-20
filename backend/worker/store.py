@@ -8,6 +8,7 @@ from typing import Any, Protocol
 
 import asyncpg
 
+from core.metrics import alerts_active, recommendations_by_status
 from core.models import Snapshot
 from core.risk import ForecastRecord
 
@@ -67,12 +68,15 @@ class PostgresStore:
                     await connection.execute(
                         """
                         UPDATE snapshots
-                        SET fetched_at = $1, stale = $2, data_status = $3
+                        SET sim_time = $1, raw_json = $2::jsonb, fetched_at = $3,
+                            stale = $4, data_status = $5
                         WHERE id = (
                             SELECT id FROM snapshots
                             ORDER BY fetched_at DESC, id DESC LIMIT 1
                         )
                         """,
+                        sim_time,
+                        payload,
                         snapshot.fetched_at,
                         snapshot.stale,
                         snapshot.data_status.value,
@@ -136,7 +140,7 @@ class PostgresStore:
                             needs_review, source, trajectory, drivers
                         ) VALUES (
                             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-                            'local', $13::jsonb, $14::jsonb
+                            $13, $14::jsonb, $15::jsonb
                         )
                         ON CONFLICT (snapshot_id, station_id, fuel_type) DO UPDATE SET
                             hours_to_stockout = EXCLUDED.hours_to_stockout,
@@ -160,6 +164,7 @@ class PostgresStore:
                         forecast.confidence,
                         forecast.risk_level.value,
                         forecast.needs_review,
+                        record.source,
                         json.dumps(
                             [point.__dict__ for point in record.trajectory],
                             separators=(",", ":"),
@@ -173,6 +178,7 @@ class PostgresStore:
                         previous_risk,
                         forecast.risk_level.value,
                     )
+                await self._refresh_active_alert_metrics(connection)
 
     async def expire_stale_recommendations(self, tick: int) -> None:
         await self.pool.execute(
@@ -259,6 +265,39 @@ class PostgresStore:
             failure_reason,
             sim_allocation_id,
         )
+        recommendations_by_status.labels(status=status).inc()
+
+    async def set_predictor_incident(self, active: bool, reason: str | None = None) -> None:
+        async with self.pool.acquire() as connection:
+            if active:
+                detail = json.dumps({"reason": reason or "unavailable"}, separators=(",", ":"))
+                await connection.execute(
+                    """
+                    INSERT INTO incidents (type, severity, detail)
+                    SELECT 'predictor_fallback', 'high', $1::jsonb
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM incidents
+                        WHERE type = 'predictor_fallback' AND resolved_at IS NULL
+                    )
+                    """,
+                    detail,
+                )
+            else:
+                await connection.execute(
+                    """UPDATE incidents SET resolved_at = now()
+                    WHERE type = 'predictor_fallback' AND resolved_at IS NULL"""
+                )
+            await self._refresh_active_alert_metrics(connection)
+
+    @staticmethod
+    async def _refresh_active_alert_metrics(connection: asyncpg.Connection) -> None:
+        rows = await connection.fetch(
+            """SELECT severity, COUNT(*) AS count FROM incidents
+            WHERE resolved_at IS NULL GROUP BY severity"""
+        )
+        counts = {str(row["severity"]): int(row["count"]) for row in rows}
+        for severity in ("critical", "high", "medium", "low"):
+            alerts_active.labels(severity=severity).set(counts.get(severity, 0))
 
     @staticmethod
     def _decode_recommendation(row: Any) -> dict[str, Any]:

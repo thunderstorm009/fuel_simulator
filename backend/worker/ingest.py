@@ -11,6 +11,7 @@ from typing import Callable
 
 from core.metrics import (
     forecast_job_failures,
+    sim_service_level,
     snapshot_age,
     snapshot_rejected,
     worker_ingest_failures,
@@ -134,6 +135,7 @@ class SnapshotIngestor:
             )
             await self.store.prune_snapshots(self.keep_snapshots)
             snapshot_age.set(max(0.0, (self._now() - snapshot.fetched_at).total_seconds()))
+            sim_service_level.set(snapshot.metrics.service_level)
             worker_ingest_success.inc()
             logger.info(
                 json.dumps(

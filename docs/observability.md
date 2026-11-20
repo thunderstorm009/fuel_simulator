@@ -2,7 +2,7 @@
 
 ## Current topology
 
-Prometheus scrapes the API (`api:8101`), worker (`worker:8102`), and independent predictor (`predictor:8103`) at a 15-second interval. Configuration is in `observability/prometheus/prometheus.yml`. Grafana is configured with a Prometheus data source in `observability/grafana/provisioning/datasources/prometheus.yml` and is available at port 3000. A dashboard and alert rules are not currently provisioned.
+Prometheus scrapes the API (`api:8101`), worker (`worker:8102`), and independent predictor (`predictor:8103`) at a 15-second interval. Configuration is in `observability/prometheus/prometheus.yml`. Grafana has a provisioned Prometheus data source, dashboard, and alert rules under `observability/grafana/provisioning/`; it is available at port 3000.
 
 Each Python service exposes `/health` and `/metrics`. API request metrics are low-cardinality by method, route template, and status class. Simulator request metrics use endpoint and outcome labels; rejection metrics use simulator error code. Station/fuel labels appear only on forecast error metrics, where they are useful for domain diagnosis.
 
@@ -21,13 +21,15 @@ Metric definitions are in `backend/shared/core/metrics.py`; route and job instru
 | `recommendations_created_total`, `recommendation_fallbacks_total`, `recommendation_job_failures_total` | Recommendation job outcomes |
 | `allocation_executor_failures_total`, `simulator_allocation_rejections_total` | Approved-allocation executor and simulator rejections |
 | `worker_sse_events_total`, `worker_sse_reconnects_total` | SSE hints and reconnect activity |
+| `policy_fallback_total{reason}`, `forecast_mape{station,fuel}`, `hours_to_stockout{station,fuel}`, `stockout_probability{station,fuel}` | Predictor fallback and forecast quality/risk |
+| `recommendations_total{status}`, `sim_service_level`, `alerts_active{severity}` | Recommendation lifecycle, service level, and active alert gauges |
 
 Prometheus counters are process-local and reset when a service restarts. No metrics should include recommendation IDs, operator tokens, raw URLs, or other unbounded values.
 
 ## Logs and health
 
-Python services log operational errors and job events. `/health` is a liveness response used by Compose; it is not a component-level readiness/latency report. Worker status and snapshot age are available from the persisted data-health API and metrics. The API does not call the simulator for health information.
+Python services log operational errors and job events using JSON records for relevant worker paths. `GET /api/health` reports backend, database, simulator heartbeat/data age, predictor ping, and decision-engine age, plus API histogram p95 and observed 5xx fraction. `/health` remains a liveness endpoint. The API does not call the simulator for health information.
 
 ## Verification and gaps
 
-The sprint reports and `docs/evidence/` contain real service health, scrape/metric, and runtime observations. Prometheus/Grafana Compose health and source configuration have been checked locally. Grafana dashboards, alert rules, dashboard screenshots, and a metric-backed fault comparison remain follow-up work; their absence is not represented as complete observability coverage.
+The sprint reports and `docs/evidence/` contain service health, scrape/metric, and runtime observations from the runs that were actually available. Current Grafana runtime and panel movement under fault injection have not been rechecked in this resumed session because Docker is unavailable. Do not treat configuration presence as proof that a dashboard loaded or an alert fired.

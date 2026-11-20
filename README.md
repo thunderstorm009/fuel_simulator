@@ -22,7 +22,8 @@ flowchart LR
   DB --> API[API]
   WEB[Frontend] --> API
   W -->|approved allocation only| SIM
-  P[Predictor service] -. independent health/metrics service .-> PROM[Prometheus]
+  W -->|bounded forecast requests| P[Predictor service]
+  P -. fallback on failure .-> W
   API --> PROM
   W --> PROM
   PROM --> G[Grafana]
@@ -34,7 +35,7 @@ The platform has six independently running services:
 |---|---|---|
 | API | Database-backed operator reads and approval/rejection records; no simulator reads | `http://localhost:8101` |
 | Worker | Simulator REST/SSE, validation, persistence, forecasting, recommendation and approved execution jobs | `http://localhost:8102` |
-| Predictor | Independent health/metrics service; forecast request/fallback integration is planned | `http://localhost:8103` |
+| Predictor | Validated forecast endpoint; worker timeout/breaker and review-required baseline fallback | `http://localhost:8103` |
 | Frontend | React + TypeScript operator interface | `http://localhost:5173` |
 | Prometheus | Scrapes API, worker and predictor metrics | `http://localhost:9090` |
 | Grafana | Provisioned Prometheus data source | `http://localhost:3000` |
@@ -85,6 +86,6 @@ See `.env.example` for supported environment variables and [docs/operations.md](
 
 ## Development status
 
-Sprint 1–4 implementation work is present. Sprints 1–3 have local acceptance evidence. Sprint 4 implementation and local checks are complete, while its live acceptance gate remains open: an operator-approved allocation reaching `ARRIVED` and an identical body/key replay have not been verified, and no simulator allocation was submitted. The predictor service is currently a health/metrics skeleton; the worker computes forecasts using shared logic.
+Sprints 1–3 have historical local acceptance evidence. Sprint 4 code and local checks are present, while its live acceptance gate remains open: an operator-approved allocation reaching `ARRIVED` and an identical body/key replay have not been verified, and no simulator allocation was submitted. Sprint 5 predictor, fallback, health UI, and dashboard code is present; its live resilience gate remains unverified in the current environment. Sprints 6–7 still require scenario and performance evidence, CI execution, and a cold-start/demo rehearsal. See [the current progress record](docs/PROGRESS.md) and [final execution report](docs/FINAL-EXECUTION-REPORT.md).
 
 The consolidated engineering update is [Day 1 Engineering Progress — Sprints 1–4](docs/DAY-1-UPDATE.md).

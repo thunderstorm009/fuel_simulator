@@ -17,7 +17,7 @@ Same key and same body returns the existing allocation (guide says 201 in one pl
 Allocation errors {detail:{code,message}}. Injected faults {error:{code:FAULT_INJECTED,message}} HTTP 503. Stream fault 503 {detail:{code:FAULT_INJECTED}}. Validation 422 {detail:[...]}.
 
 ## SSE
-Events: simulation.tick, allocation.status_changed, inventory.updated, simulator.notice. 15s keepalive. Queue of 200 per subscriber; falling behind drops you silently. No Last-Event-ID replay. Treat as a hint; refetch via REST.
+Events: simulation.tick, allocation.status_changed, inventory.updated, simulator.notice. 15s keepalive. Queue of 200 per subscriber; falling behind drops you silently. No Last-Event-ID replay. Treat as a hint; refetch via REST. The worker uses a 20s SSE read timeout so normal keepalive silence does not look like a disconnect; ordinary REST reads keep their separate 3s timeout.
 
 ## Client behavior implemented in Sprint 2
 `backend/shared/core/sim_client.py` validates each response against the shared typed models, returns the `X-Simulator-Stale` marker with the result, and exposes typed unavailable, invalid-response, and business errors. Requests use 2s connect and 3s read timeouts and up to three retries after the first attempt with jitter for timeouts, connection errors, and HTTP 503 `FAULT_INJECTED`; 409 and 422 are not retried. The per-client breaker opens after five failed requests and permits one half-open probe after 10s. The worker is the only owner of this client in production.
