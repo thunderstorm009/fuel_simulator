@@ -116,10 +116,3 @@ All screenshots were captured from the live running application at desktop resol
 
 ---
 
-## Remaining Work
-
-The platform is fully implemented, verified, and frozen. Remaining tasks are strictly human-only presentation ceremonies:
-
-1. **Presentation Rehearsal:** Practice the 5-minute live operator walkthrough using [docs/final-demo-script.md](final-demo-script.md).
-2. **Offline Backup Video:** Record a local 3-minute screen capture as an offline backup for the live judging panel.
-3. **Repository Merge:** Project owner performs final review of branch `overnight-sprints-4-7` and merges to `main`.
