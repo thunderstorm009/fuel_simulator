@@ -82,6 +82,22 @@ def test_one_critical_pair_produces_a_feasible_recommendation() -> None:
     assert result[0].request.quantity <= 7000
 
 
+def test_estimated_arrival_matches_simulator_dispatch_tick_semantics() -> None:
+    snapshot = snapshot_fixture()
+    mirpur = next(row for row in snapshot.stations if row.id == "station-mirpur")
+    mirpur.inventory[FuelType.DIESEL] = 3000
+
+    forecast = urgent_forecast(snapshot, mirpur.id, FuelType.DIESEL)
+    result = HeuristicPolicy().recommend(snapshot, [forecast])
+
+    route = next(row for row in snapshot.routes if row.id == result[0].request.route_id)
+    assert result[0].arrival_tick == snapshot.instance.tick + route.transit_ticks
+    assert (
+        result[0].projected_inventory_at_arrival
+        == forecast.trajectory[route.transit_ticks].mean_inventory
+    )
+
+
 def test_disrupted_route_uses_an_available_alternative() -> None:
     snapshot = snapshot_fixture()
     mirpur = next(row for row in snapshot.stations if row.id == "station-mirpur")

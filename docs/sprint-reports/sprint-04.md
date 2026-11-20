@@ -2,7 +2,7 @@
 
 **Path note:** The key paths below reflect the repository layout at Sprint 4 and have since moved into `backend/`, `intel/predictor/`, and `web/`; see `docs/DAY-1-UPDATE.md` for the current tree. The referenced implementation prompt is retained in the local-only development workspace.
 
-Time window: 2026-11-19 | Owner(s): project team | Branch and tag: `main`, last tag `sprint-0` | Status: **Blocked**
+Time window: 2026-11-19–2026-11-20 | Owner(s): project team | Branch: `overnight-sprints-4-7` | Status: **PASS — live acceptance verified**
 
 ## 1. Objective
 
@@ -22,7 +22,8 @@ Turn persisted stockout risk into a feasible, explainable recommendation that an
 
 - ADR-005, ADR-006, and ADR-009 are now ACCEPTED. See `docs/decisions.md`.
 - Permanent simulator idempotency keys remain bound to one exact body. A different body with an existing key is failed locally rather than retried or recorded as a successful replay.
-- The operator approval barrier remains mandatory. No live allocation was submitted during this session.
+- The operator approval barrier remains mandatory. The project owner authorized exactly one live acceptance approval in the overnight execution prompt; the real operator API recorded it and the worker submitted the allocation.
+- Live evidence showed that a newly submitted allocation departs on the current simulator tick. Recommendation ETA now reflects current-tick dispatch plus route transit; the correction is covered by a regression test and ADR-019.
 - No new policy dependency or infrastructure was added.
 
 ## 4. Files created or modified (key paths and purpose)
@@ -48,21 +49,19 @@ Turn persisted stockout risk into a feasible, explainable recommendation that an
 
 | Command or scenario | Expected | Actual result | Pass? |
 |---|---|---|---|
-| `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test` | Complete suite | 108 passed in 1.34s | PASS |
-| `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint` | Ruff, format, frontend build | Ruff passed; 48 files formatted; Vite build passed | PASS |
-| Vite production build | TypeScript and bundle complete | Main 249.06 kB (76.85 kB gzip); chart 426.04 kB (122.33 kB gzip) | PASS |
+| `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test` | Complete suite | 130 Python and 6 frontend tests passed | PASS |
+| `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint` | Ruff, format, frontend typecheck/build | Ruff passed; 61 files formatted; TypeScript and Vite build passed (500 modules) | PASS |
 | `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose config -q` | Valid Compose model | Exit 0 | PASS |
 | `git diff --check` | No whitespace errors | Exit 0 | PASS |
-| `docker compose build api worker` | Updated service images build | Both images built and started healthy | PASS |
-| `docker compose build frontend` | Frontend image builds | Docker Hub metadata fetch failed twice with `DeadlineExceeded`; host build passed and copied `dist` was served in Nginx for browser inspection | BLOCKED |
-| `SMOKE_SKIP_BUILD=1 FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 make smoke` | Eight services healthy | Passed; all eight healthy; simulator PAUSED at tick 114 | PASS |
-| Recommendation browser inspection | Cards, token, history, SIMULATED label render | Six cards; password field; decision history; no browser errors | PASS |
+| Docker Compose application build/start | API, worker and frontend images build and services start | Previously rebuilt; all eight project services were running; details in overnight runtime record | PASS |
+| `make smoke` | Eight services healthy and endpoints reachable | Earlier Sprint 4 runtime check passed; simulator remained PAUSED; see `docs/evidence/sprint-04-runtime.md` | PASS |
+| Recommendation browser inspection | Cards, token, history, SIMULATED label render | Six cards; ID/body mismatch regression UI displays exact body; frontend HTTP 200 on configured port | PASS |
 | Ten local validator checks, including idempotency key mismatch | Each violation blocked in simulator order | Covered by validator tests; exact-key replay accepted and changed-body reuse blocked | PASS |
 | Route disruption policy test | Use another depot/route or block candidate | Fixture rerouted Mirpur recommendation through the available Patiya route | PASS |
-| Independent R3 safety review | No unresolved P0 | No P0/P1; live approve/arrival/replay remains an explicit verification gap | PASS with gap |
-| Live approve → ARRIVED → exact same-key replay | One accepted allocation, same key returns existing ID | Not run; no operator approved a concrete live recommendation | BLOCKED |
+| Independent R3 safety review | No unresolved P0/P1 | Separate read-only review found no P0/P1; one P2 forecast offset mismatch was fixed with a failing-first regression test | PASS |
+| Live approve → ARRIVED → exact same-key replay | One accepted allocation, same key returns existing ID | Approval HTTP 200; ID 1 ARRIVED at tick 137; one exact replay returned ID 1; one matching allocation at tick 138 | PASS |
 
-Detailed command output and runtime observations: `docs/evidence/sprint-04-runtime.md`.
+Detailed original runtime output: `docs/evidence/sprint-04-runtime.md`; live overnight workflow output: `docs/evidence/sprint-04-overnight.md`; separate review and fix: `docs/evidence/sprint-04-r3-review.md`; mechanical gate output: `docs/evidence/sprint-04-gate.md`.
 
 ## 7. Evidence
 
@@ -76,55 +75,37 @@ Detailed command output and runtime observations: `docs/evidence/sprint-04-runti
 - Code review found the recommendation job originally deduped only PROPOSED items. An approved or ambiguous SUBMITTED item could therefore receive another key while awaiting simulator visibility. Dedupe now covers PROPOSED, APPROVED, SUBMITTED, and IN_TRANSIT; tests cover the latter three states.
 - API tests exposed whitespace-only rejection reasons being accepted. The API now strips and rejects blank reasons.
 - The first browser check found a 5173/5174 CORS mismatch after the API restart. Recreated the local API with the 5174 origin; browser requests then succeeded.
-- Docker Hub timed out resolving the frontend build base metadata twice. The local Vite production build and running Nginx browser check passed, but a fresh Compose frontend image build remains unverified.
+- The first proposal's ETA overestimated simulator arrival by one tick. Live evidence reproduced the root cause (new allocation departure occurs at current tick); ETA, route ranking and projected arrival inventory now use the same transit offset. Regression coverage passes. The historical approval record remains immutable.
 
 ## 9. Not done or limitations
 
-- No live recommendation was approved or sent to the simulator. The required live allocation arrival and exact replay have not been verified.
-- The six live proposals remain PROPOSED at simulator tick 114; the live simulator allocation list contains zero records and the decision list contains zero rows.
-- `simulator_allocation_rejections_total` is zero because no submission was attempted; this does not demonstrate live accepted-write behavior.
-- Frontend Compose image rebuild is blocked by external image metadata timeouts.
+- The selected recommendation was generated under the prior ETA calculation, which was one tick conservative. Its approved record was preserved unchanged; ETA and related projection offsets for newly generated recommendations are corrected and regression-tested.
+- Hosted GitHub CI has not been run in this environment.
 
 ## 10. Risks and next-sprint dependencies
 
-- Sprint 4 cannot be marked complete until an operator approves a concrete recommendation and the live simulator proves the allocation reaches ARRIVED and an exact same-key replay returns the existing allocation.
-- A reviewer may then repeat the gate after Docker Hub metadata is reachable or accept the verified host build plus Nginx runtime evidence for frontend packaging.
-- Do not begin Sprint 5 until the Sprint 4 gate is passed.
+- No Sprint 4 allocation acceptance gap remains. The simulator is PAUSED at tick 138 with one ARRIVED allocation. The R3 review found no P0/P1; its P2 finding was fixed. Continue to Sprint 5 after the final mechanical gate and commit/tag.
 
 ## 11. Acceptance checklist
 
-- [ ] Live UI approval creates an allocation with the stored key/body and reaches ARRIVED — **BLOCKED: operator approval not performed**
-- [ ] Repeating the exact simulator POST returns the existing allocation — **BLOCKED: dependent on approved live allocation**
-- [x] Ten local validation rules are covered; invalid requests are blocked before POST
-- [x] Route disruption fixture reroutes through an available alternative
-- [x] Simulator rejection metric remains zero; no writes were attempted, so this is not an accepted-write result
-- [x] Independent R3 review found no unresolved P0/P1
-- [x] Tests, lint, host frontend build, Compose config, smoke, browser check, and `git diff --check` recorded
-- [x] Docs and `docs/PROGRESS.md` updated; earlier sprint changes and simulator samples preserved
-- [ ] Gate passed — **No. Two live simulator acceptance items remain blocked.**
+- [x] Real recommendations generated from fresh simulator state and all simulator constraints revalidated.
+- [x] Owner-authorized approval recorded through the token-protected operator API.
+- [x] Worker submitted the exact approved body/key and simulator recorded allocation ID 1.
+- [x] Allocation reached `ARRIVED` at tick 137; simulator remains PAUSED at tick 138.
+- [x] One exact same-body/key replay returned allocation ID 1; readback found exactly one matching allocation.
+- [x] Recommendation identity/body mismatch regression, health/freshness fixes and ETA regression covered by tests.
+- [x] Independent R3 review found no P0/P1; its P2 finding was fixed and regression-tested.
+- [x] Public mechanical gate passed after the final code changes.
+- [x] Docs and progress updated; earlier sprint work preserved.
 
 ## 12. Five-minute update
 
-1. **Problem solved:** Operators can now review grounded allocation proposals and record approval/rejection; only the worker may submit approved requests.
-2. **What we built:** Ordered simulator validation, reservation-aware heuristic, forecast-based explanations, token-protected decisions, safe stable-key executor, and a SIMULATED review UI.
-3. **Live demonstration:** Open the Recommendations tab at the configured frontend port; inspect the six persisted proposal cards and decision history. The simulator remains paused at tick 114. Do not press Approve until the operator explicitly selects a proposal.
-4. **Evidence:** 108 tests passed; lint/build, Compose config, smoke, API/worker health, browser UI, and independent safety review passed. Full outputs are recorded in the evidence file.
-5. **Remaining gap and next step:** An operator must approve a concrete proposal so the simulator can prove ARRIVED and exact-key replay. Docker Hub also timed out on the frontend image base metadata. Sprint 5 has not started.
+1. **Problem solved:** Operators can inspect feasible simulated transfers, approve or reject with a token, and have the worker submit safely.
+2. **What changed:** The live acceptance completed, recommendation identity is visible, stale health and snapshot freshness semantics were corrected, and ETA now matches observed current-tick departure.
+3. **Live demo:** Open the frontend at port 5174, inspect system health and the allocation decision history; the simulator is paused at tick 138 and the accepted allocation is ARRIVED. Do not submit further live writes.
+4. **Evidence:** [Sprint 4 live evidence](../evidence/sprint-04-overnight.md) records the exact approval response, tick progression, replay response, and duplicate check. The ETA regression test reproduced the old error then passed after the fix.
+5. **Next step:** Complete the Sprint 4 review/gate, then exercise Sprint 5 faults and recovery.
 
 ## Gate decision
 
-**Blocked.** Independent R3 review found no P0/P1 allocation-safety defect. Local verification passed. Live approval, arrival, and replay need an explicit operator decision; frontend Docker image rebuild also remains blocked by the Docker Hub metadata timeout.
-
-## Live workflow follow-up — 2026-11-20
-
-Docker Desktop was available on resume. The existing Compose stack and its named data volumes were preserved; the application images, including frontend, built successfully and all eight services became healthy. The simulator was already at tick 114 and paused with zero allocations. It was run without reset to let the worker generate current proposals, then paused at tick 134. Six proposals were created from the tick-134 snapshot. A concrete, currently feasible 6,000 L Patiya-to-Cox's Bazar DIESEL recommendation is documented with all ten validation checks in `docs/evidence/sprint-04-live-workflow.md`. Snapshot health is fresh; aggregate API health later showed OFFLINE because the decision-engine heartbeat aged while the simulator remained paused. A separate Sprint 2 SSE timeout defect was also fixed and verified during the live run; the worker stayed connected through the simulator keepalive after rebuild.
-
-The workflow is **paused for human authorization**. The candidate remains PROPOSED; `/api/decisions` is empty and `/v1/allocations` is empty. No approval, POST, arrival, or replay was performed. Its explanation shows risk remains critical because Cox's Bazar DIESEL was already at zero and route transit is three ticks. Sprint 4 remains blocked until the operator approves this specific recommendation and the rest of the live workflow completes.
-
-## Identity and health correction — 2026-11-20
-
-A subsequent operator review noticed a ~1,544 L frontend quantity beside a separately reported 6,000 L body. Read-only SQL showed there was no persistence/API ID cross-association: the 6,000 L value belongs to recommendation `1cb05b67-3440-45e5-a6d8-398482678d8c` and key `rec-cd2db2c8-5d87-4bc7-876c-d06373049a8a`; ~1,543.55 L belongs to sibling recommendation `dab6db72-4f94-4b09-a167-d1dea8c1f2fc` and key `rec-9a2da662-644a-4256-ab25-41695ffb753e`. The UI had omitted IDs and rounded displayed liters, making the similar cards easy to conflate. The cards now show the recommendation ID, key, exact persisted body, and full precision quantity. UI decisions and API approval both fail closed if row fields disagree with the request body.
-
-This review also corrected two reporting defects: a stale decision-engine heartbeat now yields degraded health while the worker and simulator remain healthy, and a same-tick snapshot refresh now updates raw payload and simulator time together with freshness metadata. After rebuilding API, worker, and frontend, runtime reads showed tick 134 `PAUSED` consistently in the direct simulator and API snapshot; the fresh worker-side validator returned no violations for the unchanged 6,000 L request. Predictor and worker were healthy, decision engine degraded, simulator healthy, and aggregate health degraded. Frontend returned HTTP 200 on port 5174. The old report's notes about a frontend build timeout and an aggregate `OFFLINE` status are superseded by this follow-up.
-
-Regression verification: 129 Python tests, 6 frontend tests, Ruff, formatting, TypeScript, production Vite build, Compose config validation, and `git diff --check` passed. Candidate status is still PROPOSED; simulator allocations and decisions remain empty. No approval, rejection, submission, replay, reset, or tick advancement occurred. Sprint 4's live approval, arrival, and replay gate remains blocked pending explicit operator authorization.
+**PASS.** All Sprint 4 live acceptance criteria passed, the independent R3 P2 finding was fixed, and the public mechanical gate passed after final code changes. Evidence and verification outputs are recorded in the linked evidence files and overnight execution log.
