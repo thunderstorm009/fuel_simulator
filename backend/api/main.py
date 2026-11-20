@@ -36,11 +36,16 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="Fuel Supply Platform API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        origin.strip()
-        for origin in os.getenv("CORS_ORIGIN", "http://localhost:5173").split(",")
-        if origin.strip()
-    ],
+    allow_origins=list(
+        {
+            origin.strip()
+            for origin in os.getenv(
+                "CORS_ORIGIN", "http://localhost:5173,http://localhost:5174"
+            ).split(",")
+            if origin.strip()
+        }
+        | {"http://localhost:5173", "http://localhost:5174"}
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
