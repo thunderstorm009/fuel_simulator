@@ -20,8 +20,22 @@ class FakeRepository:
     async def get_latest_snapshot(self) -> dict[str, Any] | None:
         return self.snapshot
 
-    async def get_incidents(self) -> list[dict[str, Any]]:
+    async def get_incidents(
+        self, include_resolved: bool = True, limit: int = 100
+    ) -> list[dict[str, Any]]:
         return [{"id": 9, "type": "simulator_unavailable", "severity": "warning"}]
+
+    async def get_incident(self, incident_id: int) -> dict[str, Any] | None:
+        if incident_id == 9:
+            return {
+                "id": 9,
+                "type": "simulator_unavailable",
+                "severity": "warning",
+                "detected_at": "2026-11-21T10:00:00Z",
+                "resolved_at": None,
+                "detail": {"explanation": "Simulator connection dropped", "entity_id": "sim-1"},
+            }
+        return None
 
 
 def seeded_record(age_seconds: int = 0, stale: bool = False) -> dict[str, Any]:
@@ -65,6 +79,8 @@ def test_state_and_data_health_read_latest_snapshot(api_client: TestClient) -> N
     assert response.json()["simulated"] is True
     assert response.json()["data_status"] == "HEALTHY"
     assert response.json()["data_age_seconds"] < 15
+    assert response.json()["model_version"] == "1.1.0"
+    assert response.json()["policy_version"] == "2.0.0"
     assert health.json()["data_status"] == "HEALTHY"
 
 
@@ -110,3 +126,38 @@ def test_events_and_metrics_summary_include_simulator_data_and_incidents(
     assert events["simulated"] is True
     assert events["incidents"][0]["type"] == "simulator_unavailable"
     assert metrics["metrics"]["service_level"] >= 0
+
+
+def test_regional_demand_and_evaluation_endpoints(api_client: TestClient) -> None:
+    app.dependency_overrides[get_repository] = lambda: FakeRepository(seeded_record())
+
+    reg = api_client.get("/api/regional-demand")
+    assert reg.status_code == 200
+    reg_data = reg.json()
+    assert reg_data["simulated"] is True
+    assert "regional_demand" in reg_data
+
+    eval_res = api_client.get("/api/evaluation/summary")
+    assert eval_res.status_code == 200
+    eval_data = eval_res.json()
+    assert eval_data["simulated"] is True
+    assert eval_data["evaluation_type"] == "offline_benchmark"
+    assert "backtest" in eval_data
+
+
+def test_incident_summary_endpoint(api_client: TestClient) -> None:
+    app.dependency_overrides[get_repository] = lambda: FakeRepository(seeded_record())
+
+    # Found incident
+    res = api_client.get("/api/incidents/9/summary")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["incident_id"] == 9
+    assert data["simulated"] is True
+    assert data["label"] == "AI-generated summary of simulated data"
+    assert "summary" in data
+    assert len(data["summary"]) > 0
+
+    # Not found incident
+    not_found = api_client.get("/api/incidents/999/summary")
+    assert not_found.status_code == 404

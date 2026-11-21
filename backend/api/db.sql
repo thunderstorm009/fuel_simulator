@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS forecasts (
     needs_review BOOLEAN NOT NULL,
     source TEXT NOT NULL,
     trajectory JSONB NOT NULL DEFAULT '[]'::jsonb,
-    drivers JSONB NOT NULL DEFAULT '{}'::jsonb
+    drivers JSONB NOT NULL DEFAULT '{}'::jsonb,
+    model_version TEXT NOT NULL DEFAULT '1.1.0'
 );
 CREATE INDEX IF NOT EXISTS forecasts_pair_tick_idx ON forecasts (station_id, fuel_type, tick DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS forecasts_snapshot_pair_idx
@@ -49,7 +50,9 @@ CREATE TABLE IF NOT EXISTS recommendations (
     expires_tick INTEGER NOT NULL,
     correlation_id TEXT,
     sim_allocation_id BIGINT,
-    failure_reason TEXT
+    failure_reason TEXT,
+    model_version TEXT NOT NULL DEFAULT '1.1.0',
+    policy_version TEXT NOT NULL DEFAULT '2.0.0'
 );
 CREATE INDEX IF NOT EXISTS recommendations_status_idx ON recommendations (status, created_tick);
 

@@ -295,3 +295,24 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
      - Make recommendation expiry configurable via `RECOMMENDATION_EXPIRY_TICKS` and `RECOMMENDATION_EXPIRY_HOURS`.
      - Provide `scripts/demo_clock.py` stepping `/admin/step` at controllable operator rates (default 0.5 ticks/s) for demo and judging walkthroughs.
 - **Trade-off:** Pure functions ensure all detection and risk algorithms are 100% testable without database or network mocks; worker manages persistence asynchronously.
+
+### ADR-039: Uncertainty-Aware Safety Buffer and Linear Flow Optimization Policy (Sprint 9)
+- **Status:** Accepted
+- **Context:** Under high stockout risk combined with low data confidence (<65%), standard 70% target inventory sizing can leave stations vulnerable to demand variance. Additionally, Sprint 9 allows exploring linear optimization policies while requiring strict preservation of hard physical constraints and the heuristic as fallback.
+- **Decision:**
+  1. Add P90 uncertainty buffer in `core/policies/heuristic.py`: when risk is HIGH/CRITICAL and confidence < 0.65, size an additional buffer based on P90 demand variance ($\sum r_t \times \text{noise} \times 1.282 / \sqrt{N}$), capped so total target does not exceed 85% tank capacity. Gated behind `enable_uncertainty_buffer=True` (`POLICY_VERSION = "2.1.0"`), with `False` serving as instant rollback to 2.0.0.
+  2. Implement `OptimizerPolicy` in `backend/shared/core/policies/optimizer.py`: prioritizes network-wide allocation flow based on risk-weighted urgency while penalizing transit ticks, subject to route limits, depot physical stock, depot dispatch budgets, and destination tank ullage. Wrapped by `PolicyRunner` with `HeuristicPolicy` as default fallback.
+  3. Every candidate from both policies is re-validated through `core/validator.py` before submission.
+- **Trade-off:** The uncertainty buffer increases fuel dispatched during low-confidence shocks to prevent stockouts while respecting physical depot stock and dispatch constraints. Heuristic policy remains the battle-tested default.
+
+### ADR-040: Generative Incident Explanations and LLM Operational Boundaries (Sprint 9)
+- **Status:** Accepted
+- **Context:** Operators investigating anomalies (calibration drift, demand surges, stockout risks, bottlenecks) benefit from concise narrative explanations. Hackathon brief section 22.1 encourages generative AI incident explanations while prohibiting autonomous decision-making or unconstrained network dependencies.
+- **Decision:**
+  1. Implement `TemplateSummarizer` in `backend/shared/core/summarize.py` as the default, deterministic, zero-latency generator for all incident types.
+  2. Implement `LLMSummarizer` as an optional wrapper with a strict 3-second timeout, disabled by default, requiring explicit API key configuration.
+  3. Under any timeout, API error, or missing credentials, `LLMSummarizer` falls back instantly to `TemplateSummarizer` without raising exceptions or logging secrets.
+  4. Increment Prometheus counters `summaries_total{source}` and `summary_fallback_total`.
+  5. Expose `GET /api/incidents/{id}/summary` returning `{summary, source, label, simulated: true}`.
+  6. Operator UI renders the output with mandatory disclaimer pill: `AI-generated summary of simulated data`. The LLM has zero authority to approve allocations or validate feasibility.
+- **Trade-off:** Safeguards guarantee high availability and zero external network fragility while offering narrative convenience to human operators.

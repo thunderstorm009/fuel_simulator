@@ -16,6 +16,8 @@ class ReadRepository(Protocol):
         self, include_resolved: bool = False, limit: int = 100
     ) -> list[dict[str, Any]]: ...
 
+    async def get_incident(self, incident_id: int) -> dict[str, Any] | None: ...
+
     async def get_depot_risks(self) -> list[dict[str, Any]]: ...
 
     async def get_tick_freshness(self) -> dict[str, float]: ...
@@ -45,7 +47,18 @@ class PostgresReadRepository:
 
     @classmethod
     async def connect(cls, database_url: str) -> PostgresReadRepository:
-        return cls(await asyncpg.create_pool(database_url, min_size=1, max_size=5))
+        pool = await asyncpg.create_pool(database_url, min_size=1, max_size=5)
+        await pool.execute(
+            """
+            ALTER TABLE forecasts
+                ADD COLUMN IF NOT EXISTS model_version TEXT NOT NULL DEFAULT '1.1.0';
+            ALTER TABLE recommendations
+                ADD COLUMN IF NOT EXISTS model_version TEXT NOT NULL DEFAULT '1.1.0';
+            ALTER TABLE recommendations
+                ADD COLUMN IF NOT EXISTS policy_version TEXT NOT NULL DEFAULT '2.0.0';
+            """
+        )
+        return cls(pool)
 
     async def get_latest_snapshot(self) -> dict[str, Any] | None:
         row = await self.pool.fetchrow(
@@ -81,6 +94,19 @@ class PostgresReadRepository:
                 item["detail"] = json.loads(item["detail"])
             result.append(item)
         return result
+
+    async def get_incident(self, incident_id: int) -> dict[str, Any] | None:
+        query = (
+            "SELECT id, type, severity, detected_at, resolved_at, detail "
+            "FROM incidents WHERE id = $1"
+        )
+        row = await self.pool.fetchrow(query, incident_id)
+        if not row:
+            return None
+        item = dict(row)
+        if isinstance(item.get("detail"), str):
+            item["detail"] = json.loads(item["detail"])
+        return item
 
     async def get_depot_risks(self) -> list[dict[str, Any]]:
         rows = await self.pool.fetch(
@@ -124,7 +150,8 @@ class PostgresReadRepository:
             """
             SELECT DISTINCT ON (station_id, fuel_type)
                 station_id, fuel_type, tick, hours_to_stockout, p10, p50, p90,
-                stockout_prob_24h, confidence, risk_level, needs_review, source, drivers
+                stockout_prob_24h, confidence, risk_level, needs_review, source, drivers,
+                model_version
             FROM forecasts
             ORDER BY station_id, fuel_type, snapshot_id DESC
             """

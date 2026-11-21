@@ -15,7 +15,11 @@ Base URL: `http://localhost:8101`.
 | GET | `/api/health` | Database-backed component health and API latency/error summary. |
 | GET | `/api/events` | Latest simulator events and open platform incidents. |
 | GET | `/api/incidents` | Deduplicated anomaly/incident detections from the database (`?status=open|resolved|all`). |
+| GET | `/api/incidents/{id}/summary` | Plain-language incident explanation (template/LLM fallback), labelled `AI-generated summary of simulated data`. |
 | GET | `/api/depots/risk` | Forward 24-hour depot supply cover, scheduled arrivals, projected demand, and bottleneck indicators. |
+| GET | `/api/regional-demand` | Regional aggregated demand, served liters, unmet liters, and service levels across recent ticks. |
+| GET | `/api/evaluation/summary` | Offline benchmark and backtest results (MAPE, bias, interval coverage across 1h, 6h, 12h, 24h horizons) and scenario outcomes. |
+| POST | `/api/whatif` | Simulates candidate allocation impact on station trajectory, stockout runway, and depot cover without DB/simulator writes. |
 | GET | `/api/metrics-summary` | Simulator service-level and allocation metrics from the latest snapshot. |
 | GET | `/api/risks` | Latest forecast per station/fuel pair and freshness. |
 | GET | `/api/risks/{station_id}/{fuel_type}/trajectory` | Persisted inventory trajectory and risk details for one pair. |

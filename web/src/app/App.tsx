@@ -6,6 +6,10 @@ import DashboardPage from "../features/dashboard/DashboardPage";
 import RecommendationsPage from "../features/allocations/RecommendationsPage";
 import ShortageRiskPage from "../features/shortage-risk/ShortageRiskPage";
 import HealthPage from "../features/system-health/HealthPage";
+import NetworkView from "../features/network/NetworkView";
+import IncomingSupplyView from "../features/inventory/IncomingSupplyView";
+import AlertCenterPage from "../features/alerts/AlertCenterPage";
+import EvaluationPage from "../features/evaluation/EvaluationPage";
 import { fetchDepotRisks, fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
 import type { Fuel } from "../types/api";
 import { localTime } from "../lib/format";
@@ -35,7 +39,12 @@ export default function App() {
 
   return (
     <main className="page-shell">
-      <Header status={state?.data_status} ageSeconds={state?.data_age_seconds} />
+      <Header
+        status={state?.data_status}
+        ageSeconds={state?.data_age_seconds}
+        alertCount={incidents.length}
+        onAlertClick={() => setPage("alerts")}
+      />
       <PageNavigation page={page} onChange={setPage} />
       {apiUnavailable && <div className="notice notice-warning" role="status"><strong>API unreachable.</strong> Showing the last received state while polling continues.</div>}
       {healthQuery.data && healthQuery.data.status !== "HEALTHY" && <div className="notice notice-degraded" role="status"><strong>System is {healthQuery.data.status.toLowerCase()}.</strong> Review the System health view for component status and data age.</div>}
@@ -51,12 +60,20 @@ export default function App() {
       )}
       {page === "health" ? (
         <HealthPage report={healthQuery.data} loading={healthQuery.isLoading} error={healthQuery.isError} />
+      ) : page === "alerts" ? (
+        <AlertCenterPage />
+      ) : page === "evaluation" ? (
+        <EvaluationPage />
       ) : !snapshot ? (
         <section className="empty-state panel">
           <p className="eyebrow">LIVE SIMULATOR SNAPSHOT</p>
           <h2>{apiUnavailable ? "API unreachable" : "Waiting for the first snapshot"}</h2>
           <p>{apiUnavailable ? "No saved state is available yet. The dashboard will reconnect automatically." : "The worker is collecting simulator state."}</p>
         </section>
+      ) : page === "network" ? (
+        <NetworkView snapshot={snapshot} />
+      ) : page === "supply" ? (
+        <IncomingSupplyView snapshot={snapshot} />
       ) : page === "recommendations" ? (
         <RecommendationsPage token={operatorToken} onTokenChange={setOperatorToken} />
       ) : page === "risk" ? (

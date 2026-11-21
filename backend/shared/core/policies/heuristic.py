@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 
 from core.forecast import future_demand_rates
@@ -10,15 +11,21 @@ from core.models import (
     AllocationStatus,
     AllocationTerms,
     FuelType,
+    RiskLevel,
     Snapshot,
 )
 from core.policies.base import PolicyPlan
 from core.risk import ForecastRecord
 from core.validator import validate
+from core.world import PROFILE_NOISE
 
 
 class HeuristicPolicy:
     name = "heuristic"
+
+    def __init__(self, enable_uncertainty_buffer: bool = True) -> None:
+        self.enable_uncertainty_buffer = enable_uncertainty_buffer
+        self.version = "2.1.0" if enable_uncertainty_buffer else "2.0.0"
 
     def recommend(
         self, snapshot: Snapshot, forecasts: Sequence[ForecastRecord]
@@ -55,7 +62,19 @@ class HeuristicPolicy:
             if free_capacity <= 1e-6:
                 continue
 
-            # Need to reach 70% target
+            safety_buffer = 0.0
+            if (
+                self.enable_uncertainty_buffer
+                and forecast.risk_level in {RiskLevel.HIGH, RiskLevel.CRITICAL}
+                and forecast.confidence < 0.65
+            ):
+                noise = PROFILE_NOISE.get(station.demand_profile, 0.10)
+                p90_excess = sum(rates) * noise * 1.282 / max(1.0, math.sqrt(len(rates)))
+                max_buffer = max(0.0, station.capacity[fuel] * 0.85 - target_inventory)
+                safety_buffer = round(min(max_buffer, p90_excess), 1)
+                target_inventory += safety_buffer
+
+            # Need to reach target (including safety buffer when applicable)
             need_full = max(0.0, target_inventory - station.inventory[fuel])
             if need_full <= 1e-6:
                 continue
@@ -72,6 +91,7 @@ class HeuristicPolicy:
                     "fuel": fuel,
                     "rates": rates,
                     "target_inventory": target_inventory,
+                    "safety_buffer": safety_buffer,
                     "need_full": need_full,
                     "need_emergency": need_emergency,
                     "free_capacity": free_capacity,
@@ -286,6 +306,7 @@ class HeuristicPolicy:
                 "priority_rule": "two_pass_urgency_12h_then_target",
                 "requested_full": round(need_full, 2),
                 "allocated": round(tot_allocated, 2),
+                "safety_buffer_liters": c.get("safety_buffer", 0.0),
             }
 
             consolidated: list[dict[str, object]] = []

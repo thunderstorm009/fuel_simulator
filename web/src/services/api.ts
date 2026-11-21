@@ -8,6 +8,11 @@ import type {
   RiskResponse,
   StateResponse,
   TrajectoryResponse,
+  WhatIfCandidate,
+  WhatIfResponse,
+  RegionalDemandResponse,
+  IncidentsResponse,
+  EvaluationResponse,
 } from "../types/api";
 
 const apiBase = (import.meta.env.VITE_API_URL || "http://localhost:8101").replace(/\/$/, "");
@@ -53,3 +58,30 @@ export const rejectRecommendation = (id: string, token: string, reason: string):
   postJson(`/api/recommendations/${encodeURIComponent(id)}/reject`, token, { reason });
 export const fetchDepotRisks = (): Promise<DepotRiskResponse> =>
   getJson<DepotRiskResponse>("/api/depots/risk");
+export const fetchWhatIf = async (candidate: WhatIfCandidate): Promise<WhatIfResponse> => {
+  const response = await fetch(`${apiBase}/api/whatif`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(candidate),
+  });
+  if (!response.ok) {
+    const detail = (await response.json().catch(() => undefined)) as { detail?: string } | undefined;
+    throw new Error(detail?.detail || `API returned ${response.status}`);
+  }
+  return (await response.json()) as WhatIfResponse;
+};
+export const fetchRegionalDemand = (): Promise<RegionalDemandResponse> =>
+  getJson<RegionalDemandResponse>("/api/regional-demand");
+export const fetchIncidentsList = (status: "all" | "open" | "resolved" = "all"): Promise<IncidentsResponse> =>
+  getJson<IncidentsResponse>(`/api/incidents?status=${status}`);
+export const fetchIncidentSummary = (
+  id: number,
+): Promise<{ incident_id: number; summary: string; source: string; label: string; simulated: boolean }> =>
+  getJson<{ incident_id: number; summary: string; source: string; label: string; simulated: boolean }>(
+    `/api/incidents/${id}/summary`,
+  );
+export const fetchEvaluation = (): Promise<EvaluationResponse> =>
+  getJson<EvaluationResponse>("/api/evaluation/summary");

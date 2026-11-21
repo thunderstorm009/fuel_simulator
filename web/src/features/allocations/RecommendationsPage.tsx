@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import WhatIfSimulator from "./WhatIfSimulator";
 import {
   approveRecommendation,
   fetchDecisions,
@@ -41,6 +42,7 @@ function RecommendationCard({
   const [expanded, setExpanded] = useState(false);
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmedReview, setConfirmedReview] = useState(false);
   const queryClient = useQueryClient();
   const request = isAllocationRequest(item.request_body) ? item.request_body : null;
   const requestMismatch = !request || item.quantity !== request.quantity
@@ -50,6 +52,8 @@ function RecommendationCard({
     || item.route_id !== request.route_id
     || item.fuel_type !== request.fuel_type;
   const canDecide = item.status === "PROPOSED" && !requestMismatch;
+  const needsReview = item.explanation_json.confidence < 0.5;
+  const canApprove = canDecide && (!needsReview || confirmedReview);
 
   async function decide(action: "approve" | "reject") {
     if (!token.trim()) {
@@ -142,16 +146,28 @@ function RecommendationCard({
         <ul className="detail-list">{constraints.map((constraint, index) => <li key={index}>{Object.entries(constraint).map(([key, value]) => `${key.replaceAll("_", " ")}: ${String(value)}`).join(" · ")}</li>)}</ul>
         <h4>Rejected alternatives</h4>
         {alternatives.length ? <ul className="detail-list">{alternatives.map((alternative, index) => <li key={index}>{Object.entries(alternative).map(([key, value]) => `${key.replaceAll("_", " ")}: ${String(value)}`).join(" · ")}</li>)}</ul> : <p className="empty-note">No alternatives were rejected.</p>}
+        <WhatIfSimulator item={item} />
       </div>}
 
       {requestMismatch && <p className="notice notice-warning" role="alert">Stored recommendation fields do not match its allocation request. Operator decisions are disabled until the record is corrected.</p>}
+
+      {needsReview && canDecide && (
+        <div className="notice notice-warning" style={{ margin: "0.5rem 0", fontSize: "0.85rem" }}>
+          <strong>Low Confidence Advisory ({Math.round(item.explanation_json.confidence * 100)}%):</strong> Data status is {item.explanation_json.data_status}. Requires explicit confirmation before approval.
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.5rem", cursor: "pointer" }}>
+            <input type="checkbox" checked={confirmedReview} onChange={(e) => setConfirmedReview(e.target.checked)} />
+            <span>I have reviewed the low-confidence explanation and accept this allocation.</span>
+          </label>
+        </div>
+      )}
 
       {canDecide && <div className="decision-controls">
         <label>Rejection reason<textarea value={reason} maxLength={500} onChange={(event) => setReason(event.target.value)} placeholder="Required to reject" /></label>
         <div className="button-row">
           <button className="action-button secondary" disabled={busy} onClick={() => void decide("reject")}>Reject</button>
-          <button className="action-button" disabled={busy} onClick={() => void decide("approve")}>Approve allocation</button>
+          <button className="action-button" disabled={busy || !canApprove} onClick={() => void decide("approve")}>Approve allocation</button>
         </div>
+        <p className="muted" style={{ fontSize: "0.75rem", margin: "0.25rem 0 0 0" }}>Approval submits the permanent proposal as stored ({request ? `${liters.format(request.quantity)} L` : "N/A"}).</p>
       </div>}
       {item.failure_reason && <p className="failure-reason">{item.failure_reason}</p>}
     </article>

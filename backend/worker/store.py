@@ -10,7 +10,12 @@ import asyncpg
 
 from core.depot_risk import DepotRiskProjection
 from core.detect import IncidentDetection
-from core.metrics import alerts_active, detections_total, recommendations_by_status
+from core.metrics import (
+    alerts_active,
+    detections_total,
+    forecast_drift_total,
+    recommendations_by_status,
+)
 from core.models import Snapshot
 from core.risk import ForecastRecord
 
@@ -52,7 +57,15 @@ class PostgresStore:
             "ON forecasts (snapshot_id, station_id, fuel_type)"
         )
         await pool.execute(
-            "ALTER TABLE recommendations ADD COLUMN IF NOT EXISTS failure_reason TEXT"
+            """
+            ALTER TABLE recommendations ADD COLUMN IF NOT EXISTS failure_reason TEXT;
+            ALTER TABLE forecasts
+                ADD COLUMN IF NOT EXISTS model_version TEXT NOT NULL DEFAULT '1.1.0';
+            ALTER TABLE recommendations
+                ADD COLUMN IF NOT EXISTS model_version TEXT NOT NULL DEFAULT '1.1.0';
+            ALTER TABLE recommendations
+                ADD COLUMN IF NOT EXISTS policy_version TEXT NOT NULL DEFAULT '2.0.0';
+            """
         )
         await pool.execute(
             """
@@ -165,10 +178,10 @@ class PostgresStore:
                         INSERT INTO forecasts (
                             snapshot_id, tick, station_id, fuel_type, hours_to_stockout,
                             p10, p50, p90, stockout_prob_24h, confidence, risk_level,
-                            needs_review, source, trajectory, drivers
+                            needs_review, source, trajectory, drivers, model_version
                         ) VALUES (
                             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-                            $13, $14::jsonb, $15::jsonb
+                            $13, $14::jsonb, $15::jsonb, $16
                         )
                         ON CONFLICT (snapshot_id, station_id, fuel_type) DO UPDATE SET
                             hours_to_stockout = EXCLUDED.hours_to_stockout,
@@ -179,7 +192,8 @@ class PostgresStore:
                             needs_review = EXCLUDED.needs_review,
                             source = EXCLUDED.source,
                             trajectory = EXCLUDED.trajectory,
-                            drivers = EXCLUDED.drivers
+                            drivers = EXCLUDED.drivers,
+                            model_version = EXCLUDED.model_version
                         """,
                         snapshot_id,
                         snapshot.instance.tick,
@@ -199,6 +213,7 @@ class PostgresStore:
                             separators=(",", ":"),
                         ),
                         json.dumps(record.drivers, separators=(",", ":")),
+                        getattr(forecast, "model_version", "1.1.0"),
                     )
                     await self._update_risk_incident(
                         connection,
@@ -238,10 +253,10 @@ class PostgresStore:
                             id, status, policy_used, fallback_used, depot_id, station_id,
                             route_id, fuel_type, quantity, idempotency_key, request_body,
                             explanation_json, created_tick, expires_tick, correlation_id,
-                            sim_allocation_id, failure_reason
+                            sim_allocation_id, failure_reason, model_version, policy_version
                         ) VALUES (
                             $1::uuid, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-                            $11::jsonb, $12::jsonb, $13, $14, $15, $16, $17
+                            $11::jsonb, $12::jsonb, $13, $14, $15, $16, $17, $18, $19
                         )
                         ON CONFLICT (idempotency_key) DO NOTHING
                         """,
@@ -262,6 +277,8 @@ class PostgresStore:
                         row["correlation_id"],
                         row["sim_allocation_id"],
                         row["failure_reason"],
+                        row.get("model_version", "1.1.0"),
+                        row.get("policy_version", "2.0.0"),
                     )
 
     async def get_recommendations_for_execution(self) -> list[dict[str, Any]]:
@@ -377,6 +394,7 @@ class PostgresStore:
             "abnormal_inventory",
             "bottleneck",
             "emerging_regional_disruption",
+            "calibration_drift",
         ]
         async with self.pool.acquire() as connection:
             async with connection.transaction():
@@ -434,6 +452,9 @@ class PostgresStore:
                             detail_json,
                         )
                         detections_total.labels(type=d.type).inc()
+                        if d.type == "calibration_drift":
+                            direction = str(d.evidence.get("direction", "UNKNOWN")).lower()
+                            forecast_drift_total.labels(direction=direction).inc()
 
             await self._refresh_active_alert_metrics(connection)
 

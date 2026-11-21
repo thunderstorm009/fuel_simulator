@@ -4,28 +4,28 @@ Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`.
-- Sprints 1–8: All gates passed and tagged.
-- Sprint 8: COMPLETE. WP8.0 (Truth pass), WP8.1 (Brief compliance matrix), WP8.2 (Full event coverage and two-pass constrained triage), WP8.3 (Pure detection engine), WP8.4 (Depot supply risk & 24h cover), WP8.5 (Running-simulator robustness) all verified. 158 Python tests, 6 frontend tests, 54 scenario runs with 100% determinism.
-- Next: Sprint 9 (prompts/SPRINT-09.md: continuous backtesting, what-if simulator, regional supply views, LP/MIP optimization, LLM incident explainer).
+- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`.
+- Sprints 1–9: All gates passed and tagged.
+- Sprint 9: COMPLETE. WP9.1 (Backtesting, calibration, versioning, experiments), WP9.2 (What-if simulator), WP9.3 (Operator view gaps: regional demand, incoming supply, alert center, network view, evaluation page), WP9.4 (Uncertainty buffer & LP optimizer), WP9.5 (Generative incident explanations) all verified. 177 Python tests, 11 frontend tests.
+- Next: Sprint 10 (prompts/SPRINT-10.md: security hardening, decision load testing, cold start resilience, compliance pass, demo day runbook).
 
 ## Verification in this work package
 
-- `.venv/bin/ruff check . && .venv/bin/ruff format --check .`: passed; 73 files formatted, 0 errors.
-- `.venv/bin/pytest tests/`: 158 Python tests passed in 1.61s.
-- `npm --prefix web test -- --run && npm --prefix web run build`: 6 Vitest tests passed; Vite production build passed.
-- `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose config -q`: passed.
+- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 85 files checked, 0 errors.
+- `.venv/bin/pytest tests/`: 177 Python tests passed in 1.74s.
+- `npm --prefix web test -- --run && npm --prefix web run build`: 11 Vitest tests passed; Vite production build passed cleanly.
+- `docker compose config -q`: passed.
 - `git diff --check`: passed.
-- `bash scripts/smoke.sh`: passed; all 8 containers healthy.
-- Live demand-spike detection & auto-resolution: verified on running stack (`docs/evidence/sprint-08-demand-spike-detection.txt`).
-- Simulator speed matrix: measured speeds 1, 4, 8 (`docs/evidence/sprint-08-speed-matrix.txt`).
-- Mutation testing: 3 intentional mutations verified and caught by test suite.
-- Scenario determinism: 54 benchmark runs (9 scenarios × 3 policies × 2 runs), delta 0.0000.
+- `bash scripts/sprint_gate.sh 9`: passed.
+- Backtesting: 2,000 ticks replayed across 1h, 6h, 12h, 24h horizons. MAPE 2.11%-3.07%.
+- What-If Simulator: pure candidate simulation with zero DB/simulator writes (<50ms).
+- Operator Views: Regional demand, incoming supply, alert center, network view, evaluation scorecard.
+- Generative Explanations: deterministic template default with bounded LLM wrapper (3s timeout, safe fallback).
 
 ## Current work package and exact next action
 
-Sprint 8 is COMPLETE and gated.
-Next action: Proceed to Sprint 9 work packages (WP9.1 continuous backtesting & calibration).
+Sprint 9 is COMPLETE and gated.
+Next action: Proceed to Sprint 10 work packages (WP10.1 Security hardening & zero-vulnerability audit).
 
 ## Workspace constraints
 
@@ -43,11 +43,12 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
 | 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
 | 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
+| 9 | PASS; backtest calibration, what-if simulator, 5 operator views, LP optimizer & buffer, incident summarizer; tag `sprint-9` | [sprint-09.md](sprint-reports/sprint-09.md) |
 
 ## Five-minute status update
 
-1. **Problem:** Operators required complete compliance with the 26-section Hackathon brief, zero false/unsubstantiated claims, explicit handling of all six crisis events, automated anomaly detection, forward depot supply risk visibility, and robustness when the simulator runs continuous ticks without manual pausing.
-2. **Change:** Implemented a pure deterministic two-pass triage heuristic, 5 crisis scenarios, a pure detection engine (`detect.py`) with 5 detectors and auto-resolution, forward depot cover modeling (`depot_risk.py`) with dashboard panel, dynamic tick freshness monitoring (`ticks_per_second`) with operator speed warning banners, and controllable demo clock stepping (`demo_clock.py`). Remediated all `/admin` routes in app code.
-3. **Demo:** Run `./scripts/demo_clock.py --rate 0.5`. Open dashboard at `http://localhost:5174`: inspect live depot risk cover panel, events/incidents panel, and speed telemetry.
-4. **Evidence:** 158 Python tests + 6 frontend tests passing cleanly. Live demand-spike auto-resolution documented in `docs/evidence/sprint-08-demand-spike-detection.txt`; speed matrix in `docs/evidence/sprint-08-speed-matrix.txt`; 54 scenario runs with 100% determinism in `docs/results/scenario-summary.md`.
-5. **Remaining:** Proceed automatically to Sprint 9 (backtesting, what-if simulation, regional corridor views, LP optimization, LLM explainer).
+1. **Problem:** Operators required verified forecast accuracy and calibration bounds, interactive what-if simulation to test candidate allocations before approving, comprehensive operational views (regional demand, incoming supply, alert center, network topology, offline evaluation scorecard), uncertainty safety buffers, and plain-language incident explanations.
+2. **Change:** Implemented pure backtesting and calibration engine (`backtest.py`), pure what-if simulator (`what_if.py` and `POST /api/whatif`), 5 operator views in React, P90 uncertainty safety buffer, linear flow optimizer (`policies/optimizer.py`), and deterministic template summarizer with bounded LLM fallback (`summarize.py` and `GET /api/incidents/{id}/summary`).
+3. **Demo:** Open `http://localhost:5174`: Navigate between Allocations (What-If drawer with quantity slider), Network View (topology status), Regional Demand, Incoming Supply, and Alert Center (click "Explain Incident" for plain-language summary with disclaimer badge).
+4. **Evidence:** 177 Python tests + 11 Vitest tests passing; backtest summary across 2,000 ticks in `docs/results/backtest-summary.md`; what-if tested with zero DB/simulator writes (<50ms); mechanical gate `bash scripts/sprint_gate.sh 9` passed.
+5. **Remaining:** Proceed automatically to Sprint 10 (security hardening, decision load testing, cold-start resilience audit, judging runbook).

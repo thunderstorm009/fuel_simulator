@@ -63,3 +63,24 @@ $$\text{Net 24h Cover} = \text{Current Inventory} + \text{Scheduled Arrivals}_{\
 - **Supply shortfall effect:** When an arrival volume is reduced (e.g. halved by factor 0.5), net cover drops proportionally.
 - Unrelated depots are provably unaffected.
 - Projections are persisted by the worker into `depot_risks` and rendered in the dashboard's `DepotRiskPanel`.
+
+## Backtesting, calibration, and drift tracking (Sprint 9)
+
+### Empirical backtesting performance (docs/results/backtest-summary.md)
+Evaluated across 2,000 recorded demand history ticks across all 4 stations and 3 fuel types using `core/backtest.py`:
+- **1-hour horizon (4 ticks):** MAPE **3.07%**, Bias **+0.01%**, P10–P90 interval coverage **91.49%** (nominal target 80.0%).
+- **6-hour horizon (24 ticks):** MAPE **2.19%**, Bias **-0.13%**, P10–P90 interval coverage **65.57%**.
+- **12-hour horizon (48 ticks):** MAPE **2.10%**, Bias **-0.31%**, P10–P90 interval coverage **49.86%**.
+- **24-hour horizon (96 ticks):** MAPE **2.11%**, Bias **-0.42%**, P10–P90 interval coverage **36.08%**.
+
+### Honest reporting of weaknesses
+- **Point Forecast Accuracy vs Interval Coverage:** The point forecast remains highly accurate across all horizons (~2.1% MAPE). However, because demand noise accumulates as independent stochastic variances across 96 ticks, the nominal 80% coverage interval coverage drops from 91.5% at 1h to 36.1% at 24h.
+- **Drift Under Sudden Shock:** Under sudden demand spikes (e.g. 2.5x multiplier), the calibration EWMA ratio takes 4–6 ticks to catch up, during which bias is temporarily negative.
+
+### Drift detection and metric (`calibration_drift`)
+`backend/shared/core/detect.py` implements pure `detect_calibration_drift`. If the calibration ratio stays outside $[0.8, 1.25]$ for $\ge 4$ consecutive ticks, a `calibration_drift` incident (severity WARNING) is opened, recording direction (`SURGE` or `COLLAPSE`), mean ratio, and tick evidence, and incrementing `forecast_drift_total{direction}`.
+
+### Model and policy versioning
+- Constant `MODEL_VERSION = "1.1.0"` in `backend/shared/core/version.py`.
+- Constant `POLICY_VERSION = "2.0.0"` in `backend/shared/core/version.py`.
+- Stored on every forecast and recommendation database row, serialized in `explanation_json`, returned in `GET /api/state`, and recorded in `docs/results/experiments.csv`.

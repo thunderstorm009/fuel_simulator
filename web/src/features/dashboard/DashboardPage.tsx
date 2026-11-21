@@ -5,6 +5,7 @@ import DepotRiskPanel from "../inventory/DepotRiskPanel";
 import InventoryMatrix from "../inventory/InventoryMatrix";
 import EventsPanel from "../incidents/EventsPanel";
 import RoutesPanel from "../network/RoutesPanel";
+import RegionalDemandPanel from "../demand/RegionalDemandPanel";
 
 export default function DashboardPage({
   snapshot,
@@ -44,6 +45,7 @@ export default function DashboardPage({
         <DepotRiskPanel risks={depotRisks} />
       </section>
     )}
+    <RegionalDemandPanel />
     <div className="lower-grid"><RoutesPanel routes={snapshot.routes} /><EventsPanel events={events} incidents={incidents} /></div>
   </>;
 }

@@ -12,8 +12,10 @@ from typing import Any
 from core.depot_risk import DepotRiskProjection, calculate_depot_risks
 from core.forecast import expected_demand
 from core.models import (
+    DemandObs,
     FuelType,
     Snapshot,
+    StationStatus,
 )
 from core.world import PROFILE_NOISE
 
@@ -336,6 +338,79 @@ def detect_emerging_regional_disruptions(snapshot: Snapshot) -> list[IncidentDet
     return incidents
 
 
+def detect_calibration_drift(
+    snapshot: Snapshot,
+    threshold_ticks: int = 4,
+    lower: float = 0.8,
+    upper: float = 1.25,
+) -> list[IncidentDetection]:
+    """Detect sustained forecast calibration ratio drift outside [0.8, 1.25]
+    for >= threshold_ticks consecutive ticks.
+    """
+    incidents: list[IncidentDetection] = []
+    obs_by_station_fuel: dict[tuple[str, FuelType], list[DemandObs]] = {}
+    for obs in snapshot.demand_history:
+        obs_by_station_fuel.setdefault((obs.station_id, obs.fuel_type), []).append(obs)
+
+    stations_by_id = {s.id: s for s in snapshot.stations}
+
+    for (station_id, fuel), history in obs_by_station_fuel.items():
+        station = stations_by_id.get(station_id)
+        if not station or station.status == StationStatus.OUTAGE:
+            continue
+        sorted_history = sorted(history, key=lambda o: o.tick)
+        if len(sorted_history) < threshold_ticks:
+            continue
+
+        recent = sorted_history[-threshold_ticks:]
+        ratios: list[float] = []
+        for obs in recent:
+            base_expected = expected_demand(
+                profile=station.demand_profile,
+                fuel=fuel.value,
+                sim_time=obs.sim_time,
+                multiplier=1.0,
+                tick_minutes=snapshot.instance.tick_minutes,
+            )
+            if base_expected > 0:
+                ratios.append(obs.demand_liters / base_expected)
+
+        if len(ratios) < threshold_ticks:
+            continue
+
+        all_high = all(r > upper for r in ratios)
+        all_low = all(r < lower for r in ratios)
+        if all_high or all_low:
+            direction = "SURGE" if all_high else "COLLAPSE"
+            avg_ratio = sum(ratios) / len(ratios)
+            incidents.append(
+                IncidentDetection(
+                    type="calibration_drift",
+                    severity="WARNING",
+                    entity_id=f"{station_id}:{fuel.value}",
+                    dedup_key=f"calibration_drift:{station_id}:{fuel.value}",
+                    explanation=(
+                        f"Forecast calibration ratio for {station.name} {fuel.value} has drifted "
+                        f"({direction}, mean ratio {avg_ratio:.2f}) outside [{lower}, {upper}] for "
+                        f"{threshold_ticks} consecutive ticks."
+                    ),
+                    recovery_condition=(
+                        f"Calibration ratio returns to acceptable range [{lower}, {upper}]."
+                    ),
+                    evidence={
+                        "station_id": station_id,
+                        "fuel_type": fuel.value,
+                        "direction": direction,
+                        "mean_ratio": round(avg_ratio, 3),
+                        "consecutive_ticks": threshold_ticks,
+                        "threshold_lower": lower,
+                        "threshold_upper": upper,
+                    },
+                )
+            )
+    return incidents
+
+
 def run_all_detectors(
     snapshot: Snapshot,
     depot_risks: Sequence[DepotRiskProjection] | None = None,
@@ -349,9 +424,15 @@ def run_all_detectors(
     abnormal_inventories = detect_abnormal_inventory_changes(snapshot)
     bottlenecks = detect_bottlenecks(snapshot, depot_risks=depot_risks)
     disruptions = detect_emerging_regional_disruptions(snapshot)
+    drifts = detect_calibration_drift(snapshot)
 
     all_detections = (
-        demand_anomalies + regional_surges + abnormal_inventories + bottlenecks + disruptions
+        demand_anomalies
+        + regional_surges
+        + abnormal_inventories
+        + bottlenecks
+        + disruptions
+        + drifts
     )
 
     for item in all_detections:

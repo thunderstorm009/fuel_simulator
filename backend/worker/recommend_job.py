@@ -20,6 +20,7 @@ from core.models import AllocationRequest, Snapshot
 from core.policies.base import Policy, PolicyPlan
 from core.policies.heuristic import HeuristicPolicy
 from core.risk import ForecastRecord
+from core.version import MODEL_VERSION, POLICY_VERSION
 
 logger = logging.getLogger("fuel_simulator.worker.recommend")
 
@@ -133,6 +134,8 @@ class RecommendationJob:
                 "correlation_id": None,
                 "sim_allocation_id": None,
                 "failure_reason": None,
+                "model_version": MODEL_VERSION,
+                "policy_version": POLICY_VERSION,
             }
             rows.append(row)
         if rows:
