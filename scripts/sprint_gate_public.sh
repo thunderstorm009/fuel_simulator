@@ -22,7 +22,7 @@ make test
 docker compose config -q
 git diff --check
 test -f "docs/sprint-reports/sprint-$NN.md"
-grep -q "Sprint $N" docs/PROGRESS.md
+grep -E -q "Sprint $N|\| *$N *\||\| *Sprint $N *\|" docs/PROGRESS.md
 if git ls-files --error-unmatch .env >/dev/null 2>&1; then
   echo 'FAIL: .env is tracked by Git' >&2
   exit 1

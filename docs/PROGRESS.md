@@ -36,16 +36,16 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 
 | Sprint | Status | Report |
 |---|---|---|
-| 1 | Passed historically; local verification only | [sprint-01.md](sprint-reports/sprint-01.md) |
-| 2 | Passed historically with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
-| 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
-| 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
-| 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
-| 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
-| 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
-| 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
-| 9 | PASS; backtest calibration, what-if simulator, 5 operator views, LP optimizer & buffer, incident summarizer; tag `sprint-9` | [sprint-09.md](sprint-reports/sprint-09.md) |
-| 10 | PASS; delivery excellence, rollback drill, resilience limits, decision load test, judging runbook; tag `sprint-10` | [sprint-10.md](sprint-reports/sprint-10.md) |
+| Sprint 1 | Passed historically; local verification only | [sprint-01.md](sprint-reports/sprint-01.md) |
+| Sprint 2 | Passed historically with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
+| Sprint 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
+| Sprint 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
+| Sprint 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
+| Sprint 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
+| Sprint 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
+| Sprint 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
+| Sprint 9 | PASS; backtest calibration, what-if simulator, 5 operator views, LP optimizer & buffer, incident summarizer; tag `sprint-9` | [sprint-09.md](sprint-reports/sprint-09.md) |
+| Sprint 10 | PASS; delivery excellence, rollback drill, resilience limits, decision load test, judging runbook; tag `sprint-10` | [sprint-10.md](sprint-reports/sprint-10.md) |
 
 ## Five-minute status update
 
