@@ -19,6 +19,7 @@ class PolicyPlan:
     target_inventory: float
     constraints_applied: list[dict[str, object]] = field(default_factory=list)
     alternatives: list[dict[str, object]] = field(default_factory=list)
+    triage: dict[str, object] = field(default_factory=dict)
 
 
 class Policy(Protocol):

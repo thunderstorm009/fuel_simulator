@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hmac
 import os
+import time
+from collections import defaultdict
 from typing import Annotated, Any
 from uuid import UUID
 
@@ -15,6 +17,24 @@ from api.routes.read import RepositoryDep
 from core.metrics import recommendations_by_status
 
 router = APIRouter(prefix="/api")
+
+# Sliding-window rate limiter for operator decision actions
+_DECISION_CALLS: defaultdict[str, list[float]] = defaultdict(list)
+_RATE_LIMIT_WINDOW_SECONDS: float = 60.0
+_RATE_LIMIT_MAX_REQUESTS: int = 60
+
+
+def check_rate_limit(key: str = "operator") -> None:
+    now = time.monotonic()
+    window_start = now - _RATE_LIMIT_WINDOW_SECONDS
+    calls = [t for t in _DECISION_CALLS[key] if t > window_start]
+    _DECISION_CALLS[key] = calls
+    if len(calls) >= _RATE_LIMIT_MAX_REQUESTS:
+        raise HTTPException(
+            status_code=429,
+            detail="Too Many Requests: Operator decision rate limit exceeded. Max 60 per minute.",
+        )
+    _DECISION_CALLS[key].append(now)
 
 
 class RejectRequest(BaseModel):
@@ -84,6 +104,7 @@ async def approve_recommendation(
     repository: RepositoryDep,
     actor: Annotated[str, Depends(require_operator_token)],
 ) -> dict[str, Any]:
+    check_rate_limit(actor)
     return await _decide(recommendation_id, "approve", None, actor, repository)
 
 
@@ -94,4 +115,5 @@ async def reject_recommendation(
     repository: RepositoryDep,
     actor: Annotated[str, Depends(require_operator_token)],
 ) -> dict[str, Any]:
+    check_rate_limit(actor)
     return await _decide(recommendation_id, "reject", payload.reason, actor, repository)

@@ -10,6 +10,8 @@ from fastapi import FastAPI
 from fastapi.responses import Response
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
+from core.depot_risk import calculate_depot_risks
+from core.detect import run_all_detectors
 from core.metrics import health_checks, recommendation_job_failures
 from core.sim_client import SimClient
 from worker.executor import Executor
@@ -62,9 +64,28 @@ async def lifespan(app: FastAPI):
         reset_after_s=max(0.1, float(os.getenv("PREDICTOR_BREAKER_RESET_S", "10"))),
     )
     forecast_job = ForecastJob(store, predictor)
-    recommendation_job = RecommendationJob(store)
+    expiry_hours = float(os.getenv("RECOMMENDATION_EXPIRY_HOURS", "1.0"))
+    expiry_ticks = int(os.getenv("RECOMMENDATION_EXPIRY_TICKS", "0"))
+    recommendation_job = RecommendationJob(
+        store, expiry_hours=expiry_hours, expiry_ticks=expiry_ticks
+    )
 
     async def process_snapshot(snapshot):
+        # WP8.4: Compute and persist depot risks
+        depot_risks = None
+        try:
+            depot_risks = calculate_depot_risks(snapshot)
+            await store.persist_depot_risks(snapshot, depot_risks)
+        except Exception:
+            logger.exception("depot_risk_persistence_failed")
+
+        # WP8.3: Run pure detection engine and sync active incidents
+        try:
+            detections = run_all_detectors(snapshot, depot_risks=depot_risks)
+            await store.sync_detections(detections)
+        except Exception:
+            logger.exception("detection_sync_failed")
+
         forecasts = await forecast_job.run(snapshot)
         if forecasts:
             try:
@@ -93,7 +114,7 @@ async def lifespan(app: FastAPI):
     app.state.ingestor = ingestor
     app.state.executor = executor
     await ingestor.run_once()
-    interval_s = max(0.1, float(os.getenv("INGEST_INTERVAL_S", "5")))
+    interval_s = max(1.0, float(os.getenv("INGEST_INTERVAL_S", "5")))
     poll_task = asyncio.create_task(_poll_loop(ingestor, interval_s, stop))
     sse_task = asyncio.create_task(SSEConsumer(client, ingestor.run_once).run(stop_event=stop))
     executor_task = asyncio.create_task(executor.run(stop))

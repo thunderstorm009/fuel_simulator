@@ -1,0 +1,12 @@
+name: shipment_delay
+description: Upstream supply shipment delay affecting bulk DIESEL delivery at Gazipur depot.
+events:
+  - type: shipment_delay
+    start_tick: 4
+    end_tick: 6
+    parameters:
+      delay_ticks: 6
+      depot_ids:
+        - depot-gazipur
+      fuel_types:
+        - DIESEL

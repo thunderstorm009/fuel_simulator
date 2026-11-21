@@ -28,6 +28,8 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-022 | Keep personal AI workspace local and publish application/engineering artifacts only | ACCEPTED | Publication |
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
 | ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
+| ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
+| ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -244,3 +246,83 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** Sprint 7 requires full freeze, cold-start recovery proof from wiped volumes, clean-clone verification in an isolated directory, reversible chaos testing, and demo readiness. During testing, legacy environment configurations using `PREDICTOR_URL=http://predictor:8100` alongside newer `8103` definitions caused startup and health-check degradation if ports were hardcoded.
 - **Decision:** Enable transparent dual-port listening in `intel/predictor` (uvicorn on port 8103 with an asynchronous TCP forwarder on port 8100) and candidate port discovery in `backend/api/routes/health.py`. Fix `scripts/chaos_random.py` to issue HTTP POST to `/admin/faults/clear`. Execute cold-start recovery with volume destruction timing at 34 seconds (`scripts/cold_start_check.sh`), verify clean clone in an isolated temporary clone without private prompts (`scripts/verify_clean_clone.sh`), and verify zero unexplained 5xx responses during random chaos testing (`docs/evidence/sprint-07-chaos.json`).
 - **Trade-off:** Retaining port 8100 compatibility preserves backward compatibility across historical local environment files without requiring unauthorized `.env` modifications.
+
+### ADR-036 — WP8.0 truth pass, admin endpoint route remediation, and tag alignment
+
+- **Status:** ACCEPTED
+- **Context:** An adversarial audit of the codebase following Sprint 7 identified non-compliant `/admin/fail` paths in `intel/predictor` and `backend/api/routes/chaos.py`, inaccurate claims in public documentation ("vehicle quotas", "price spikes", "cryptographically stable" keys, and "independent review" descriptions for single-agent self-reviews), non-existent git tags (`S1`, `S2`, `S3`) cited in the Day 2 update, and an omitted policy comparison table in `README.md`.
+- **Decision:**
+  1. Rename predictor failure endpoint from `/admin/fail` to `/chaos/fail`, ensuring `git grep -n "/admin" -- backend web intel` returns zero hits.
+  2. Remove all references to "vehicle quotas" (the simulator enforces route max shipment and depot dispatch capacity) and "price spikes" (the simulator has no pricing model).
+  3. Re-label stored idempotency keys truthfully as stable persisted keys rather than cryptographically generated tokens.
+  4. Explicitly label reviews conducted by the same model/agent as self-reviews using the `code-review-strict` skill.
+  5. Correct the Day 2 update tag table to list only tags that exist in `git tag` (`sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`), marking earlier sprints as preserved in branch history.
+  6. Add a full scenario policy comparison benchmark table to `README.md` referencing `docs/results/scenario-summary.md`.
+- **Trade-off:** Retaining strict transparency eliminates unsubstantiated claims and aligns public documentation with proven operational reality.
+
+### ADR-037 — Two-pass emergency triage policy and full event coverage
+
+- **Status:** ACCEPTED
+- **Context:** During constrained supply conditions (such as refinery shortfalls, shipment delays, or depot throughput throttling), naive single-pass greedy allocation risks exhausting bulk depot reserves on the first station that reaches 70% capacity, leaving neighboring stations to starve. Furthermore, the platform must handle all six crisis event types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`).
+- **Decision:**
+  1. Implement a deterministic two-pass triage heuristic in `core/policies/heuristic.py`:
+     - **Pass 1:** Computes the exact 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk station, allocating emergency fuel to the most urgent stations first.
+     - **Pass 2:** Allocates remaining depot inventory and dispatch capacity toward the 70% target inventory.
+     - Physical reservations carry across Pass 1 and Pass 2 monotonically.
+     - If supply is exhausted before full target is met, recommendations are explicitly tagged `is_partial = True` with unserved liters, root physical bottleneck reason, and priority rule `two_pass_urgency_12h_then_target`.
+  2. Implement event semantics: stations in `OUTAGE` receive zero recommendations; `CONSTRAINED` depots remain shippable but are deprioritized behind `OPEN` depots where equivalent routes exist.
+  3. Add 5 crisis scenarios (`shipment_delay.yaml`, `depot_constraint.yaml`, `station_outage.yaml`, `supply_shortfall.yaml`, `crisis_combined.yaml`) and document handling across all 6 crisis types in `docs/event-handling.md`.
+- **Trade-off:** Multi-pass triage slightly increases computational complexity but prevents cascading regional fuel stockouts during severe supply shocks.
+
+### ADR-038 — Pure detection engine, depot supply risk projection, and adaptive simulator freshness
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 8 requires an automated detection layer for operational anomalies, forward depot-level risk projections, and platform resilience when the simulator advances in continuous RUNNING mode at arbitrary speeds.
+- **Decision:**
+  1. Implement pure detection functions in `backend/shared/core/detect.py` with zero I/O and deterministic behavior:
+     - `detect_demand_anomalies`: Flags when observed station demand exceeds baseline expected consumption (>1.3x) for 3 consecutive ticks, filtering noise via `PROFILE_NOISE`.
+     - `detect_regional_surges`: Flags coordinated surges when 2+ stations in the same region surge within 8 ticks.
+     - `detect_abnormal_inventory_changes`: Flags unexplained inventory drops, explicitly excluding stations in `OUTAGE` to prevent false positives.
+     - `detect_bottlenecks`: Flags depot dispatch capacity utilization >= 80% or 24-hour projected fuel deficits.
+     - `detect_emerging_regional_disruptions`: Flags station outages or 2+ disrupted transit routes into a region.
+     - Deduplicate incidents via stable `dedup_key` and expose `GET /api/incidents` (open and resolved). Increment `detections_total{type}`.
+  2. Implement pure forward depot risk calculation in `backend/shared/core/depot_risk.py`:
+     - Net 24h cover = current inventory + scheduled arrivals within horizon - committed active allocations - 24h served station demand.
+     - Persist via `depot_risks` table and expose `GET /api/depots/risk`. Render interactive `DepotRiskPanel` on the operator dashboard.
+  3. Running-simulator robustness:
+     - Track `ticks_per_second` and `snapshot_age_ticks` dynamically in `GET /api/state`.
+     - Fire speed warning banner in operator UI when tick advance rate exceeds human review threshold (>0.5 ticks/sec).
+     - Make recommendation expiry configurable via `RECOMMENDATION_EXPIRY_TICKS` and `RECOMMENDATION_EXPIRY_HOURS`.
+     - Provide `scripts/demo_clock.py` stepping `/admin/step` at controllable operator rates (default 0.5 ticks/s) for demo and judging walkthroughs.
+- **Trade-off:** Pure functions ensure all detection and risk algorithms are 100% testable without database or network mocks; worker manages persistence asynchronously.
+
+### ADR-039: Uncertainty-Aware Safety Buffer and Linear Flow Optimization Policy (Sprint 9)
+- **Status:** Accepted
+- **Context:** Under high stockout risk combined with low data confidence (<65%), standard 70% target inventory sizing can leave stations vulnerable to demand variance. Additionally, Sprint 9 allows exploring linear optimization policies while requiring strict preservation of hard physical constraints and the heuristic as fallback.
+- **Decision:**
+  1. Add P90 uncertainty buffer in `core/policies/heuristic.py`: when risk is HIGH/CRITICAL and confidence < 0.65, size an additional buffer based on P90 demand variance ($\sum r_t \times \text{noise} \times 1.282 / \sqrt{N}$), capped so total target does not exceed 85% tank capacity. Gated behind `enable_uncertainty_buffer=True` (`POLICY_VERSION = "2.1.0"`), with `False` serving as instant rollback to 2.0.0.
+  2. Implement `OptimizerPolicy` in `backend/shared/core/policies/optimizer.py`: prioritizes network-wide allocation flow based on risk-weighted urgency while penalizing transit ticks, subject to route limits, depot physical stock, depot dispatch budgets, and destination tank ullage. Wrapped by `PolicyRunner` with `HeuristicPolicy` as default fallback.
+  3. Every candidate from both policies is re-validated through `core/validator.py` before submission.
+- **Trade-off:** The uncertainty buffer increases fuel dispatched during low-confidence shocks to prevent stockouts while respecting physical depot stock and dispatch constraints. Heuristic policy remains the battle-tested default.
+
+### ADR-040: Generative Incident Explanations and LLM Operational Boundaries (Sprint 9)
+- **Status:** Accepted
+- **Context:** Operators investigating anomalies (calibration drift, demand surges, stockout risks, bottlenecks) benefit from concise narrative explanations. Hackathon brief section 22.1 encourages generative AI incident explanations while prohibiting autonomous decision-making or unconstrained network dependencies.
+- **Decision:**
+  1. Implement `TemplateSummarizer` in `backend/shared/core/summarize.py` as the default, deterministic, zero-latency generator for all incident types.
+  2. Implement `LLMSummarizer` as an optional wrapper with a strict 3-second timeout, disabled by default, requiring explicit API key configuration.
+  3. Under any timeout, API error, or missing credentials, `LLMSummarizer` falls back instantly to `TemplateSummarizer` without raising exceptions or logging secrets.
+  4. Increment Prometheus counters `summaries_total{source}` and `summary_fallback_total`.
+  5. Expose `GET /api/incidents/{id}/summary` returning `{summary, source, label, simulated: true}`.
+  6. Operator UI renders the output with mandatory disclaimer pill: `AI-generated summary of simulated data`. The LLM has zero authority to approve allocations or validate feasibility.
+- **Trade-off:** Safeguards guarantee high availability and zero external network fragility while offering narrative convenience to human operators.
+
+### ADR-041: Token Rate Limiting, Version Metadata API, and Automated Deployment Rollback (Sprint 10)
+- **Status:** Accepted
+- **Context:** Sprint 10 requires production-grade delivery excellence: constant-time operator authentication with rate limiting against brute-force attacks, transparent version telemetry for operators and auditors, automated container image building and registry publishing, and automated rollback scripts to recover from failed deployments.
+- **Decision:**
+  1. Operator Token Handling: Enforce constant-time comparison via `hmac.compare_digest`. Implement in-memory sliding-window rate limiting on operator decision endpoints (`/approve` and `/reject`), restricting callers to 60 decisions per minute and returning HTTP 429 when exceeded. Never log raw tokens.
+  2. Version Metadata: Expose `GET /api/version` returning `{git_sha, tag, build_time, model_version, policy_version, simulated: true}`. Render version identifiers and SIMULATED badge in the global web footer (`Footer.tsx`).
+  3. Release Automation & Rollback: Add `.github/workflows/release.yml` building and publishing versioned container images to GHCR on `v*` and `sprint-*` tags. Implement `scripts/deploy.sh <tag>` and `scripts/rollback.sh <tag>` providing one-command automated rollback upon smoke test failure.
+  4. Security Hardening: Add Gitleaks secret scanning and dependency audits (`npm audit` with 0 high/critical vulnerabilities) to CI.
+- **Trade-off:** Sliding-window in-memory limiter avoids external Redis dependency while protecting decision APIs from flood attacks. Automated rollback ensures zero downtime during judging or operational deploys.

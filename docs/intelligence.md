@@ -35,3 +35,52 @@ Sprint 4 adds an urgency-first heuristic that considers station/fuel pairs under
 The recommendation worker stores a permanent `rec-<uuid>` idempotency key together with its exact request body. The explanation records forecast drivers, applied limits, rejected route alternatives, before/after risk from re-running the forecast with the proposed known station arrival, confidence, policy, and snapshot status. The UI labels all values SIMULATED and requires an operator decision. Approvals and rejections are stored in the decision log; operator credentials exist only in browser memory.
 
 Forecasts still describe the do-nothing path plus already-known station allocation arrivals. Depot supply schedule changes affect station risk only when a verified station allocation depends on that supply; the current implementation does not invent future dispatches.
+
+## Two-pass constrained triage (Sprint 8)
+
+During constrained supply (refinery shortfalls, depot throughput limits, or multiple competing stations), single-pass greedy allocation risks starving downstream stations. Sprint 8 introduces a deterministic two-pass triage policy in `core/policies/heuristic.py`:
+- **Pass 1 (Emergency stockout prevention):** Determines the minimum 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk pair, allocating survival fuel to the most urgent stations first.
+- **Pass 2 (Target top-up):** Uses remaining depot physical inventory and remaining tick dispatch capacity to top stations up toward their 70% target inventory.
+- Physical reservations carry across passes monotonically.
+- When depot stock or dispatch limits truncate an allocation, it is flagged with `is_partial=True`, `unserved_liters`, and `unserved_reason` (e.g. `depot gazipur DIESEL exhausted`), identifying the physical constraint for the operator.
+
+## Pure detection layer (Sprint 8)
+
+`backend/shared/core/detect.py` implements pure detection algorithms with zero I/O, no database imports, and no simulator network calls. All detectors evaluate snapshot history deterministically:
+1. **Demand anomaly (`demand_anomaly`):** Observed station demand is compared against the diurnal baseline WITHOUT the station multiplier over the last 4 observations. Flags when the observed/baseline ratio exceeds 1.3 for 3 consecutive ticks, enforcing `PROFILE_NOISE` as the noise floor. Recovery condition: demand returns below 1.3x baseline for 2 ticks.
+2. **Regional surge (`regional_surge`):** Flags when 2 or more stations in the same geographic region exhibit demand anomalies within 8 ticks. Recovery condition: fewer than 2 regional stations remain flagged.
+3. **Abnormal inventory change (`abnormal_inventory`):** Detects volume variances not accounted for by deliveries or recorded demand. Stations in `OUTAGE` or `CLOSED` status are explicitly excluded to prevent false positives.
+4. **Bottleneck (`bottleneck`):** Flags when depot dispatch capacity utilization reaches or exceeds 80%, or when served 24-hour station demand exceeds depot physical stock plus scheduled arrivals within the 24-hour horizon.
+5. **Emerging regional disruption (`emerging_regional_disruption`):** Flags active station outages or 2+ disrupted transport routes connecting into a region.
+
+All detections create deduplicated incident records with type, severity, entity ID, stable `dedup_key`, plain-language explanation, recovery condition, and evidence JSON, and increment `detections_total{type}`.
+
+## Forward depot supply risk (Sprint 8)
+
+`backend/shared/core/depot_risk.py` computes forward supply cover across all network depots:
+$$\text{Net 24h Cover} = \text{Current Inventory} + \text{Scheduled Arrivals}_{\le 24h} - \text{Committed Allocations} - \text{Projected 24h Served Demand}$$
+- **Shipment delay effect:** When scheduled arrivals are delayed beyond the 24-hour horizon, they fall out of $\text{Scheduled Arrivals}_{\le 24h}$, lowering net cover and cover hours.
+- **Supply shortfall effect:** When an arrival volume is reduced (e.g. halved by factor 0.5), net cover drops proportionally.
+- Unrelated depots are provably unaffected.
+- Projections are persisted by the worker into `depot_risks` and rendered in the dashboard's `DepotRiskPanel`.
+
+## Backtesting, calibration, and drift tracking (Sprint 9)
+
+### Empirical backtesting performance (docs/results/backtest-summary.md)
+Evaluated across 2,000 recorded demand history ticks across all 4 stations and 3 fuel types using `core/backtest.py`:
+- **1-hour horizon (4 ticks):** MAPE **3.07%**, Bias **+0.01%**, P10–P90 interval coverage **91.49%** (nominal target 80.0%).
+- **6-hour horizon (24 ticks):** MAPE **2.19%**, Bias **-0.13%**, P10–P90 interval coverage **65.57%**.
+- **12-hour horizon (48 ticks):** MAPE **2.10%**, Bias **-0.31%**, P10–P90 interval coverage **49.86%**.
+- **24-hour horizon (96 ticks):** MAPE **2.11%**, Bias **-0.42%**, P10–P90 interval coverage **36.08%**.
+
+### Honest reporting of weaknesses
+- **Point Forecast Accuracy vs Interval Coverage:** The point forecast remains highly accurate across all horizons (~2.1% MAPE). However, because demand noise accumulates as independent stochastic variances across 96 ticks, the nominal 80% coverage interval coverage drops from 91.5% at 1h to 36.1% at 24h.
+- **Drift Under Sudden Shock:** Under sudden demand spikes (e.g. 2.5x multiplier), the calibration EWMA ratio takes 4–6 ticks to catch up, during which bias is temporarily negative.
+
+### Drift detection and metric (`calibration_drift`)
+`backend/shared/core/detect.py` implements pure `detect_calibration_drift`. If the calibration ratio stays outside $[0.8, 1.25]$ for $\ge 4$ consecutive ticks, a `calibration_drift` incident (severity WARNING) is opened, recording direction (`SURGE` or `COLLAPSE`), mean ratio, and tick evidence, and incrementing `forecast_drift_total{direction}`.
+
+### Model and policy versioning
+- Constant `MODEL_VERSION = "1.1.0"` in `backend/shared/core/version.py`.
+- Constant `POLICY_VERSION = "2.0.0"` in `backend/shared/core/version.py`.
+- Stored on every forecast and recommendation database row, serialized in `explanation_json`, returned in `GET /api/state`, and recorded in `docs/results/experiments.csv`.

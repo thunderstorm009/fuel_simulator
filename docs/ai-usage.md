@@ -23,6 +23,6 @@ This repository was developed with AI-assisted software engineering. Development
 
 ## Quality control and review protocol
 
-- **Architectural review:** Independent review prompts (R3, R4, R5) were executed at sprint boundaries to audit code against `AGENTS.md` rules, boundary integrity, stale-data hazards, and exception ergonomics.
+- **Architectural review:** Structured review prompts (R3, R4, R5) were executed at sprint boundaries as rigorous self-reviews using the code-review-strict skill to audit code against `AGENTS.md` rules, boundary integrity, stale-data hazards, and exception ergonomics.
 - **Documentation auditing:** Public documentation was audited to guarantee zero references or links to private development files (`.env`, local prompts, private agent skills).
 - **Clean clone validation:** Independent verification was performed in clean, temporary directories to ensure full reproducibility from public repository assets alone.

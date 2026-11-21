@@ -35,6 +35,7 @@ echo "=== 4. Installing frontend dependencies in clean clone ===" | tee -a "$OUT
 npm --prefix web ci 2>&1 | tee -a "$OUTPUT_FILE"
 
 echo "=== 5. Running public mechanical gate ===" | tee -a "$OUTPUT_FILE"
-PATH="/tmp/fuel-sprint1-venv/bin:$PATH" bash scripts/sprint_gate_public.sh 6 2>&1 | tee -a "$OUTPUT_FILE"
+VENV_BIN="${VIRTUAL_ENV:-$ROOT_DIR/.venv}/bin"
+PATH="$VENV_BIN:/tmp/fuel-sprint1-venv/bin:$PATH" bash scripts/sprint_gate_public.sh 6 2>&1 | tee -a "$OUTPUT_FILE"
 
 echo "=== Clean clone verification PASSED ===" | tee -a "$OUTPUT_FILE"

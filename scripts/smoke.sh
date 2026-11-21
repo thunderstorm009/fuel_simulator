@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-python3 scripts/check_compose_env.py
+if [[ -f .env.example ]]; then
+  python3 scripts/check_compose_env.py --env-file .env.example
+else
+  python3 scripts/check_compose_env.py
+fi
 
 if [[ "${SMOKE_SKIP_BUILD:-0}" == "1" ]]; then
   docker compose up -d

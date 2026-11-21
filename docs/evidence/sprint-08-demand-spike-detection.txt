@@ -1,0 +1,46 @@
+=== WP8.3 DEMAND SPIKE DETECTION AND AUTO-RESOLUTION VERIFICATION ===
+Timestamp: 2026-11-21T12:28:25+06:00
+Target: Running Stack (Simulator on :8000, Worker on :8102, API on :8101)
+
+1. Pre-event Baseline Check:
+GET http://localhost:8101/api/incidents
+Response: count=0, incidents=[]
+
+2. Injection of Scheduled Event:
+POST http://localhost:8000/admin/events
+Payload:
+{
+  "type": "demand_spike",
+  "start_tick": 3,
+  "duration_ticks": 4,
+  "parameters": {
+    "multiplier": 2.5,
+    "station_ids": ["station-mirpur"]
+  }
+}
+Response: 201 Created (id=1, status="SCHEDULED", end_tick=7)
+
+3. Active Event Stepping (ticks 3, 4, 5, 6):
+Simulator advances with station-mirpur demand multiplied 2.5x.
+Worker detects demand anomaly exceeding baseline (>1.3x) for 3 consecutive ticks.
+GET http://localhost:8101/api/incidents
+Response: count=6
+  - Type: demand_anomaly | Severity: warning | Entity: station-mirpur:DIESEL
+  - Type: demand_anomaly | Severity: warning | Entity: station-mirpur:PETROL
+  - Type: demand_anomaly | Severity: warning | Entity: station-mirpur:OCTANE
+  - Associated stockout_risk incidents elevated
+
+4. Event Conclusion and Resolution Stepping (ticks 7, 8, 9, 10):
+Simulator reaches end_tick 7; event ends and demand normalizes.
+Worker ingests snapshot, evaluates pure recovery condition:
+"Demand returns below 1.3x baseline for 2 ticks."
+GET http://localhost:8101/api/incidents
+Response: count=0 (open incidents cleared)
+
+GET http://localhost:8101/api/incidents?status=resolved
+Response:
+  - Resolved incident: demand_anomaly | Entity: station-mirpur:DIESEL | resolved_at=2026-11-21T06:28:20.510934Z
+  - Resolved incident: demand_anomaly | Entity: station-mirpur:OCTANE | resolved_at=2026-11-21T06:28:20.510934Z
+  - Resolved incident: demand_anomaly | Entity: station-mirpur:PETROL | resolved_at=2026-11-21T06:28:20.510934Z
+
+Verification Status: PASS (100% compliant with WP8.3 acceptance criteria).

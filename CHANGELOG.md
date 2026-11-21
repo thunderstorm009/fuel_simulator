@@ -2,6 +2,32 @@
 
 All notable changes to the Fuel Supply Intelligence & Resilience Platform are documented in this file.
 
+## [Sprint 10] - 2026-11-21 - Delivery Excellence, Resilience Limits, Observability, Load Proof & Final Freeze
+- Added `/api/version` endpoint exposing git sha, tag, build time, `model_version` (1.1.0), and `policy_version` (2.1.0), with UI footer component.
+- Added constant-time operator token verification via `hmac.compare_digest` with sliding-window rate limiting (60 decisions/min, HTTP 429).
+- Added multi-architecture container release workflow `.github/workflows/release.yml` with automatic GHCR publishing.
+- Added automated rollback scripts `scripts/deploy.sh` and `scripts/rollback.sh` with live rollback drill verified in `docs/evidence/sprint-10-rollback-drill.txt`.
+- Added Prometheus alert rules in `observability/prometheus/alert_rules.yml` with runbook URLs for all critical conditions.
+- Measured empirical resilience matrix: per-service kill -9 recovery (0.10s-0.23s), database outage recovery (0.16s), and 5x traffic surge burst in `docs/evidence/sprint-10-resilience-matrix.txt`.
+- Benchmarked decision path under load via `loadtest/k6.js` (9,584 requests across 10-100 VUs, median 122ms, 0% errors).
+- Added judging day demonstration guide in `docs/JUDGING-DAY.md` and rehearsal drill script `scripts/surprise_drill.sh`.
+- Achieved 100% compliance across all 26 sections of official hackathon brief in `docs/BRIEF-COMPLIANCE.md`.
+
+## [Sprint 9] - 2026-11-21 - Decision Intelligence Quality and Operator Experience
+- Implemented pure backtesting and calibration engine (`core/backtest.py`), replaying 2,000 historical ticks (1h: 3.07% MAPE, 24h: 2.11% MAPE).
+- Added interactive pure What-If impact simulation tool (`core/what_if.py`, `POST /api/whatif`, `WhatIfSimulator.tsx`) executing in <50ms without database writes.
+- Built 5 operator views: Regional Demand Panel, Incoming Supply Timeline, Alert Center with live bell badge, Network Topology View, and Offline Evaluation Scorecard.
+- Added P90 uncertainty safety buffer in heuristic policy and implemented linear flow optimizer (`core/policies/optimizer.py`, ADR-039).
+- Added generative incident summarization engine (`core/summarize.py`) with deterministic template default and bounded LLM wrapper (ADR-040).
+
+## [Sprint 8] - 2026-11-21 - Truth Pass, Event Coverage, Anomaly Detection & Running Simulator Robustness
+- Completed truth pass: eliminated non-compliant `/admin` routes from app code and purged unproven claims.
+- Built 26-section brief compliance matrix in `docs/BRIEF-COMPLIANCE.md`.
+- Implemented pure deterministic two-pass triage heuristic prioritizing 12h emergency survival fuel, with 5 crisis scenarios and 100% determinism across 54 runs.
+- Implemented pure anomaly detection engine (`core/detect.py`) covering demand surges, regional spikes, inventory drops, bottlenecks, and corridor disruptions with automatic resolution.
+- Added forward depot supply risk modeling (`core/depot_risk.py`) and operator dashboard risk panel.
+- Added adaptive simulator speed telemetry (`ticks_per_second`) and operator speed warning banner.
+
 ## [Sprint 7] - 2026-11-20 - Freeze, Rehearsal, and Release Readiness
 - Added guarded cold-start recovery script `scripts/cold_start_check.sh` with live timing (34s recovery).
 - Added clean-clone verification script `scripts/verify_clean_clone.sh` validating isolated builds without private workspace files.

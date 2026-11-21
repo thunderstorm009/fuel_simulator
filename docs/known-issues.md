@@ -13,6 +13,9 @@ Updated 2026-11-20. Reflects verified evidence available in this repository.
 | Load testing & performance knee | k6 benchmark completed across normal, latency fault, and predictor stopped; 205k requests, 0% errors, knee at 100 VUs | `docs/loadtest.md`, `docs/results/docker-stats-*.csv` |
 | Isolated clean clone verification | Clean clone build, lint, and test suite pass completely without private local-only development files | `docs/evidence/clean-clone-check.txt` |
 | Reversible chaos testing | 1.0 min random fault injection completed with zero unexplained 5xx API errors and automatic system recovery | `docs/evidence/sprint-07-chaos.json` |
+| Sprint 8 event handling & triage | 6 crisis events covered with 5 scenarios; 2-pass emergency triage; pure anomaly detection; depot supply risk | `docs/sprint-reports/sprint-08.md`, `docs/results/scenario-summary.md` |
+| Sprint 9 intelligence & operator views | 2,000 tick backtest (2.11% MAPE over 24h); pure what-if simulator; 5 new operator views; LP optimizer & buffer | `docs/sprint-reports/sprint-09.md`, `docs/results/backtest-summary.md` |
+| Sprint 10 delivery & resilience limits | CI/CD release workflow; automated deployment rollback; per-service kill recovery (0.10s-0.23s); decision load test (9.5k reqs, 0% errors); judging runbook | `docs/sprint-reports/sprint-10.md`, `docs/JUDGING-DAY.md`, `docs/evidence/sprint-10-resilience-matrix.txt` |
 
 ## Open human-only ceremony items
 

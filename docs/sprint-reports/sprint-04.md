@@ -65,7 +65,7 @@ Detailed original runtime output: `docs/evidence/sprint-04-runtime.md`; live ove
 
 ## 7. Evidence
 
-- `docs/evidence/sprint-04-runtime.md`: test/build/smoke results, service health, live proposal counts, browser inspection, and independent review disposition.
+- `docs/evidence/sprint-04-runtime.md`: test/build/smoke results, service health, live proposal counts, browser inspection, and code-review-strict review disposition.
 - Existing test fixtures in `docs/sim-samples/` anchor local policy and validation behavior to the documented simulator contract.
 
 ## 8. Problems, root causes, fixes

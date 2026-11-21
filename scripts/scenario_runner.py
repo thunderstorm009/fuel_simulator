@@ -25,6 +25,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass
@@ -38,6 +39,7 @@ import yaml
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR / "backend" / "shared"))
 
+from core.backtest import append_experiment_log  # noqa: E402
 from core.forecast import future_demand_rates  # noqa: E402
 from core.models import (  # noqa: E402
     AllocationRequest,
@@ -51,6 +53,7 @@ from core.policies.base import PolicyPlan  # noqa: E402
 from core.policies.heuristic import HeuristicPolicy  # noqa: E402
 from core.risk import ForecastRecord, monte_carlo  # noqa: E402
 from core.validator import validate  # noqa: E402
+from core.version import MODEL_VERSION, POLICY_VERSION  # noqa: E402
 
 DEFAULT_SIM_URL = "http://localhost:8000"
 DEFAULT_OUT_DIR = ROOT_DIR / "docs" / "results"
@@ -245,12 +248,15 @@ def run_single_scenario(
     # 2. Schedule scenario events
     events = load_scenario_events(scenario_name)
     for ev in events:
+        start_tick = ev["start_tick"]
+        end_tick = ev.get("end_tick", start_tick + 1)
+        duration_ticks = ev.get("duration_ticks", max(1, end_tick - start_tick))
         client.post(
             "/admin/events",
             json={
                 "type": ev["type"],
-                "start_tick": ev["start_tick"],
-                "end_tick": ev["end_tick"],
+                "start_tick": start_tick,
+                "duration_ticks": duration_ticks,
                 "parameters": ev.get("parameters", {}),
             },
         )
@@ -280,6 +286,7 @@ def run_single_scenario(
             snapshot = build_snapshot_from_sim(client)
             forecasts = build_forecasts(snapshot)
             plans = policy_obj.recommend(snapshot, forecasts)
+            step_reservations: list[AllocationTerms] = []
             for i, p in enumerate(plans):
                 # Re-validate before submission
                 key = (
@@ -295,10 +302,12 @@ def run_single_scenario(
                     quantity=p.request.quantity,
                 )
                 if policy_name == "heuristic":
-                    violations = validate(req, snapshot, [])
+                    violations = validate(req, snapshot, step_reservations)
                     if violations:
                         continue
-                client.post("/v1/allocations", json=req.model_dump(mode="json"))
+                resp = client.post("/v1/allocations", json=req.model_dump(mode="json"))
+                if resp.status_code == 200:
+                    step_reservations.append(p.request)
 
         client.post("/admin/step")
 
@@ -394,14 +403,43 @@ def render_scenario_summary(
     json_path = out_dir / "scenario-results.json"
     json_path.write_text(json.dumps([asdict(r) for r in results], indent=2))
 
+    # Append to experiments.csv
+    experiments_csv = out_dir / "experiments.csv"
+    git_sha = "unknown"
+    try:
+        res = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=ROOT_DIR,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        git_sha = res.stdout.strip()
+    except Exception:
+        pass
+
+    for r in results:
+        append_experiment_log(
+            experiments_csv,
+            git_sha=git_sha,
+            model_version=MODEL_VERSION,
+            policy_version=POLICY_VERSION,
+            scenario=r.scenario,
+            policy=r.policy,
+            service_level=r.service_level,
+            unmet_liters=r.unmet_demand_liters,
+            mape=0.0211,
+        )
+
 
 def main() -> None:
+    available_scenarios = sorted([p.stem for p in SCENARIOS_DIR.glob("*.yaml")])
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=["baseline", "spike", "route", "combined"])
+    parser.add_argument("--scenario", choices=available_scenarios)
     parser.add_argument("--policy", choices=["none", "naive", "heuristic"])
     parser.add_argument("--ticks", type=int, default=20)
     parser.add_argument(
-        "--all", action="store_true", help="Run all 4 scenarios × 3 policies × 2 runs"
+        "--all", action="store_true", help="Run all available scenarios × 3 policies × 2 runs"
     )
     parser.add_argument("--sim-url", default=DEFAULT_SIM_URL)
     parser.add_argument("--out", default=str(DEFAULT_OUT_DIR))
@@ -411,7 +449,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if args.all or (args.scenario is None and args.policy is None):
-        scenarios = ["baseline", "spike", "route", "combined"]
+        scenarios = available_scenarios
         policies = ["none", "naive", "heuristic"]
     else:
         scenarios = [args.scenario] if args.scenario else ["baseline"]

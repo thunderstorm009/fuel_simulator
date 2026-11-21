@@ -1,0 +1,9 @@
+name: depot_constraint
+description: Infrastructure throughput constraint at Gazipur depot reducing dispatch capacity.
+events:
+  - type: depot_constraint
+    start_tick: 4
+    end_tick: 14
+    parameters:
+      depot_ids:
+        - depot-gazipur

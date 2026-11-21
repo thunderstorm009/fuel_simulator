@@ -8,7 +8,7 @@ from httpx import Response
 def test_forecast_chaos_requires_token_and_forwards_switch(monkeypatch) -> None:
     monkeypatch.setenv("OPERATOR_TOKEN", "test-operator")
     monkeypatch.setenv("PREDICTOR_URL", "http://predictor.test")
-    forwarded = respx.post("http://predictor.test/admin/fail").mock(
+    forwarded = respx.post("http://predictor.test/chaos/fail").mock(
         return_value=Response(200, json={"enabled": True})
     )
 

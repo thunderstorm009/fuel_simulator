@@ -9,6 +9,8 @@ from typing import Any, Optional
 from httpx import Response
 from pydantic import BaseModel, ConfigDict, Field
 
+from core.version import MODEL_VERSION, POLICY_VERSION
+
 
 class ContractModel(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -221,18 +223,22 @@ class Forecast(ContractModel):
     confidence: float
     risk_level: RiskLevel
     needs_review: bool
+    model_version: str = MODEL_VERSION
 
 
 class Explanation(ContractModel):
     drivers: dict[str, Any] = Field(default_factory=dict)
     constraints_applied: list[dict[str, Any]] = Field(default_factory=list)
     alternatives: list[dict[str, Any]] = Field(default_factory=list)
+    triage: dict[str, Any] = Field(default_factory=dict)
     risk_before: dict[str, Any] = Field(default_factory=dict)
     risk_after: dict[str, Any] = Field(default_factory=dict)
     policy_used: str
     data_status: DataStatus
     confidence: float
     created_at: datetime
+    model_version: str = MODEL_VERSION
+    policy_version: str = POLICY_VERSION
 
 
 class Recommendation(ContractModel):
@@ -245,6 +251,8 @@ class Recommendation(ContractModel):
     quantity: float = Field(gt=0)
     idempotency_key: str = Field(min_length=1, max_length=150)
     explanation: Explanation
+    model_version: str = MODEL_VERSION
+    policy_version: str = POLICY_VERSION
 
 
 class Snapshot(ContractModel):

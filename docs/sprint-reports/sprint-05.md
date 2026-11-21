@@ -40,7 +40,7 @@ The simulator started PAUSED at tick 150 and ended PAUSED at tick 152. No alloca
 | `python3 -m pytest -q tests/unit/test_compose_env_check.py` | 3 passed | PASS |
 | `python3 scripts/check_compose_env.py --env-file .env.example` | `PASS: database credentials and predictor URL match Compose services` | PASS |
 | Forecast source upsert regression | Focused store test passed; runtime tick 152 source remote for all 12 forecasts | PASS |
-| R4 independent review | No P0; P1 stale-ingest alert defect fixed with timestamp and worker-target alerts; P2 predictor status-body check fixed and tested | PASS after fixes; final review rerun pending |
+| R4 review (code-review-strict) | No P0; P1 stale-ingest alert defect fixed with timestamp and worker-target alerts; P2 predictor status-body check fixed and tested | PASS after fixes; final review rerun pending |
 | Alert evaluation under worker outage | Worker stopped 55 s; Prometheus worker target 0; Grafana snapshot-age rule active; restart restored worker/simulator/predictor HEALTHY | PASS; SMTP delivery not tested |
 | `make test`, `make lint`, frontend test/build | 136 Python tests + 6 frontend tests passed; lint clean (ruff + tsc + vite build); 2026-11-20 | PASS |
 | Docker Compose state | All eight services running and healthy after fault demo | PASS |

@@ -50,6 +50,32 @@ export interface Route {
   status: string;
 }
 
+export interface SupplyArrival {
+  id: string;
+  depot_id: string;
+  fuel_type: Fuel;
+  quantity: number;
+  planned_tick: number;
+  actual_tick: number | null;
+  status: string;
+}
+
+export interface AllocationItem {
+  id: number;
+  idempotency_key: string;
+  source_depot_id: string;
+  destination_station_id: string;
+  route_id: string;
+  fuel_type: Fuel;
+  quantity: number;
+  created_tick: number;
+  departure_tick: number | null;
+  expected_arrival_tick: number | null;
+  actual_arrival_tick: number | null;
+  status: string;
+  failure_reason: string | null;
+}
+
 export interface Snapshot {
   instance: {
     tick: number;
@@ -61,6 +87,8 @@ export interface Snapshot {
   depots: InventoryEntity[];
   stations: InventoryEntity[];
   routes: Route[];
+  supply_arrivals: SupplyArrival[];
+  allocations: AllocationItem[];
   events: SimulatorEvent[];
   metrics: {
     served_demand_liters: number;
@@ -73,6 +101,35 @@ export interface Snapshot {
 
 export interface StateResponse {
   snapshot: Snapshot;
+  fetched_at: string;
+  data_age_seconds: number;
+  data_status: DataStatus;
+  stale: boolean;
+  ticks_per_second?: number;
+  snapshot_age_ticks?: number;
+  speed_warning?: boolean;
+  simulated: true;
+}
+
+export interface DepotRisk {
+  depot_id: string;
+  depot_name?: string;
+  fuel_type: Fuel;
+  tick: number;
+  current_inventory: number;
+  scheduled_arrivals: number;
+  committed_allocations: number;
+  projected_demand: number;
+  net_cover_liters: number;
+  cover_hours: number;
+  is_bottleneck: boolean;
+  dispatch_utilization: number;
+  evidence: Record<string, unknown>;
+}
+
+export interface DepotRiskResponse {
+  depot_risks: DepotRisk[];
+  count: number;
   fetched_at: string;
   data_age_seconds: number;
   data_status: DataStatus;
@@ -180,4 +237,112 @@ export interface Decision {
   fuel_type: Fuel;
   quantity: number;
   route_id: string;
+}
+
+export interface WhatIfCandidate {
+  source_depot_id: string;
+  destination_station_id: string;
+  route_id: string;
+  fuel_type: Fuel;
+  quantity: number;
+}
+
+export interface WhatIfCondition {
+  hours_to_stockout: number | null;
+  stockout_probability_24h: number;
+  risk_level: string;
+  trajectory: TrajectoryPoint[];
+  depot_net_cover_liters: number;
+  depot_cover_hours: number;
+}
+
+export interface WhatIfDelta {
+  hours_to_stockout_change: number | null;
+  stockout_probability_change: number;
+  depot_net_cover_change: number;
+}
+
+export interface WhatIfResponse {
+  feasible: boolean;
+  violations: Array<{ code: string; message: string }>;
+  verdict: "FEASIBLE_BENEFICIAL" | "FEASIBLE_NEUTRAL" | "INFEASIBLE";
+  before: WhatIfCondition;
+  after: WhatIfCondition;
+  delta: WhatIfDelta;
+  simulated: true;
+}
+
+export interface RegionalDemandFuel {
+  demand_liters: number;
+  served_liters: number;
+  unmet_liters: number;
+  service_level: number;
+}
+
+export interface RegionalDemandItem {
+  region_id: string;
+  region_name: string;
+  demand_factor: number;
+  station_count: number;
+  fuels: Partial<Record<Fuel, RegionalDemandFuel>>;
+}
+
+export interface RegionalDemandResponse {
+  regional_demand: RegionalDemandItem[];
+  window_ticks: number;
+  data_age_seconds: number;
+  data_status: DataStatus;
+  stale: boolean;
+  simulated: true;
+}
+
+export interface IncidentRecord {
+  id: number;
+  type: string;
+  severity: string;
+  detected_at: string;
+  resolved_at: string | null;
+  detail: {
+    dedup_key?: string;
+    entity_id?: string;
+    explanation?: string;
+    recovery_condition?: string;
+    evidence?: Record<string, unknown>;
+    station_id?: string;
+    fuel_type?: string;
+    risk_level?: string;
+  };
+}
+
+export interface IncidentsResponse {
+  incidents: IncidentRecord[];
+  count: number;
+  status_filter: string;
+  simulated: true;
+}
+
+export interface EvaluationResponse {
+  evaluation_type: string;
+  model_version: string;
+  policy_version: string;
+  scenarios: Array<{
+    scenario: string;
+    policy: string;
+    run: number;
+    ticks: number;
+    service_level: number;
+    unmet_demand_liters: number;
+    served_demand_liters: number;
+    allocation_liters: number;
+    allocation_failures: number;
+    station_tick_stockouts: number;
+    elapsed_seconds: number;
+  }>;
+  backtest: {
+    model_version: string;
+    policy_version: string;
+    aggregate: Record<string, { mape: number; bias: number; interval_coverage: number }>;
+  };
+  calibration_ratio_envelope: string;
+  simulated: true;
 }

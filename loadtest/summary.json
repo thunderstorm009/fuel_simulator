@@ -1,31 +1,38 @@
 {
-  "workload": "GET /api/risks, /api/state, /api/recommendations",
+  "workload": "GET /api/risks, /api/state, /api/recommendations + POST /api/whatif",
   "vus": [
     10,
     50,
     100
   ],
-  "stages": "10s ramp + 60s hold per level; 5s ramp down",
   "http_req_duration": {
-    "min": 3.896,
-    "med": 99.878,
-    "max": 2006.069,
-    "p(90)": 411.95939999999996,
-    "p(95)": 477.79579999999976,
-    "avg": 156.0231665741197
+    "avg": 384.9162056206095,
+    "min": 1.848,
+    "med": 245.522,
+    "max": 3689.022,
+    "p(90)": 955.3254000000001,
+    "p(95)": 1279.3489
+  },
+  "whatif_duration": {
+    "max": 2326.858,
+    "p(90)": 628.702,
+    "p(95)": 920.5746999999998,
+    "avg": 287.60630866510496,
+    "min": 11.135,
+    "med": 150.119
   },
   "http_reqs": {
-    "rate": 326.6371713296305,
-    "count": 70233
+    "count": 8540,
+    "rate": 131.3055129034727
   },
   "request_errors": {
     "rate": 0,
     "passes": 0,
-    "fails": 70233
+    "fails": 8540
   },
   "checks": {
-    "passes": 70233,
-    "fails": 0,
-    "rate": 1
+    "rate": 1,
+    "passes": 10675,
+    "fails": 0
   }
 }

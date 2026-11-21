@@ -20,6 +20,7 @@ from core.models import AllocationRequest, Snapshot
 from core.policies.base import Policy, PolicyPlan
 from core.policies.heuristic import HeuristicPolicy
 from core.risk import ForecastRecord
+from core.version import MODEL_VERSION, POLICY_VERSION
 
 logger = logging.getLogger("fuel_simulator.worker.recommend")
 
@@ -73,12 +74,14 @@ class RecommendationJob:
         fallback: Policy | None = None,
         policy_timeout_s: float = 0.5,
         expiry_hours: float = 1.0,
+        expiry_ticks: int = 0,
     ) -> None:
         self.store = store
         self.runner = PolicyRunner(
             primary or HeuristicPolicy(), fallback, timeout_s=policy_timeout_s
         )
         self.expiry_hours = max(0.25, expiry_hours)
+        self.expiry_ticks = max(0, expiry_ticks)
 
     async def run(
         self, snapshot: Snapshot, forecasts: Sequence[ForecastRecord]
@@ -93,7 +96,10 @@ class RecommendationJob:
             (record.forecast.station_id, record.forecast.fuel_type.value): record
             for record in forecasts
         }
-        expire_after = max(1, ceil(self.expiry_hours * 60 / snapshot.instance.tick_minutes))
+        if self.expiry_ticks > 0:
+            expire_after = self.expiry_ticks
+        else:
+            expire_after = max(1, ceil(self.expiry_hours * 60 / snapshot.instance.tick_minutes))
         rows: list[dict[str, Any]] = []
         for plan in plans:
             pair = (plan.request.destination_station_id, plan.request.fuel_type.value)
@@ -128,6 +134,8 @@ class RecommendationJob:
                 "correlation_id": None,
                 "sim_allocation_id": None,
                 "failure_reason": None,
+                "model_version": MODEL_VERSION,
+                "policy_version": POLICY_VERSION,
             }
             rows.append(row)
         if rows:

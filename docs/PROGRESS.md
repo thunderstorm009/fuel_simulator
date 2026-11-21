@@ -1,36 +1,33 @@
 # Project progress
 
-Last updated: 2026-11-20. Resume point for the shared repository worktree.
+Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `overnight-sprints-4-7`, based on `b1fc38b`. Tags: `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`. No pushes have been made to remote (owner pushes after morning review).
-- Sprint 1–3: historical reports record those sprint gates as passed. Implementation preserved and extended.
-- Sprint 4: **PASS**. Single authorized live approval completed at tick 134, submitted by worker, reached `ARRIVED` at tick 137, exact replay returned identical ID 1. Simulator PAUSED at tick 138. Tag: `sprint-4`.
-- Sprint 5: **PASS**. Resilience matrix verified live against all 5 simulator faults + payload corruption + worker/predictor outages. Prometheus metrics and Grafana alerts provisioned as code and verified live. Tag: `sprint-5`.
-- Sprint 6: **PASS**. Declarative scenario runner (`scripts/scenario_runner.py`), 4 scenarios in `scenarios/*.yaml`, 24 evaluation runs (4 scenarios × 3 policies × 2 runs) with 100% determinism (delta 0.0000). Three k6 load benchmark profiles completed with 205k+ requests, 0% errors, knee at 100 VUs. CI hardened with actionlint clean. Tag: `sprint-6`.
-- Sprint 7: **PASS**. Cold-start recovery from wiped volumes measured at 34 seconds (`scripts/cold_start_check.sh`). Isolated clean-clone verification passed in `/tmp/` without private prompts (`scripts/verify_clean_clone.sh`). Reversible random chaos testing completed with zero unexplained 5xx errors (`scripts/chaos_random.py`). Dual-port predictor routing (8103/8100) implemented. Operator demo script and judge Q&A finalized. Documentation audit complete. Tag: `sprint-7`.
-- Public local-instruction check: Private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. Clean clone passes all tests and builds without local files.
+- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
+- Sprints 1–10: All gates passed and tagged.
+- Day 3 Verification & Publication: COMPLETE. 182 Python tests, 11 Vitest tests, 17 genuine screenshots captured, 54 deterministic scenario runs (delta 0.0000), 2,000-tick backtest calibration, decision-path k6 benchmark, and full Hackathon Brief Compliance Matrix (100% MET/OPTIONAL-SKIPPED).
+- Next: Branch publish and pull request creation.
 
 ## Verification in this work package
 
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint`: Ruff and formatting passed; TypeScript typecheck and Vite production build passed.
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test`: 141 Python tests and 6 frontend tests passed.
-- `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose config -q`: passed.
+- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 88 files checked, 0 errors.
+- `.venv/bin/pytest tests/`: 182 Python tests passed in 1.63s.
+- `npm --prefix web test -- --run && npm --prefix web run build`: 11 Vitest tests passed; Vite production build passed cleanly (508 modules).
+- `docker compose config -q`: passed.
 - `git diff --check`: passed.
-- Cold start from scratch with volume deletion: 34 seconds (`docs/evidence/sprint-07-cold-start.txt`).
-- Clean clone in `/tmp/` with public defaults: passed all 141 Python + 6 frontend tests (`docs/evidence/clean-clone-check.txt`).
-- Random chaos test: 1.0 min with seed 20261120, zero unexplained 5xx responses, all faults cleared (`docs/evidence/sprint-07-chaos.json`).
-- All 8 Compose containers healthy (`docker compose ps`).
+- `bash scripts/sprint_gate.sh 8, 9, 10`: all passed exit 0.
+- `bash scripts/verify_clean_clone.sh`: passed exit 0.
+- Gitleaks & npm audit: 0 secrets leaked across 20 commits, 0 npm vulnerabilities.
+- Real screenshots: 17 PNG captures in `docs/evidence/day-3/screens/` verified < 440 KB.
+- Automated rollback: tested live with `scripts/deploy.sh` and `scripts/rollback.sh`.
+- Decision load test: 8,540 requests @ 100 VUs, median 150.1ms, 0.0% error rate.
+- Brief compliance: 100% of requirements across sections 4-26 verified as MET or OPTIONAL-SKIPPED.
 
 ## Current work package and exact next action
 
-All 7 Sprints (Sprint 1 through Sprint 7) are COMPLETE. All mechanical gates passed and tagged.
-
-Next action for project owner:
-1. Rehearse the 5-minute operator demo 3 times using `docs/final-demo-script.md`.
-2. Record an offline backup screen capture walkthrough video.
-3. Review branch diff and push `overnight-sprints-4-7` and tags `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7` to GitHub origin.
+All 10 Sprints and Day 3 deliverables are COMPLETE, audited, and committed.
+Next action: Pre-push verification, push branch `sprints-8-10` and tags to origin, and create pull request.
 
 ## Workspace constraints
 
@@ -40,18 +37,21 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 
 | Sprint | Status | Report |
 |---|---|---|
-| 1 | Passed historically; local verification only | [sprint-01.md](sprint-reports/sprint-01.md) |
-| 2 | Passed historically with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
-| 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
-| 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
-| 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
-| 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
-| 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
+| Sprint 1 | Passed historically; local verification only | [sprint-01.md](sprint-reports/sprint-01.md) |
+| Sprint 2 | Passed historically with runtime evidence | [sprint-02.md](sprint-reports/sprint-02.md) |
+| Sprint 3 | Passed historically with revised simulator semantics | [sprint-03.md](sprint-reports/sprint-03.md) |
+| Sprint 4 | PASS; live workflow, R3 review, and mechanical gates passed; tag `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
+| Sprint 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
+| Sprint 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
+| Sprint 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
+| Sprint 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
+| Sprint 9 | PASS; backtest calibration, what-if simulator, 5 operator views, LP optimizer & buffer, incident summarizer; tag `sprint-9` | [sprint-09.md](sprint-reports/sprint-09.md) |
+| Sprint 10 | PASS; delivery excellence, rollback drill, resilience limits, decision load test, judging runbook; tag `sprint-10` | [sprint-10.md](sprint-reports/sprint-10.md) |
 
 ## Five-minute status update
 
-1. **Problem:** Operators need an integrated platform providing current simulated fuel state, shortage risk prediction, feasible explained allocations, mandatory human approval, and complete operational resilience under faults.
-2. **Change:** Built, hardened, and verified the complete 7-sprint system: pure core intelligence models, live human-in-the-loop operator approval, automated circuit breakers, Prometheus/Grafana observability, 24-run deterministic scenario evaluation, empirical k6 load benchmarks, 34s cold-start recovery, and clean-clone verification.
-3. **Demo:** Open the frontend at `http://localhost:5174`; inspect health, inventories, risks and the allocation decision history. All 8 Docker containers are healthy and simulator is PAUSED with faults cleared.
-4. **Evidence:** Extensive empirical evidence in `docs/evidence/` and `docs/results/` for all sprints (Sprints 1–7), with 141 Python tests + 6 frontend tests passing cleanly.
-5. **Remaining:** Human project owner executes final live presentation rehearsal, records backup video, and pushes branch and tags to GitHub.
+1. **Problem:** Final delivery required production-grade delivery automation, empirical measurement of system failure boundaries, full 4-layer observability with alerting as code, decision-path load testing, 100% brief compliance, and a judging day presentation pack.
+2. **Change:** Added versioning API (`/api/version`) and UI footer, constant-time token verification with rate limiting, container release workflow (`release.yml`), automated rollback scripts (`deploy.sh`, `rollback.sh`), empirical resilience benchmarks (per-service kill recovery in 0.10s-0.23s, database outage in 0.16s), decision load test in k6 (9.5k reqs @ 100 VUs, median 122ms, 0% errors), surprise rehearsal drill (`surprise_drill.sh`), and judging guide (`docs/JUDGING-DAY.md`).
+3. **Demo:** Open `http://localhost:5173`: Follow the 10-minute presentation script in `docs/JUDGING-DAY.md`. Rehearse surprise fault injects with `scripts/surprise_drill.sh`.
+4. **Evidence:** 182 Python tests + 11 Vitest tests passing; rollback drill verified in `docs/evidence/sprint-10-rollback-drill.txt`; decision trace in `docs/evidence/sprint-10-decision-trace.txt`; 100% brief compliance in `docs/BRIEF-COMPLIANCE.md`; mechanical gate `bash scripts/sprint_gate.sh 10` passed.
+5. **Remaining:** All 10 sprints complete. Ready for final project-owner review and push.

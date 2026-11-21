@@ -3,19 +3,20 @@
 > **BUP CSE Fest 2026 Hackathon**
 > A simulation-driven platform for fuel inventory intelligence, demand forecasting, shortage-risk analysis and resilient allocation decision support.
 
-[![CI Status](https://img.shields.io/badge/CI-actionlint%20passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
-[![Python Tests](https://img.shields.io/badge/pytest-141%20passed-brightgreen)](tests/)
-[![Frontend Tests](https://img.shields.io/badge/vitest-6%20passed-brightgreen)](web/tests/)
+[![CI Status](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
+[![Python Tests](https://img.shields.io/badge/pytest-182%20passed-brightgreen)](tests/)
+[![Frontend Tests](https://img.shields.io/badge/vitest-11%20passed-brightgreen)](web/tests/)
 [![Code Style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](web/)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-8%20services-blue)](docker-compose.yml)
+[![Judging Guide](https://img.shields.io/badge/Judging-Runbook-blueviolet)](docs/JUDGING-DAY.md)
 [![Scope](https://img.shields.io/badge/scope-SIMULATED-orange)](#scope-and-limitations)
 
 ---
 
 ## Main Operator Dashboard
 
-![Fuel Supply Intelligence Platform Dashboard](docs/evidence/day-2/01-dashboard.png)
+![Fuel Supply Intelligence Platform Dashboard](docs/evidence/day-3/screens/01-dashboard.png)
 *Figure 1: Main operator overview displaying real-time simulated network state across regional corridors (Dhaka, Chattogram, Cox's Bazar), overall service level, station-by-station fuel capacity bars, and regional depot reserves.*
 
 ---
@@ -26,37 +27,52 @@ In regional fuel logistics, supply chain disruptions—such as highway blockages
 
 The **Fuel Supply Intelligence & Resilience Platform** provides an integrated operational control loop on top of the official BUP CSE Fest 2026 Fuel Supply Simulator. It connects to the simulator's REST and Server-Sent Event (SSE) streams, continuously ingests downstream fuel distribution telemetry, forecasts future stockout trajectories using pure statistical models, and produces constrained, explainable replenishment recommendations.
 
-Crucially, the platform enforces **human-in-the-loop governance**: recommendations are never autonomously submitted to the distribution network. Instead, an authenticated operator must review the physical constraint audit and approve the recommendation before the background executor securely submits the order with permanent idempotency guarantees.
+> [!IMPORTANT]
+> **SIMULATED ENVIRONMENT & MANDATORY HUMAN GOVERNANCE:**
+> All platform operations represent purely simulated fuel infrastructure. Recommendations are **never autonomously submitted** to the simulator. An authenticated operator must review the physical constraint audit and approve the recommendation using `OPERATOR_TOKEN` before the background executor securely submits the order with permanent idempotency guarantees.
 
 ---
 
-## Core Capabilities
+## Complete Operational Loop
 
-1. **Real-Time Simulator Synchronization:** The background worker polls authoritative simulator REST endpoints while treating SSE events as immediate refetch hints, ensuring zero state drift across network reconnects.
-2. **Depot & Station Inventory Monitoring:** Continuous tracking of bulk depot storage and multi-product retail inventory across Diesel, Petrol, and Octane against physical tank capacities.
-3. **Pure Demand Forecasting:** Empirical demand rate tracking with Exponentially Weighted Moving Average (EWMA) calibration and diurnal variation modeling (`backend/shared/core/forecast.py`).
-4. **Shortage-Risk & Trajectory Analysis:** Seeded Monte Carlo simulations projecting 24-hour stock levels, calculating stockout probability distributions, and identifying critical stockout hours (`backend/shared/core/risk.py`).
-5. **Incident & Network Disruption Monitoring:** Live detection and tracking of active simulator events, transit delays, route closures, and pricing spikes.
-6. **Constrained Allocation Engine:** Urgency-first replenishment heuristics that mathematically validate depot availability, station tank ullage, route transit times, and vehicle quotas before proposing dispatches (`backend/shared/core/policies/`).
-7. **Mandatory Operator Approval Workflow:** Complete separation of proposal generation and execution. Dispatches require an authenticated operator decision (`OPERATOR_TOKEN`) stored permanently in PostgreSQL.
-8. **Idempotent Dispatch Execution:** Re-validates network freshness and physical constraints at the instant of submission; attaches a permanent idempotency key to prevent double-dispatch during network retries.
-9. **Architectural Resilience & Graceful Degradation:** Automatic circuit breakers on simulator and predictor communication channels; fallback to local baseline heuristics if the independent predictor service is unreachable.
-10. **Full-Stack Observability:** Embedded Prometheus metrics exporting request latencies, ingestion lag, and circuit breaker states, paired with provisioned Grafana dashboards and alerting rules as code.
+The platform implements the complete 9-stage engineering loop defined by the hackathon charter:
+
+```
+Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> Approve ──> Act ──> Monitor ──> Recover
+```
+
+- **1. Observe:** Real-time synchronization via REST polling with SSE invalidation hints; tracking of bulk depot storage, retail station inventory (Diesel, Petrol, Octane), incoming bulk pipeline, and route corridors.
+- **2. Detect:** Pure mathematical anomaly detectors (`backend/shared/core/detect.py`) identifying demand surges (ratio >= 1.3), corridor disruptions, station outages, depot constraints, and model calibration drift.
+- **3. Predict:** Pure empirical demand forecasting with diurnal curve modeling (`forecast.py`) and Monte Carlo stockout risk projection with P10–P90 confidence intervals (`risk.py`).
+- **4. Decide:** Constrained two-pass triage heuristic prioritizing stations facing stockout within 12 hours while locking depot dispatch capacity; optional SciPy Linear Programming solver (`optimizer.py`).
+- **5. Simulate:** Pure zero-database in-memory What-If simulator (`POST /api/whatif`, `WhatIfSimulator.tsx`) computing post-dispatch tank inventory and averted stockout hours in <50ms prior to decision.
+- **6. Approve:** Enforced human authority gate using constant-time token comparison (`hmac.compare_digest`) with sliding-window rate limiting (60 req/min).
+- **7. Act:** Outbox-pattern background executor re-verifying freshness and physical constraints at the exact moment of dispatch; permanent idempotency key prevents duplicate execution.
+- **8. Monitor:** Low-cardinality Prometheus metrics, provisioned 4-layer Grafana dashboards, codified alert rules with runbooks, and correlation-traced decision lifecycles.
+- **9. Recover:** Typed circuit breakers, bounded retries with jitter, graceful fallback to local baseline heuristics, automated container rollback (`scripts/rollback.sh`), and disaster recovery drills.
 
 ---
 
 ## Application Showcase
 
-The application interface is built with React 19, TypeScript, Vite, and Tailwind CSS. All screenshots below are captured from the live running platform:
+All interface views are rendered in React 19, TypeScript 5.8, and Tailwind CSS. Screenshots below are captured directly from the live running platform:
 
 | View | Screenshot | Description |
 |---|---|---|
-| **Inventory Matrix** | ![Inventory View](docs/evidence/day-2/02-inventory.png) | On-hand fuel inventory by station and product (Diesel, Petrol, Octane) shown against tank limits alongside bulk depot supply sources. |
-| **Shortage Risk & Forecasts** | ![Risk Matrix](docs/evidence/day-2/03-forecast-risk.png) | Color-coded shortage risk matrix with interactive `TrajectoryDrawer` showing 24-hour Monte Carlo inventory projections and uncertainty bands. |
-| **Disruptions & Routes** | ![Incidents View](docs/evidence/day-2/04-incidents.png) | Active road network corridors, route distance, travel duration, and simulator incident tracking. |
-| **Replenishment Recommendations** | ![Recommendations View](docs/evidence/day-2/05-allocations.png) | Urgency-ranked allocation proposals with complete physical constraint validation, structured explanations, and operator approval controls. |
-| **System Health** | ![System Health View](docs/evidence/day-2/06-system-health.png) | Aggregated component health status (API, Worker, Predictor, Database, Simulator) with data freshness tracking and p95 latency metrics. |
-| **Grafana Monitoring** | ![Grafana Dashboard](docs/evidence/day-2/07-grafana.png) | Provisioned Grafana dashboard monitoring HTTP throughput, p95 durations, worker ingestion lag, and active alerting rules. |
+| **Inventory Matrix** | ![Inventory View](docs/evidence/day-3/screens/02-inventory.png) | On-hand fuel inventory by station and product (Diesel, Petrol, Octane) shown against tank limits alongside bulk depot supply sources. |
+| **Shortage Risk & Forecasts** | ![Risk Matrix](docs/evidence/day-3/screens/03-forecast-risk.png) | Color-coded shortage risk matrix with interactive `TrajectoryDrawer` showing 24-hour Monte Carlo inventory projections and uncertainty bands. |
+| **Replenishment Recommendations** | ![Recommendations View](docs/evidence/day-3/screens/04-recommendations.png) | Urgency-ranked allocation proposals with complete physical constraint validation, structured explanations, and operator approval controls. |
+| **What-If Simulation Sandbox** | ![What-If Sandbox](docs/evidence/day-3/screens/05-what-if.png) | Candidate what-if evaluator testing hypothetical dispatch volume and timing against physical constraints in <50ms prior to approval. |
+| **Crisis Alert Center** | ![Alert Center](docs/evidence/day-3/screens/06-alerts.png) | Real-time crisis alert hub surfacing active anomalies with severity badges and generative plain-text incident explanations. |
+| **Regional Demand Breakdown** | ![Regional Demand](docs/evidence/day-3/screens/07-regional-demand.png) | Corridor-level fuel consumption panel tracking demand aggregates and surge multipliers across Dhaka, Chittagong, and regional highways. |
+| **Incoming Supply Pipeline** | ![Incoming Supply](docs/evidence/day-3/screens/08-incoming-supply.png) | Scheduled bulk deliveries to depots and in-transit replenishment trucks with arrival ETA ticks. |
+| **Network Topology View** | ![Network View](docs/evidence/day-3/screens/09-network.png) | Graph topology visualizing supply nodes (Gazipur, Patiya depots), retail stations, connecting corridors, and active disruptions. |
+| **Forecasting Evaluation** | ![Evaluation View](docs/evidence/day-3/screens/10-evaluation.png) | Empirical evaluation view presenting backtest MAPE across 1h–24h horizons (2.1%–3.1%) and deterministic scenario policy comparisons. |
+| **Decision Audit History** | ![Decision History](docs/evidence/day-3/screens/11-decision-history.png) | Permanent audit trail proving owner-authorized human approval, worker execution, and confirmed arrival (`ARRIVED`) in the simulator. |
+| **System Health (Normal)** | ![System Health](docs/evidence/day-3/screens/12-health-healthy.png) | Aggregated component health status (API, Worker, Predictor, Database, Simulator) with data freshness tracking and latency telemetry. |
+| **Graceful Degradation** | ![Health Degraded](docs/evidence/day-3/screens/14-health-degraded.png) | Live graceful degradation during injected simulator outage; displays prominent warning banner and stale data advisory. |
+| **Grafana Observability** | ![Grafana Dashboard](docs/evidence/day-3/screens/16-grafana-normal.png) | Provisioned Grafana dashboard monitoring HTTP throughput, p95 durations, worker ingestion lag, and active alerting rules. |
+| **Prometheus Alerts Console** | ![Prometheus Alerts](docs/evidence/day-3/screens/17-prometheus-alerts.png) | Prometheus alerting console verifying 5 active alerting rules as code with operational runbooks. |
 
 ---
 
@@ -144,7 +160,7 @@ flowchart TD
 
 ## Sprint Implementation Summary
 
-The platform was engineered in seven sequential 4-hour development sprints, preserving a single evolving codebase without scaffolding replacement applications:
+The platform was engineered across ten sequential 4-hour development sprints, preserving a single evolving codebase without scaffolding replacement applications:
 
 | Sprint | Focus & Milestone | Status | Key Deliverables |
 |---|---|---|---|
@@ -155,6 +171,9 @@ The platform was engineered in seven sequential 4-hour development sprints, pres
 | **Sprint 5** | Observability, Resilience & Fault Demo | **PASS** | Prometheus metrics, Grafana dashboards, circuit breakers, fallback predictor, live fault matrix. ([Report](docs/sprint-reports/sprint-05.md)) |
 | **Sprint 6** | Scenario Runner & Load Hardening | **PASS** | Declarative scenario runner (24 runs, 100% determinism), 3-profile k6 benchmarks (205k requests). ([Report](docs/sprint-reports/sprint-06.md)) |
 | **Sprint 7** | Freeze, Cold-Start & Clean-Clone Proof | **PASS** | Cold-start verification (**34s** recovery), clean clone proof, random chaos test, final presentation assets. ([Report](docs/sprint-reports/sprint-07.md)) |
+| **Sprint 8** | Full Crisis Coverage & Two-Pass Triage | **PASS** | 5 crisis scenarios, pure detectors, two-pass triage carrying depot reservations, speed adaptation. ([Report](docs/sprint-reports/sprint-08.md)) |
+| **Sprint 9** | Backtesting, What-If Sandbox & View Gaps | **PASS** | Backtest engine (2.1%–3.1% MAPE), What-If simulator (<50ms), 5 new views, LP optimizer, incident explainer. ([Report](docs/sprint-reports/sprint-09.md)) |
+| **Sprint 10** | Production Delivery, Limits & Final Freeze | **PASS** | Deployment/rollback drill, resilience boundaries (23k L/tick ceiling), decision load test, judging pack. ([Report](docs/sprint-reports/sprint-10.md)) |
 
 ---
 
@@ -164,44 +183,92 @@ The platform was engineered in seven sequential 4-hour development sprints, pres
 
 ```text
 ============================= test session starts ==============================
-collected 141 items
-tests/integration/ ... 12 passed
+platform darwin -- Python 3.12.16, pytest-8.3.5
+rootdir: /Users/abrar/project/fuel_simulator
+collected 182 items
+tests/integration/ ... 37 passed
 tests/scenarios/ ... 14 passed
-tests/unit/ ... 115 passed
-============================= 141 passed in 1.55s ==============================
+tests/unit/ ... 131 passed
+======================== 182 passed, 1 warning in 1.63s ========================
 
 RUN  v5.1.1 web
-✓ tests/App.test.tsx (6 tests) 202ms
-Test Files  1 passed (1) | Tests  6 passed (6)
+✓ tests/NewViews.test.tsx (5 tests) 116ms
+✓ tests/App.test.tsx (6 tests) 240ms
+Test Files  2 passed (2) | Tests  11 passed (11)
 
 ruff check .        --> All checks passed!
-ruff format --check --> 65 files already formatted
+ruff format --check --> 88 files already formatted
 tsc -b              --> 0 errors
 ```
 
+### Demand Forecasting Accuracy & Backtest Calibration
+
+Evaluated across 2,000 historical simulator ticks across 4 retail stations and 3 fuel products (`scripts/backtest.py`):
+
+| Forecast Horizon | Prediction Window | Evaluation Samples | Aggregate MAPE | Mean Bias | P10–P90 Coverage | Target Coverage |
+|---|---|---|---:|---:|---:|---:|
+| **1-hour** | 4 ticks | 1,916 | **3.07%** | +0.01% | 91.49% | 80.00% |
+| **6-hour** | 24 ticks | 1,676 | **2.19%** | -0.13% | 65.57% | 80.00% |
+| **12-hour** | 48 ticks | 1,388 | **2.10%** | -0.31% | 49.86% | 80.00% |
+| **24-hour** | 96 ticks | 812 | **2.11%** | -0.42% | 36.08% | 80.00% |
+
+> [!NOTE]
+> *Backtest Caveat:* Because the simulator generates consumption using deterministic diurnal equations with seeded noise, low MAPE values demonstrate model implementation consistency with documented simulator profiles, rather than general real-world economic forecasting.
+
 ### Empirical k6 Load Benchmarks
 
-The API read paths (`/api/state`, `/api/risks`, `/api/recommendations`, `/api/events`) were stress-tested with Grafana k6 under three operational conditions:
+The platform was stress-tested with Grafana k6 under multiple operational profiles, including concurrent candidate What-If simulations:
 
 | Workload Profile | Total Requests | Error Rate | p50 Latency | p95 Latency | Throughput | Resource Impact |
 |---|---|---|---|---|---|---|
 | **1. Normal Baseline** | 71,949 | **0.00%** | 3.4 ms | 18.2 ms | 334.6 req/s | API CPU < 25%, Memory ~65MB |
 | **2. Simulator Latency Fault (3.5s delay)** | 71,768 | **0.00%** | 3.5 ms | 19.1 ms | 333.8 req/s | Unaffected (PostgreSQL isolation) |
 | **3. Predictor Service Stopped** | 61,659 | **0.00%** | 4.1 ms | 22.4 ms | 286.7 req/s | Unaffected (cached DB views) |
-| **Combined Benchmark Total** | **205,376** | **0.00%** | **3.6 ms** | **19.8 ms** | — | **Zero HTTP 5xx errors** |
+| **4. Decision Path (What-If under load)** | 8,540 | **0.00%** | 150.1 ms | 920.6 ms | 131.3 req/s | In-memory candidate evaluation |
+| **Combined Benchmark Total** | **213,916** | **0.00%** | — | — | — | **Zero HTTP 5xx errors** |
 
-*Note: The performance knee occurs at ~100 concurrent virtual users on local hardware, where request queuing begins to elevate p95 response times past 500ms. Detailed graphs and telemetry are available in [docs/loadtest.md](docs/loadtest.md).*
+*Note on Decision Load Scope:* The decision path tested under automated load is `POST /api/whatif`. Automated submission of dispatches to `/v1/allocations` without human operator approval is strictly prohibited by AGENTS.md Hard Rules 6 & 12.
 
-### Scenario Determinism Verification
+### Scenario Determinism Verification & Policy Results
 
-The scenario runner (`scripts/scenario_runner.py`) evaluated candidate policies across four distinct disruption scenarios over 24 independent runs. Every paired run achieved **100% identical outputs (delta 0.0000)**:
+The scenario runner (`scripts/scenario_runner.py`) evaluated candidate policies across disruption scenarios over 54 independent runs (9 scenarios × 3 policies × 2 runs). Every paired run achieved **100% identical outputs (delta 0.0000)**.
 
-- `scenarios/baseline.yaml`: Normal operational conditions across regional stations.
-- `scenarios/spike.yaml`: High demand surges triggered in industrial and highway corridors.
-- `scenarios/route.yaml`: Severe transit delay disruptions on major supply corridors.
-- `scenarios/combined.yaml`: Simultaneous demand spikes and route delays.
+Measured empirical results across candidate allocation policies (`none` / do-nothing, `naive`, `heuristic`) across 54 evaluation runs (source: [docs/results/scenario-summary.md](docs/results/scenario-summary.md)):
 
-*Detailed comparison tables are recorded in [docs/results/scenario-summary.md](docs/results/scenario-summary.md).*
+| Scenario | Policy | Service Level | Served Demand | Unmet Demand | Dispatched Fuel | Stockout Events |
+|---|---|---:|---:|---:|---:|---:|
+| **baseline** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **combined** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **crisis_combined** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **depot_constraint** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **route** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **shipment_delay** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **spike** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **station_outage** | `none` (do-nothing) | 84.8% | 10,905 L | 1,955 L | 0 L | 0 |
+| | `naive` | 84.8% | 10,905 L | 1,955 L | 0 L | 0 |
+| | `heuristic` | 84.8% | 10,905 L | 1,955 L | 12,000 L | 0 |
+| **supply_shortfall** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+
+*Policy comparison analysis:*
+- In mild-horizon scenarios where initial station tank levels buffer demand over the 48-tick window, both do-nothing (`none`) and proactive replenishment (`heuristic`) maintain 100.0% service levels. The heuristic proactively dispatches 15,238 liters of buffer stock to vulnerable stations before stockouts emerge.
+- In `station_outage`, unserved demand (1,955 L) is strictly isolated to the offline station, achieving 84.8% network service level while preventing wasted fuel allocations to offline infrastructure.
+- Full paired determinism (Run 1 vs Run 2) is 100% verified with delta 0.0000 across all policies.
 
 ---
 
@@ -223,7 +290,8 @@ cd fuel_simulator
 cp .env.example .env
 ```
 
-> **Note:** The default credentials in `.env.example` are pre-configured for local simulated development. To test operator approvals, set an arbitrary `OPERATOR_TOKEN` in `.env`.
+> [!NOTE]
+> The default credentials in `.env.example` are pre-configured for local simulated development. To test operator approvals, set an arbitrary `OPERATOR_TOKEN` in `.env`.
 
 ### 2. Launch the Platform
 
@@ -241,7 +309,7 @@ docker compose ps
 
 | Component | URL | Notes |
 |---|---|---|
-| **Operator Frontend** | [http://localhost:5174](http://localhost:5174) or [http://localhost:5173](http://localhost:5173) | Primary interactive operator control UI |
+| **Operator Frontend** | [http://localhost:5173](http://localhost:5173) (or [http://localhost:5174](http://localhost:5174)) | Primary interactive operator control UI |
 | **Operator API Docs** | [http://localhost:8101/docs](http://localhost:8101/docs) | Interactive Swagger UI for backend API |
 | **API Health Status** | [http://localhost:8101/api/health](http://localhost:8101/api/health) | Aggregated component health JSON |
 | **Worker Service** | [http://localhost:8102/health](http://localhost:8102/health) | Background synchronization service |
@@ -263,68 +331,6 @@ make lint
 make smoke
 ```
 
-### 5. Clean Shutdown
-
-```bash
-# Stop containers while preserving database and Grafana volumes
-make down
-
-# Optional: Clean reset including volume removal
-docker compose down -v
-```
-
----
-
-## Repository Structure
-
-```text
-fuel_simulator/
-├── backend/
-│   ├── api/                    # FastAPI operator read service and database routes
-│   │   ├── db.sql              # PostgreSQL relational schema and initial tables
-│   │   └── routes/             # Health, state, risks, recommendations, events
-│   ├── worker/                 # Background synchronization daemon and job scheduler
-│   │   ├── forecaster.py       # RemotePredictor client with circuit breaker & fallback
-│   │   ├── jobs.py             # ForecastJob, RecommendationJob, and Ingestion loop
-│   │   └── executor.py         # Guarded allocation submitter with revalidation
-│   └── shared/core/            # Pure domain algorithms (zero I/O dependencies)
-│       ├── forecast.py         # Demand rate estimation and seasonal calibration
-│       ├── risk.py             # Monte Carlo stockout trajectory simulation
-│       ├── validator.py        # Physical constraint checker (capacity, ullage, quota)
-│       ├── explain.py          # Structured explainability rationale engine
-│       ├── models.py           # Strict Pydantic domain models
-│       └── sim_client.py       # Typed simulator REST client with circuit breaker
-├── intel/
-│   └── predictor/              # Standalone machine learning & prediction service
-│       └── app/main.py         # FastAPI service with dual-port routing (8103/8100)
-├── web/                        # React 19 + TypeScript operator application
-│   ├── src/
-│   │   ├── app/App.tsx         # Main application shell and tab routing
-│   │   ├── features/           # Dashboard, inventory, risk, allocations, health
-│   │   └── services/api.ts     # Frontend HTTP client
-│   └── tests/                  # Vitest component unit tests
-├── observability/              # Production observability configurations
-│   ├── prometheus/             # Scrape configs for API, worker, and predictor
-│   └── grafana/provisioning/   # Automated datasources, dashboards, and alerting rules
-├── scenarios/                  # Declarative disruption scenarios (YAML)
-├── loadtest/                   # Grafana k6 stress testing suites and thresholds
-├── scripts/                    # Operational automation, gate validation, and benchmarks
-│   ├── scenario_runner.py      # Multi-scenario deterministic evaluation harness
-│   ├── chaos_random.py         # Reversible randomized simulator fault injector
-│   ├── cold_start_check.sh     # Volume destruction cold-start recovery benchmark
-│   └── sprint_gate_public.sh   # Public mechanical sprint validation script
-└── docs/                       # Engineering records, architecture, and evidence
-    ├── DAY-1-UPDATE.md         # Sprints 1–4 consolidated engineering record
-    ├── DAY-2-UPDATE.md         # Sprints 5–7 engineering record & frontend showcase
-    ├── final-demo-script.md    # 5-minute live operator walkthrough script
-    ├── qa.md                   # Complete answers to 15 judge evaluation questions
-    ├── loadtest.md             # Empirical k6 load test analysis and latency knee
-    ├── resilience.md           # Runtime fault demo matrix and recovery evidence
-    ├── decisions.md            # Architecture Decision Records (ADR-001 to ADR-035)
-    ├── PROGRESS.md             # Comprehensive sprint progress ledger
-    └── evidence/day-2/         # Genuine high-resolution frontend screenshots
-```
-
 ---
 
 ## Documentation & Evidence Index
@@ -332,21 +338,25 @@ fuel_simulator/
 - **Engineering Updates:**
   - [Day 1 Engineering Update (Sprints 1–4)](docs/DAY-1-UPDATE.md)
   - [Day 2 Engineering Update (Sprints 5–7)](docs/DAY-2-UPDATE.md)
+  - [Day 3 Engineering Update & Final Freeze (Sprints 8–10)](docs/DAY-3-UPDATE.md)
+- **Judging & Evaluation:**
+  - [Judging Day Presentation Guide & 10-Min Demo Script](docs/JUDGING-DAY.md)
+  - [Hackathon Brief Compliance Matrix (Sections 4–26)](docs/BRIEF-COMPLIANCE.md)
+  - [Crisis Event Handling Architecture & Scenarios](docs/event-handling.md)
+  - [Judge Evaluation Q&A (15 Questions Answered)](docs/qa.md)
 - **Detailed Sprint Reports:**
-  - [Sprint 01 Report](docs/sprint-reports/sprint-01.md) · [Sprint 02 Report](docs/sprint-reports/sprint-02.md) · [Sprint 03 Report](docs/sprint-reports/sprint-03.md)
-  - [Sprint 04 Report](docs/sprint-reports/sprint-04.md) · [Sprint 05 Report](docs/sprint-reports/sprint-05.md) · [Sprint 06 Report](docs/sprint-reports/sprint-06.md) · [Sprint 07 Report](docs/sprint-reports/sprint-07.md)
-- **Evaluation & Benchmarks:**
+  - [Sprint 01 Report](docs/sprint-reports/sprint-01.md) · [Sprint 02 Report](docs/sprint-reports/sprint-02.md) · [Sprint 03 Report](docs/sprint-reports/sprint-03.md) · [Sprint 04 Report](docs/sprint-reports/sprint-04.md)
+  - [Sprint 05 Report](docs/sprint-reports/sprint-05.md) · [Sprint 06 Report](docs/sprint-reports/sprint-06.md) · [Sprint 07 Report](docs/sprint-reports/sprint-07.md) · [Sprint 08 Report](docs/sprint-reports/sprint-08.md)
+  - [Sprint 09 Report](docs/sprint-reports/sprint-09.md) · [Sprint 10 Report](docs/sprint-reports/sprint-10.md)
+- **Empirical Evidence & Benchmarks:**
+  - [Day 3 Screenshot Gallery Manifest](docs/evidence/day-3/screens/MANIFEST.md)
+  - [Day 3 Independent Verification Report](docs/evidence/day-3/verification.md)
+  - [Day 3 Numerical Claims Ledger](docs/evidence/day-3/claims-ledger.md)
   - [k6 Load Benchmark Report](docs/loadtest.md)
   - [Deterministic Scenario Evaluation Summary](docs/results/scenario-summary.md)
-  - [Cold-Start Recovery Benchmark (34s)](docs/evidence/sprint-07-cold-start.txt)
-  - [Clean-Clone Verification Proof](docs/evidence/clean-clone-check.txt)
-  - [Randomized Chaos Rehearsal Log](docs/evidence/sprint-07-chaos.json)
-- **Presentation & Evaluation:**
-  - [5-Minute Live Demonstration Script](docs/final-demo-script.md)
-  - [Judge Evaluation Q&A (15 Questions Answered)](docs/qa.md)
-  - [Project Assumptions & System Boundaries](docs/assumptions-and-limitations.md)
-  - [AI Usage & Governance Boundary](docs/ai-usage.md)
-  - [Comprehensive Submission Map](docs/SUBMISSION-MAP.md)
+  - [Demand Forecasting Backtest Summary](docs/results/backtest-summary.md)
+  - [Automated Rollback Drill Evidence](docs/evidence/sprint-10-rollback-drill.txt)
+  - [Resilience & Failure Boundary Matrix](docs/resilience.md)
 
 ---
 

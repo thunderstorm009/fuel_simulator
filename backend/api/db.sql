@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS forecasts (
     needs_review BOOLEAN NOT NULL,
     source TEXT NOT NULL,
     trajectory JSONB NOT NULL DEFAULT '[]'::jsonb,
-    drivers JSONB NOT NULL DEFAULT '{}'::jsonb
+    drivers JSONB NOT NULL DEFAULT '{}'::jsonb,
+    model_version TEXT NOT NULL DEFAULT '1.1.0'
 );
 CREATE INDEX IF NOT EXISTS forecasts_pair_tick_idx ON forecasts (station_id, fuel_type, tick DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS forecasts_snapshot_pair_idx
@@ -49,7 +50,9 @@ CREATE TABLE IF NOT EXISTS recommendations (
     expires_tick INTEGER NOT NULL,
     correlation_id TEXT,
     sim_allocation_id BIGINT,
-    failure_reason TEXT
+    failure_reason TEXT,
+    model_version TEXT NOT NULL DEFAULT '1.1.0',
+    policy_version TEXT NOT NULL DEFAULT '2.0.0'
 );
 CREATE INDEX IF NOT EXISTS recommendations_status_idx ON recommendations (status, created_tick);
 
@@ -72,6 +75,28 @@ CREATE TABLE IF NOT EXISTS incidents (
     detail JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 CREATE INDEX IF NOT EXISTS incidents_open_idx ON incidents (severity, detected_at DESC) WHERE resolved_at IS NULL;
+CREATE INDEX IF NOT EXISTS incidents_dedup_idx ON incidents (type, (detail->>'dedup_key')) WHERE resolved_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS depot_risks (
+    id BIGSERIAL PRIMARY KEY,
+    snapshot_id BIGINT NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,
+    tick INTEGER NOT NULL,
+    depot_id TEXT NOT NULL,
+    fuel_type TEXT NOT NULL CHECK (fuel_type IN ('DIESEL', 'PETROL', 'OCTANE')),
+    current_inventory DOUBLE PRECISION NOT NULL,
+    scheduled_arrivals DOUBLE PRECISION NOT NULL,
+    committed_allocations DOUBLE PRECISION NOT NULL,
+    projected_demand DOUBLE PRECISION NOT NULL,
+    net_cover_liters DOUBLE PRECISION NOT NULL,
+    cover_hours DOUBLE PRECISION NOT NULL,
+    is_bottleneck BOOLEAN NOT NULL DEFAULT FALSE,
+    dispatch_utilization DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    evidence JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+CREATE INDEX IF NOT EXISTS depot_risks_depot_tick_idx ON depot_risks (depot_id, fuel_type, tick DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS depot_risks_snapshot_pair_idx
+    ON depot_risks (snapshot_id, depot_id, fuel_type);
+
 
 CREATE TABLE IF NOT EXISTS integration_events (
     id BIGSERIAL PRIMARY KEY,

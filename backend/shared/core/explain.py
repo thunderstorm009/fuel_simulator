@@ -67,6 +67,7 @@ def build_explanation(
         },
         constraints_applied=plan.constraints_applied,
         alternatives=plan.alternatives,
+        triage=plan.triage,
         risk_before=_risk_summary(before),
         risk_after=_risk_summary(after),
         policy_used=policy_used,
