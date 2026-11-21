@@ -1,9 +1,9 @@
 # Demand Forecasting Backtest Summary
 
 - **Model Version**: `1.1.0`
-- **Policy Version**: `2.0.0`
-- **Evaluation Date**: 2026-11-21T06:49:50.993691+00:00
-- **Git Commit**: `1417e2f`
+- **Policy Version**: `2.1.0`
+- **Evaluation Date**: 2026-11-21T08:34:58.841286+00:00
+- **Git Commit**: `e4ceb75`
 - **Sample Records Evaluated**: 2000 ticks across 4 stations and 3 fuel types
 
 ## Aggregate Performance Across Horizons

@@ -10,7 +10,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.9183625830000892
+    "elapsed_seconds": 0.9133401670005696
   },
   {
     "scenario": "baseline",
@@ -23,7 +23,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8666589170002226
+    "elapsed_seconds": 0.8541166249997332
   },
   {
     "scenario": "baseline",
@@ -36,7 +36,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.5719444169999406
+    "elapsed_seconds": 2.78411291699922
   },
   {
     "scenario": "baseline",
@@ -49,7 +49,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.457683249999718
+    "elapsed_seconds": 3.0993328749991633
   },
   {
     "scenario": "baseline",
@@ -62,7 +62,7 @@
     "allocation_liters": 15238.135,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.310375207999641
+    "elapsed_seconds": 4.024758875000771
   },
   {
     "scenario": "baseline",
@@ -75,7 +75,7 @@
     "allocation_liters": 15238.135,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.3342306670001562
+    "elapsed_seconds": 4.272194000001036
   },
   {
     "scenario": "combined",
@@ -84,11 +84,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 16077.988,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.9207645000001321
+    "elapsed_seconds": 0.9731009589995665
   },
   {
     "scenario": "combined",
@@ -97,11 +97,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 16077.988,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.9337560419999136
+    "elapsed_seconds": 1.054240542000116
   },
   {
     "scenario": "combined",
@@ -110,11 +110,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 16077.988,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.451211874999899
+    "elapsed_seconds": 3.3897202919997653
   },
   {
     "scenario": "combined",
@@ -123,11 +123,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 16077.988,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.6074380420000125
+    "elapsed_seconds": 2.9779347090006922
   },
   {
     "scenario": "combined",
@@ -136,11 +136,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "served_demand_liters": 16077.988,
+    "allocation_liters": 19250.537,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2028439999999136
+    "elapsed_seconds": 3.623186958999213
   },
   {
     "scenario": "combined",
@@ -149,11 +149,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "served_demand_liters": 16077.988,
+    "allocation_liters": 19250.537,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.401082917000167
+    "elapsed_seconds": 3.9341094589999557
   },
   {
     "scenario": "crisis_combined",
@@ -162,11 +162,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.867819375000181
+    "elapsed_seconds": 0.9750952909998887
   },
   {
     "scenario": "crisis_combined",
@@ -175,11 +175,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.9076264169998467
+    "elapsed_seconds": 0.9674340000001393
   },
   {
     "scenario": "crisis_combined",
@@ -188,11 +188,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.4814835409997613
+    "elapsed_seconds": 2.8914112500006013
   },
   {
     "scenario": "crisis_combined",
@@ -201,11 +201,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.5655549580001207
+    "elapsed_seconds": 3.0929712500001187
   },
   {
     "scenario": "crisis_combined",
@@ -214,11 +214,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
-    "allocation_failures": 0,
+    "served_demand_liters": 15278.075,
+    "allocation_liters": 21337.178,
+    "allocation_failures": 2,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2443727909999325
+    "elapsed_seconds": 3.9447995419996005
   },
   {
     "scenario": "crisis_combined",
@@ -227,11 +227,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
-    "allocation_failures": 0,
+    "served_demand_liters": 15278.075,
+    "allocation_liters": 21337.178,
+    "allocation_failures": 2,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.3406835830001
+    "elapsed_seconds": 4.000887333000719
   },
   {
     "scenario": "depot_constraint",
@@ -244,7 +244,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.9021183330000895
+    "elapsed_seconds": 0.9560453750000306
   },
   {
     "scenario": "depot_constraint",
@@ -257,7 +257,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8744654170000103
+    "elapsed_seconds": 1.0577168749987322
   },
   {
     "scenario": "depot_constraint",
@@ -270,7 +270,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.562631207999857
+    "elapsed_seconds": 2.5874572089996946
   },
   {
     "scenario": "depot_constraint",
@@ -283,7 +283,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.5235868330000812
+    "elapsed_seconds": 3.717339084001651
   },
   {
     "scenario": "depot_constraint",
@@ -293,10 +293,10 @@
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
     "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "allocation_liters": 15359.87,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2839894169997024
+    "elapsed_seconds": 4.584497291998559
   },
   {
     "scenario": "depot_constraint",
@@ -306,10 +306,10 @@
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
     "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "allocation_liters": 15359.87,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.5521975830001793
+    "elapsed_seconds": 3.992166874999384
   },
   {
     "scenario": "route",
@@ -322,7 +322,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8936427919998096
+    "elapsed_seconds": 1.0003458749997662
   },
   {
     "scenario": "route",
@@ -335,7 +335,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8848758750000343
+    "elapsed_seconds": 0.9852456250009709
   },
   {
     "scenario": "route",
@@ -348,7 +348,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.4744072500002403
+    "elapsed_seconds": 3.0130333749984857
   },
   {
     "scenario": "route",
@@ -361,7 +361,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.8897683329996653
+    "elapsed_seconds": 2.833034958001008
   },
   {
     "scenario": "route",
@@ -371,10 +371,10 @@
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
     "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "allocation_liters": 15359.87,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2496599159999278
+    "elapsed_seconds": 3.742122333000225
   },
   {
     "scenario": "route",
@@ -384,10 +384,10 @@
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
     "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "allocation_liters": 15359.87,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.1475177920001443
+    "elapsed_seconds": 3.7369175829990127
   },
   {
     "scenario": "shipment_delay",
@@ -400,7 +400,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8580527080002867
+    "elapsed_seconds": 0.9540182500004448
   },
   {
     "scenario": "shipment_delay",
@@ -413,7 +413,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.9314905420001196
+    "elapsed_seconds": 1.0489513749998878
   },
   {
     "scenario": "shipment_delay",
@@ -426,7 +426,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.438755791999938
+    "elapsed_seconds": 2.9560237910009164
   },
   {
     "scenario": "shipment_delay",
@@ -439,7 +439,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.6338808330001484
+    "elapsed_seconds": 2.9494205829996645
   },
   {
     "scenario": "shipment_delay",
@@ -452,7 +452,7 @@
     "allocation_liters": 15238.135,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2071048749999136
+    "elapsed_seconds": 3.7832839590009826
   },
   {
     "scenario": "shipment_delay",
@@ -465,7 +465,7 @@
     "allocation_liters": 15238.135,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2692137499998353
+    "elapsed_seconds": 3.7928182919986284
   },
   {
     "scenario": "spike",
@@ -474,11 +474,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8824802919998547
+    "elapsed_seconds": 1.0332021670001268
   },
   {
     "scenario": "spike",
@@ -487,11 +487,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8920910420001746
+    "elapsed_seconds": 0.9231537080013368
   },
   {
     "scenario": "spike",
@@ -500,11 +500,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.5583863330002714
+    "elapsed_seconds": 3.053841625000132
   },
   {
     "scenario": "spike",
@@ -513,11 +513,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "served_demand_liters": 15278.075,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.4935519999999087
+    "elapsed_seconds": 2.8508789589996013
   },
   {
     "scenario": "spike",
@@ -526,11 +526,11 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "served_demand_liters": 15278.075,
+    "allocation_liters": 21538.362,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.315648417000375
+    "elapsed_seconds": 3.961664209000446
   },
   {
     "scenario": "spike",
@@ -539,89 +539,89 @@
     "ticks": 20,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "served_demand_liters": 15278.075,
+    "allocation_liters": 21538.362,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2974108749999687
+    "elapsed_seconds": 3.9357497500004683
   },
   {
     "scenario": "station_outage",
     "policy": "none",
     "run": 1,
     "ticks": 20,
-    "service_level": 1.0,
-    "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "service_level": 0.848086,
+    "unmet_demand_liters": 1953.653,
+    "served_demand_liters": 10906.572,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8856016249997083
+    "elapsed_seconds": 1.216807875000086
   },
   {
     "scenario": "station_outage",
     "policy": "none",
     "run": 2,
     "ticks": 20,
-    "service_level": 1.0,
-    "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "service_level": 0.848086,
+    "unmet_demand_liters": 1953.653,
+    "served_demand_liters": 10906.572,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8796115410000311
+    "elapsed_seconds": 1.010875500000111
   },
   {
     "scenario": "station_outage",
     "policy": "naive",
     "run": 1,
     "ticks": 20,
-    "service_level": 1.0,
-    "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "service_level": 0.848086,
+    "unmet_demand_liters": 1953.653,
+    "served_demand_liters": 10906.572,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.5363696670001445
+    "elapsed_seconds": 4.018500958000004
   },
   {
     "scenario": "station_outage",
     "policy": "naive",
     "run": 2,
     "ticks": 20,
-    "service_level": 1.0,
-    "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
+    "service_level": 0.848086,
+    "unmet_demand_liters": 1953.653,
+    "served_demand_liters": 10906.572,
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.503643542000191
+    "elapsed_seconds": 3.0383078340000793
   },
   {
     "scenario": "station_outage",
     "policy": "heuristic",
     "run": 1,
     "ticks": 20,
-    "service_level": 1.0,
-    "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "service_level": 0.848086,
+    "unmet_demand_liters": 1953.653,
+    "served_demand_liters": 10906.572,
+    "allocation_liters": 13721.668,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.401399040999877
+    "elapsed_seconds": 4.02748345800137
   },
   {
     "scenario": "station_outage",
     "policy": "heuristic",
     "run": 2,
     "ticks": 20,
-    "service_level": 1.0,
-    "unmet_demand_liters": 0.0,
-    "served_demand_liters": 12860.225,
-    "allocation_liters": 15238.135,
+    "service_level": 0.848086,
+    "unmet_demand_liters": 1953.653,
+    "served_demand_liters": 10906.572,
+    "allocation_liters": 13721.668,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.340451749999829
+    "elapsed_seconds": 3.5008523329997843
   },
   {
     "scenario": "supply_shortfall",
@@ -634,7 +634,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.976029749999725
+    "elapsed_seconds": 1.378430541999478
   },
   {
     "scenario": "supply_shortfall",
@@ -647,7 +647,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 0.8651974169997629
+    "elapsed_seconds": 0.8660989589989185
   },
   {
     "scenario": "supply_shortfall",
@@ -660,7 +660,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.674907125000118
+    "elapsed_seconds": 2.8555794580006477
   },
   {
     "scenario": "supply_shortfall",
@@ -673,7 +673,7 @@
     "allocation_liters": 0.0,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 2.527902499999982
+    "elapsed_seconds": 2.9559254169998894
   },
   {
     "scenario": "supply_shortfall",
@@ -686,7 +686,7 @@
     "allocation_liters": 15238.135,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.2895554579999953
+    "elapsed_seconds": 3.731651874999443
   },
   {
     "scenario": "supply_shortfall",
@@ -699,6 +699,6 @@
     "allocation_liters": 15238.135,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 3.32272412500015
+    "elapsed_seconds": 3.65051958299955
   }
 ]

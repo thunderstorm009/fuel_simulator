@@ -1,7 +1,7 @@
 # Stockout Probability Calibration Summary
 
 - **Model Version**: `1.1.0`
-- **Evaluation Date**: 2026-11-21T06:49:51.025865+00:00
+- **Evaluation Date**: 2026-11-21T08:34:58.869646+00:00
 - **Scenarios Evaluated**: 54 scenario runs
 
 ## Predicted vs Observed Stockout Frequency
