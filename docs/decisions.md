@@ -316,3 +316,13 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   5. Expose `GET /api/incidents/{id}/summary` returning `{summary, source, label, simulated: true}`.
   6. Operator UI renders the output with mandatory disclaimer pill: `AI-generated summary of simulated data`. The LLM has zero authority to approve allocations or validate feasibility.
 - **Trade-off:** Safeguards guarantee high availability and zero external network fragility while offering narrative convenience to human operators.
+
+### ADR-041: Token Rate Limiting, Version Metadata API, and Automated Deployment Rollback (Sprint 10)
+- **Status:** Accepted
+- **Context:** Sprint 10 requires production-grade delivery excellence: constant-time operator authentication with rate limiting against brute-force attacks, transparent version telemetry for operators and auditors, automated container image building and registry publishing, and automated rollback scripts to recover from failed deployments.
+- **Decision:**
+  1. Operator Token Handling: Enforce constant-time comparison via `hmac.compare_digest`. Implement in-memory sliding-window rate limiting on operator decision endpoints (`/approve` and `/reject`), restricting callers to 60 decisions per minute and returning HTTP 429 when exceeded. Never log raw tokens.
+  2. Version Metadata: Expose `GET /api/version` returning `{git_sha, tag, build_time, model_version, policy_version, simulated: true}`. Render version identifiers and SIMULATED badge in the global web footer (`Footer.tsx`).
+  3. Release Automation & Rollback: Add `.github/workflows/release.yml` building and publishing versioned container images to GHCR on `v*` and `sprint-*` tags. Implement `scripts/deploy.sh <tag>` and `scripts/rollback.sh <tag>` providing one-command automated rollback upon smoke test failure.
+  4. Security Hardening: Add Gitleaks secret scanning and dependency audits (`npm audit` with 0 high/critical vulnerabilities) to CI.
+- **Trade-off:** Sliding-window in-memory limiter avoids external Redis dependency while protecting decision APIs from flood attacks. Automated rollback ensures zero downtime during judging or operational deploys.

@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from api.database import ReadRepository
 from core.models import FuelType, Snapshot
 from core.summarize import LLMSummarizer
-from core.version import MODEL_VERSION, POLICY_VERSION
+from core.version import BUILD_TIME, GIT_SHA, GIT_TAG, MODEL_VERSION, POLICY_VERSION
 from core.what_if import WhatIfCandidate, simulate_what_if
 
 router = APIRouter(prefix="/api")
@@ -146,6 +146,18 @@ async def incident_summary(incident_id: int, repository: RepositoryDep) -> dict[
         "summary": summary,
         "source": source,
         "label": "AI-generated summary of simulated data",
+        "simulated": True,
+    }
+
+
+@router.get("/version")
+async def version_info() -> dict[str, Any]:
+    return {
+        "git_sha": GIT_SHA,
+        "tag": GIT_TAG,
+        "build_time": BUILD_TIME,
+        "model_version": MODEL_VERSION,
+        "policy_version": POLICY_VERSION,
         "simulated": True,
     }
 

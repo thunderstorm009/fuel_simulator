@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Header from "../components/layout/Header";
+import Footer from "../components/layout/Footer";
 import PageNavigation, { type Page } from "../components/layout/PageNavigation";
 import DashboardPage from "../features/dashboard/DashboardPage";
 import RecommendationsPage from "../features/allocations/RecommendationsPage";
@@ -88,7 +89,7 @@ export default function App() {
       ) : (
         <DashboardPage snapshot={snapshot} events={events} incidents={incidents} depotRisks={depotRisks} />
       )}
-      {state && <footer className="page-footer">All information is simulated. Last successful refresh {localTime(state.fetched_at)}.</footer>}
+      <Footer lastRefresh={state ? localTime(state.fetched_at) : undefined} />
     </main>
   );
 }

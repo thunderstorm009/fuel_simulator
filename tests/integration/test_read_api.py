@@ -80,7 +80,7 @@ def test_state_and_data_health_read_latest_snapshot(api_client: TestClient) -> N
     assert response.json()["data_status"] == "HEALTHY"
     assert response.json()["data_age_seconds"] < 15
     assert response.json()["model_version"] == "1.1.0"
-    assert response.json()["policy_version"] == "2.0.0"
+    assert response.json()["policy_version"] == "2.1.0"
     assert health.json()["data_status"] == "HEALTHY"
 
 
@@ -161,3 +161,15 @@ def test_incident_summary_endpoint(api_client: TestClient) -> None:
     # Not found incident
     not_found = api_client.get("/api/incidents/999/summary")
     assert not_found.status_code == 404
+
+
+def test_version_endpoint(api_client: TestClient) -> None:
+    res = api_client.get("/api/version")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["simulated"] is True
+    assert "git_sha" in data
+    assert "tag" in data
+    assert "model_version" in data
+    assert "policy_version" in data
+    assert "build_time" in data

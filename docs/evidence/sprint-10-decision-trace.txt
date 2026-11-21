@@ -1,0 +1,107 @@
+# End-to-End Decision Lifecycle Trace by Correlation ID
+Correlation ID (recommendation_id): bb8854e8-faa9-4a92-be3a-08fb09041725
+Permanent Idempotency Key: rec-bb8854e8-faa9-4a92-be3a-08fb09041725
+Generated: 2026-11-21T07:25:46Z
+
+## Stage 1: Shortage Risk Prediction
+```json
+{
+  "stage": "1_OBSERVE_AND_PREDICT",
+  "timestamp": "2026-11-21T07:25:46Z",
+  "station_id": "station-chittagong-hub",
+  "fuel_type": "DIESEL",
+  "current_inventory": 4200.0,
+  "tank_capacity": 30000.0,
+  "observed_consumption_rate": 1250.0,
+  "projected_hours_to_stockout": 3.36,
+  "stockout_probability_24h": 0.94,
+  "risk_level": "CRITICAL",
+  "model_version": "1.1.0",
+  "confidence": 0.88
+}
+```
+
+## Stage 2: Proposal Formulation & Constraint Audit
+```json
+{
+  "stage": "2_RECOMMENDATION_GENERATED",
+  "timestamp": "2026-11-21T07:25:46Z",
+  "recommendation_id": "bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "policy_version": "2.1.0",
+  "policy_rule": "two_pass_urgency_12h_then_target",
+  "candidate": {
+    "source_depot_id": "depot-chittagong-main",
+    "destination_station_id": "station-chittagong-hub",
+    "route_id": "route-depot-chittagong-main-to-station-chittagong-hub",
+    "fuel_type": "DIESEL",
+    "quantity": 10000.0,
+    "eta_ticks": 4
+  },
+  "constraint_audit": {
+    "depot_stock_sufficient": true,
+    "depot_dispatch_budget_available": true,
+    "route_accessible": true,
+    "station_active_not_outage": true,
+    "station_tank_ullage_sufficient": true
+  },
+  "impact_projection": {
+    "hours_to_stockout_before": 3.36,
+    "hours_to_stockout_after": 11.36,
+    "stockout_probability_after": 0.05
+  }
+}
+```
+
+## Stage 3: Human Operator Decision Gate
+```json
+{
+  "stage": "3_OPERATOR_APPROVAL",
+  "timestamp": "2026-11-21T07:25:46Z",
+  "recommendation_id": "bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "actor": "operator",
+  "decision": "APPROVED",
+  "token_verification": "CONSTANT_TIME_HMAC_PASSED",
+  "rate_limit_check": "PASSED (1/60)",
+  "simulated": true
+}
+```
+
+## Stage 4: Executor Pre-Check, Revalidation & Simulator Submission
+```json
+{
+  "stage": "4_EXECUTOR_SUBMIT_AND_SIMULATION_WRITE",
+  "timestamp": "2026-11-21T07:25:46Z",
+  "recommendation_id": "bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "pre_submission_checks": {
+    "authoritative_rest_read": "HTTP 200 OK",
+    "snapshot_data_stale": false,
+    "revalidation_all_5_rules": "PASS"
+  },
+  "simulator_write_payload": {
+    "destination_station_id": "station-chittagong-hub",
+    "fuel_type": "DIESEL",
+    "idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725",
+    "quantity": 10000.0,
+    "route_id": "route-depot-chittagong-main-to-station-chittagong-hub",
+    "source_depot_id": "depot-chittagong-main"
+  },
+  "simulator_response": {
+    "status_code": 201,
+    "allocation_id": "alloc-bb8854e8",
+    "arrival_tick": 4,
+    "status": "IN_TRANSIT"
+  },
+  "database_audit_record": {
+    "recommendation_status": "EXECUTED",
+    "executed_at": "2026-11-21T07:25:46Z",
+    "permanent_idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725"
+  }
+}
+```
+
+## Audit Summary
+- Lifecycle: Forecast -> Risk -> Recommendation -> What-If -> Operator Approval -> Pre-submission Revalidation -> Simulator Write -> In-Transit Tracking.
+- Constraint Verification: 100% verified at proposal generation AND re-verified immediately before HTTP POST.
+- Idempotency Guarantee: Single persistent key `rec-bb8854e8-faa9-4a92-be3a-08fb09041725` bound permanently to exact allocation body.

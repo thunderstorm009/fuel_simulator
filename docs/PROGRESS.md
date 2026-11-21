@@ -4,28 +4,29 @@ Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`.
-- Sprints 1–9: All gates passed and tagged.
-- Sprint 9: COMPLETE. WP9.1 (Backtesting, calibration, versioning, experiments), WP9.2 (What-if simulator), WP9.3 (Operator view gaps: regional demand, incoming supply, alert center, network view, evaluation page), WP9.4 (Uncertainty buffer & LP optimizer), WP9.5 (Generative incident explanations) all verified. 177 Python tests, 11 frontend tests.
-- Next: Sprint 10 (prompts/SPRINT-10.md: security hardening, decision load testing, cold start resilience, compliance pass, demo day runbook).
+- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
+- Sprints 1–10: All gates passed and tagged.
+- Sprint 10: COMPLETE. WP10.1 (CI/CD release workflow, /api/version, token rate limiter, rollback drill), WP10.2 (Resilience extension, database outage, per-service kill -9 recovery, physical failure boundaries), WP10.3 (Observability completion, alert rules as code, decision lifecycle trace), WP10.4 (Decision-path load testing, k6 what-if benchmark), WP10.5 (Judging-day runbook, surprise drill script, 100% brief compliance). 182 Python tests, 11 frontend tests.
+- Next: Final judging rehearsal and project handover.
 
 ## Verification in this work package
 
-- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 85 files checked, 0 errors.
-- `.venv/bin/pytest tests/`: 177 Python tests passed in 1.74s.
+- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 86 files checked, 0 errors.
+- `.venv/bin/pytest tests/`: 182 Python tests passed in 1.38s.
 - `npm --prefix web test -- --run && npm --prefix web run build`: 11 Vitest tests passed; Vite production build passed cleanly.
 - `docker compose config -q`: passed.
 - `git diff --check`: passed.
-- `bash scripts/sprint_gate.sh 9`: passed.
-- Backtesting: 2,000 ticks replayed across 1h, 6h, 12h, 24h horizons. MAPE 2.11%-3.07%.
-- What-If Simulator: pure candidate simulation with zero DB/simulator writes (<50ms).
-- Operator Views: Regional demand, incoming supply, alert center, network view, evaluation scorecard.
-- Generative Explanations: deterministic template default with bounded LLM wrapper (3s timeout, safe fallback).
+- `bash scripts/sprint_gate.sh 10`: passed.
+- Gitleaks & npm audit: 0 secrets leaked across 18 commits, 0 npm vulnerabilities.
+- Automated rollback: tested live in `docs/evidence/sprint-10-rollback-drill.txt`.
+- Decision load test: 9,584 requests @ 100 VUs, median 122ms, 0.0% error rate.
+- Per-service kill -9 recovery: measured 0.10s-0.23s across all containers.
+- Brief compliance: 100% of requirements across sections 4-26 verified as MET or OPTIONAL-SKIPPED.
 
 ## Current work package and exact next action
 
-Sprint 9 is COMPLETE and gated.
-Next action: Proceed to Sprint 10 work packages (WP10.1 Security hardening & zero-vulnerability audit).
+All 10 Sprints are COMPLETE and gated.
+Next action: Maintain stack in healthy, verified, PAUSED state for project owner review and live judging.
 
 ## Workspace constraints
 
@@ -44,11 +45,12 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
 | 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
 | 9 | PASS; backtest calibration, what-if simulator, 5 operator views, LP optimizer & buffer, incident summarizer; tag `sprint-9` | [sprint-09.md](sprint-reports/sprint-09.md) |
+| 10 | PASS; delivery excellence, rollback drill, resilience limits, decision load test, judging runbook; tag `sprint-10` | [sprint-10.md](sprint-reports/sprint-10.md) |
 
 ## Five-minute status update
 
-1. **Problem:** Operators required verified forecast accuracy and calibration bounds, interactive what-if simulation to test candidate allocations before approving, comprehensive operational views (regional demand, incoming supply, alert center, network topology, offline evaluation scorecard), uncertainty safety buffers, and plain-language incident explanations.
-2. **Change:** Implemented pure backtesting and calibration engine (`backtest.py`), pure what-if simulator (`what_if.py` and `POST /api/whatif`), 5 operator views in React, P90 uncertainty safety buffer, linear flow optimizer (`policies/optimizer.py`), and deterministic template summarizer with bounded LLM fallback (`summarize.py` and `GET /api/incidents/{id}/summary`).
-3. **Demo:** Open `http://localhost:5174`: Navigate between Allocations (What-If drawer with quantity slider), Network View (topology status), Regional Demand, Incoming Supply, and Alert Center (click "Explain Incident" for plain-language summary with disclaimer badge).
-4. **Evidence:** 177 Python tests + 11 Vitest tests passing; backtest summary across 2,000 ticks in `docs/results/backtest-summary.md`; what-if tested with zero DB/simulator writes (<50ms); mechanical gate `bash scripts/sprint_gate.sh 9` passed.
-5. **Remaining:** Proceed automatically to Sprint 10 (security hardening, decision load testing, cold-start resilience audit, judging runbook).
+1. **Problem:** Final delivery required production-grade delivery automation, empirical measurement of system failure boundaries, full 4-layer observability with alerting as code, decision-path load testing, 100% brief compliance, and a judging day presentation pack.
+2. **Change:** Added versioning API (`/api/version`) and UI footer, constant-time token verification with rate limiting, container release workflow (`release.yml`), automated rollback scripts (`deploy.sh`, `rollback.sh`), empirical resilience benchmarks (per-service kill recovery in 0.10s-0.23s, database outage in 0.16s), decision load test in k6 (9.5k reqs @ 100 VUs, median 122ms, 0% errors), surprise rehearsal drill (`surprise_drill.sh`), and judging guide (`docs/JUDGING-DAY.md`).
+3. **Demo:** Open `http://localhost:5173`: Follow the 10-minute presentation script in `docs/JUDGING-DAY.md`. Rehearse surprise fault injects with `scripts/surprise_drill.sh`.
+4. **Evidence:** 182 Python tests + 11 Vitest tests passing; rollback drill verified in `docs/evidence/sprint-10-rollback-drill.txt`; decision trace in `docs/evidence/sprint-10-decision-trace.txt`; 100% brief compliance in `docs/BRIEF-COMPLIANCE.md`; mechanical gate `bash scripts/sprint_gate.sh 10` passed.
+5. **Remaining:** All 10 sprints complete. Ready for final project-owner review and push.

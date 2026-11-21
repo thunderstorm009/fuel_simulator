@@ -1,0 +1,52 @@
+groups:
+  - name: fuel_platform_alerts
+    rules:
+      - alert: SimulatorCircuitBreakerOpen
+        expr: sim_breaker_state == 1
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Simulator circuit breaker is OPEN"
+          description: "Consecutive simulator failures exceeded threshold. Ingestion halted."
+          runbook_url: "docs/runbook.md#circuit-breaker"
+
+      - alert: SnapshotDataStale
+        expr: snapshot_age_seconds > 60
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Simulator snapshot data is stale (>60s)"
+          description: "Fresh state has not been ingested within expected refresh window."
+          runbook_url: "docs/runbook.md#stale-data"
+
+      - alert: CriticalStockoutRisk
+        expr: min(hours_to_stockout) < 4
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Station fuel inventory within 4 hours of stockout"
+          description: "Urgent dispatch replenishment required."
+          runbook_url: "docs/runbook.md#stockout-risk"
+
+      - alert: PredictorFallbackActive
+        expr: sum(rate(policy_fallback_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Predictor fallback active"
+          description: "Local heuristic fallback in use due to remote predictor failure/timeout."
+          runbook_url: "docs/runbook.md#predictor-fallback"
+
+      - alert: CalibrationDriftDetected
+        expr: increase(forecast_drift_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Forecast calibration ratio drift detected"
+          description: "Observed demand variance outside nominal envelope [0.8, 1.25]."
+          runbook_url: "docs/runbook.md#calibration-drift"

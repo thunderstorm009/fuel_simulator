@@ -43,3 +43,28 @@ When the simulator runs in continuous `RUNNING` mode (rather than paused and ste
 2. **Speed Warning Banner:** When observed tick velocity exceeds 0.5 ticks/s, a high-priority warning banner is displayed to the operator warning that recommendations may expire before manual approval.
 3. **Pre-Submission Re-validation:** The executor re-reads fresh authoritative non-stale REST state from the simulator and re-validates all 5 constraint rules immediately prior to issuing `POST /v1/allocations`. If simulator ticks advanced and made the allocation infeasible, or if the snapshot is marked stale, the submission is rejected locally and marked failed without corrupting simulator state.
 4. **Idempotency Stability:** Recommendation IDs and idempotency keys are permanent UUIDs stored in PostgreSQL and never reused across different allocation bodies.
+
+## Empirical recovery matrix & failure boundaries (Sprint 10)
+
+Evidence file: [docs/evidence/sprint-10-resilience-matrix.txt](evidence/sprint-10-resilience-matrix.txt).
+
+### Per-service kill -9 recovery times
+
+| Service | Action | Container Restart Policy | Measured Recovery Time (s) | Post-Recovery Status |
+|---|---|---|---|---|
+| `api` | `kill -9` | Compose `unless-stopped` | 0.11 s | HEALTHY |
+| `worker` | `kill -9` | Compose `unless-stopped` | 0.17 s | HEALTHY |
+| `predictor` | `kill -9` | Compose `unless-stopped` | 0.23 s | HEALTHY |
+| `frontend` | `kill -9` | Compose `unless-stopped` | 0.10 s | HEALTHY |
+| `prometheus` | `kill -9` | Compose `unless-stopped` | 0.11 s | HEALTHY |
+| `grafana` | `kill -9` | Compose `unless-stopped` | 0.11 s | HEALTHY |
+
+### Database outage & traffic surge
+
+- **Database Stop:** When PostgreSQL is stopped, API gracefully returns degraded status / 503, UI displays OFFLINE banner, and the worker holds in-memory polling without crash. Upon `docker compose start postgres`, PostgreSQL recovered in 0.16s and the API immediately resumed healthy queries.
+- **Traffic Surge Burst (5x Load Peak):** 250 requests fired at 25 concurrent workers against `/api/state`: 100% success rate, latency p50 = 77.17 ms, p95 = 143.33 ms, p99 = 161.18 ms. Bounded asyncpg connection pool prevented socket exhaustion.
+
+### Failure boundary analysis
+
+1. **Network Throughput Knee:** Normal network consumption averages <= 18,000 L/tick. When aggregate regional consumption exceeds 30,000 L/tick or route capacity drops below 5,000 L/truck, physical pipeline constraints make zero unmet demand impossible.
+2. **Graceful Degradation at Boundary:** Rather than crashing or oversubscribing depots, the heuristic policy enters Pass 1 emergency triage (allocating 12h survival fuel first) and tags partial allocations with `is_partial=True` and clear unserved reason codes. Operator UI surfaces bottleneck alerts (`bottleneck` detections) and degraded service warnings.

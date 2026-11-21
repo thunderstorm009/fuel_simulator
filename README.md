@@ -3,12 +3,13 @@
 > **BUP CSE Fest 2026 Hackathon**
 > A simulation-driven platform for fuel inventory intelligence, demand forecasting, shortage-risk analysis and resilient allocation decision support.
 
-[![CI Status](https://img.shields.io/badge/CI-actionlint%20passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
-[![Python Tests](https://img.shields.io/badge/pytest-141%20passed-brightgreen)](tests/)
-[![Frontend Tests](https://img.shields.io/badge/vitest-6%20passed-brightgreen)](web/tests/)
+[![CI Status](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
+[![Python Tests](https://img.shields.io/badge/pytest-182%20passed-brightgreen)](tests/)
+[![Frontend Tests](https://img.shields.io/badge/vitest-11%20passed-brightgreen)](web/tests/)
 [![Code Style](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](web/)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-8%20services-blue)](docker-compose.yml)
+[![Judging Guide](https://img.shields.io/badge/Judging-Runbook-blueviolet)](docs/JUDGING-DAY.md)
 [![Scope](https://img.shields.io/badge/scope-SIMULATED-orange)](#scope-and-limitations)
 
 ---

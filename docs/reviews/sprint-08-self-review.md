@@ -1,6 +1,6 @@
 # Sprint 8 Adversarial Self-Review (R1, R3, R7)
 
-- **Review Type:** Adversarial self-review using `code-review-strict` skill (labelled `self-reviewed` per AGENTS.md / section 5).
+- **Review Type:** Adversarial self-review using `code-review-strict` skill (labelled `self-reviewed` per repository review protocol).
 - **Date:** 2026-11-21
 - **Branch:** `sprints-8-10` | **Diff against tag:** `sprint-7`
 

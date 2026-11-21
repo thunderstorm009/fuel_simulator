@@ -44,3 +44,18 @@
 
 15. **What are the next production hardening steps?**
     Container orchestration (Kubernetes manifests), persistent message queuing for asynchronous events, automated SSL termination, and integrating an optional mixed-integer linear programming (MILP) optimizer alongside the heuristic policy.
+
+16. **How does the pure anomaly detection engine work?**
+    `backend/shared/core/detect.py` implements 5 pure algorithmic detectors (demand anomalies >1.3x baseline for 3 ticks, regional surge clusters, unexplained inventory drops, depot dispatch bottlenecks, emerging corridor blockades) with zero database or network I/O. Incidents are deduplicated by stable keys, logged in PostgreSQL, surfaced in the Alert Center, and automatically resolved when normal operational envelopes resume.
+
+17. **How does the interactive What-If simulation tool ensure safety?**
+    `POST /api/whatif` executes purely in-memory on the latest cached snapshot via `core.what_if.simulate_what_if`. It re-evaluates all 5 physical constraints using `core.validator`, models projected inventory trajectories with and without the candidate dispatch, and returns hours-to-stockout deltas in <50ms without writing to PostgreSQL or the simulator. Changing sliders in the UI does NOT alter stored proposals or reuse idempotency keys.
+
+18. **How does automated rollback work in production?**
+    `scripts/deploy.sh <tag>` records the previous active tag, sets the proposed image tag, and executes an immediate health gate (`scripts/smoke.sh`). If any container crashes or health checks fail, `scripts/rollback.sh` is automatically invoked, restoring the previous verified release tag and bringing the stack back to healthy state with zero data corruption.
+
+19. **What are the platform's physical failure boundaries?**
+    When aggregate regional fuel demand exceeds the maximum corridor road throughput (e.g. >30,000 L/tick or multiple highway closures), physical supply limits make zero stockout mathematically impossible. Rather than crashing, the platform gracefully degrades: entering Pass 1 emergency triage (allocating 12h survival fuel first), tagging partial allocations with `is_partial=True`, and raising high-priority bottleneck warnings in the operator UI.
+
+20. **What safeguards govern generative AI incident explanations?**
+    `backend/shared/core/summarize.py` uses a deterministic `TemplateSummarizer` by default, with an optional `LLMSummarizer` wrapper configured with a strict 3-second timeout and zero logging of secrets. Any error, timeout, or missing API key falls back instantly to the template. The LLM has zero authority to approve allocations or determine feasibility, and all outputs carry a mandatory operator disclaimer: `"AI-generated summary of simulated data"`.

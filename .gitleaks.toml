@@ -1,0 +1,8 @@
+[allowlist]
+description = "Ignore simulated UUID idempotency keys, chart keys and test tokens"
+regexes = [
+    '''rec-[a-f0-9\-]+''',
+    '''p(10|90)_inventory''',
+    '''dummy-.*''',
+    '''test-operator-api-key-xyz''',
+]

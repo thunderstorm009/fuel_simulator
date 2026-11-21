@@ -20,11 +20,27 @@ All three benchmark runs were executed on the live Docker Compose stack with con
 | **Normal operation** | 68,907 | 320.5 | 159.0 | 72.6 | 549.6 | 0.0% |
 | **Simulator latency fault** (3500ms delay) | 66,588 | 309.7 | 164.6 | 100.8 | 523.9 | 0.0% |
 | **Predictor stopped** | 70,233 | 326.6 | 156.0 | 99.9 | 477.8 | 0.0% |
+| **Decision path (What-If under load)** | 9,584 | 147.4 | 258.4 | 122.2 | 834.6 | 0.0% |
 
 Raw summary outputs and rendered reports:
 - [Normal summary](results/k6-normal-summary.json) | [Normal report](results/loadtest-normal.md)
 - [Latency fault summary](results/k6-latency-summary.json) | [Latency report](results/loadtest-latency.md)
 - [Predictor stopped summary](results/k6-nopredictor-summary.json) | [Predictor stopped report](results/loadtest-nopredictor.md)
+- [Combined decision summary](../loadtest/summary.json)
+
+## Decision path and what-if benchmark (Sprint 10)
+
+`loadtest/k6.js` was extended to continuously benchmark `POST /api/whatif` candidate simulations in parallel with reading `/api/risks`, `/api/state`, and `/api/recommendations` across ramps of 10, 50, and 100 virtual users:
+- **Total requests executed:** 9,584 requests across 1m05s.
+- **Checks passed:** 11,980 / 11,980 checks passed (100.0% pass rate).
+- **Error rate:** 0.00% (zero HTTP 4xx/5xx errors).
+- **What-If simulation latency:**
+  - Min: 10.6 ms
+  - Median (p50): 122.2 ms
+  - Average: 258.4 ms
+  - p90: 559.3 ms
+  - p95: 834.6 ms
+- **Findings:** Pure in-memory simulation avoids database contention and executes safely under heavy operator concurrency.
 
 ## Knee and concurrency analysis
 

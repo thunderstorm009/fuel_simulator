@@ -25,6 +25,7 @@
 /docs/MORNING-TODO.md
 
 # Python and test artifacts.
+.last_deployed_tag*
 __pycache__/
 *.py[cod]
 .venv/

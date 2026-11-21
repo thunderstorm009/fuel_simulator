@@ -121,7 +121,7 @@ describe("operator application", () => {
     renderApp();
 
     expect(await screen.findByRole("heading", { name: "Supply overview" })).toBeInTheDocument();
-    expect(screen.getByText("SIMULATED")).toBeInTheDocument();
+    expect(screen.getAllByText("SIMULATED").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/marked stale by the simulator/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Stockout risk" }));
     expect(await screen.findByRole("heading", { name: "Stockout risk" })).toBeInTheDocument();

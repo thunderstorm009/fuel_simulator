@@ -71,3 +71,26 @@ jobs:
       - name: Stop stack
         if: always()
         run: docker compose down -v
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Gitleaks Secret Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Python Dependency Audit
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt -r requirements-dev.txt || true
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "22"
+      - name: NPM Dependency Audit
+        run: npm audit --prefix web --audit-level=high

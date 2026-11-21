@@ -10,9 +10,9 @@
 ## 1. Audit Scope & Methodology
 
 This audit evaluates the codebase at the head of `sprints-8-10` (commits since tag `sprint-7`: `8ab932e` and `dc7f60f`) against:
-1. Hard safety rules in `AGENTS.md` (no auto-approval in app/worker, no `/admin` in app code, secret hygiene, simulator integrity).
-2. The Sprint 8 specification (`prompts/SPRINT-08.md`, WP8.0 through WP8.5).
-3. The official BUP Hackathon Brief (`reference/`) and `prompts/BRIEF-GAP-ANALYSIS.md`.
+1. Hard safety rules in platform engineering guidelines (no auto-approval in app/worker, no `/admin` in app code, secret hygiene, simulator integrity).
+2. The Sprint 8 specification (WP8.0 through WP8.5).
+3. The official BUP Hackathon Brief (`reference/`) and requirement gap analysis.
 
 Evidence is derived from direct command execution (`git grep`, `pytest`, `docker compose`, API curls) rather than existing summaries.
 

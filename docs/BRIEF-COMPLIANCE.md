@@ -49,7 +49,7 @@
 | 7.5 | Constrained-supply emergency triage (two-pass stockout prevention) | **MET** | `backend/shared/core/policies/heuristic.py`, `tests/unit/test_triage_policy.py`, ADR-037 | Sprint 8 |
 | 7.6 | Optimization-based allocation (LP / MIP solver) | **MET** | `backend/shared/core/policies/optimizer.py`, `tests/unit/test_optimizer_and_buffer.py`, ADR-039 | Sprint 9 |
 | **8** | **Reinforcement Learning (OPTIONAL)** | | | |
-| 8.1 | Reinforcement learning allocation policy | **OPTIONAL-SKIPPED** | Explicitly out of scope per `AGENTS.md` and brief section 8 | — |
+| 8.1 | Reinforcement learning allocation policy | **OPTIONAL-SKIPPED** | Explicitly out of scope per hackathon brief section 8 | — |
 | **9** | **Decision Support & Explainability** | | | |
 | 9.1 | Transparent rationale: why at risk, primary signals | **MET** | `backend/shared/core/explain.py:45`, `web/src/features/allocations/` | Sprint 4 |
 | 9.2 | Constraint verification checklist per recommendation | **MET** | `backend/shared/core/validator.py`, `web/src/features/allocations/ConstraintAudit.tsx` | Sprint 4 |
@@ -65,7 +65,7 @@
 | 10.6 | `supply_shortfall` handling (reduced bulk deliveries, triage scarce stock) | **MET** | `scenarios/supply_shortfall.yaml`, `backend/shared/core/depot_risk.py`, `tests/unit/test_depot_risk.py`, `docs/event-handling.md` | Sprint 8 |
 | 10.7 | Combined crisis scenario (demand surge + route disruption + shortfall) | **MET** | `scenarios/crisis_combined.yaml`, `docs/results/scenario-summary.md` (54 runs, delta 0.0000) | Sprint 8 |
 | **11** | **Surprise Hackathon Events (Demonstration Loop)** | | | |
-| 11.1 | Complete operational loop: Observe, Detect, Predict, Decide, Simulate, Approve, Act, Monitor, Recover | **PARTIAL** | Observe, Detect, Predict, Decide, Approve, Act, Monitor proven; Simulate in WP9.2 | Sprints 8–9 |
+| 11.1 | Complete operational loop: Observe, Detect, Predict, Decide, Simulate, Approve, Act, Monitor, Recover | **MET** | Complete 9-stage loop verified end to end in `scripts/trace_decision.py`, `docs/evidence/sprint-10-decision-trace.txt`, `WhatIfSimulator.tsx` | Sprint 10 |
 | 11.2 | Evidence documentation per crisis event | **MET** | `docs/event-handling.md` covering detection, evaluation, response, explanation, recovery | Sprint 8 |
 | **12** | **Application Resilience & Fallbacks** | | | |
 | 12.1 | Simulator latency / transient 503 resilience (retries + jitter) | **MET** | `backend/shared/core/sim_client.py:40`, `docs/resilience.md` | Sprint 5 |
@@ -101,13 +101,13 @@
 | 18.2 | Stress testing under upstream simulator latency fault | **MET** | 71k requests, 0% errors, 3.5ms p50 (`docs/results/loadtest-latency.md`) | Sprint 6 |
 | 18.3 | Stress testing under predictor outage | **MET** | 61k requests, 0% errors, 4.1ms p50 (`docs/results/loadtest-nopredictor.md`) | Sprint 6 |
 | 18.4 | Performance knee analysis and concurrency limits | **MET** | Measured knee at ~100 VUs (`docs/loadtest.md`) | Sprint 6 |
-| 18.5 | Decision API / End-to-end allocation submission load testing | **NOT MET** | Scheduled in WP10.4 | Sprint 10 |
+| 18.5 | Decision API / End-to-end allocation submission load testing | **MET** | `loadtest/k6.js` (9,584 requests @ 100 VUs, median 122ms, 0% error rate), `docs/loadtest.md` | Sprint 10 |
 | **19** | **Security & Engineering Hygiene** | | | |
 | 19.1 | No secrets committed in source code; `.env.example` template | **MET** | Automated secret scans clean; `.env` gitignored | Sprints 1–7 |
 | 19.2 | Strict schema validation on all inputs (Pydantic models) | **MET** | `backend/shared/core/models.py`, `tests/unit/test_models.py` | Sprint 1 |
 | 19.3 | Token-protected operator actions (`X-Operator-Token`) | **MET** | `backend/api/routes/recommendations.py:15`, `tests/unit/test_policy.py` | Sprint 4 |
 | 19.4 | Automated static analysis (Ruff) and TypeScript strict typechecking | **MET** | `make lint`, `ruff check`, `tsc -b` clean | Sprints 1–7 |
-| 19.5 | Automated dependency vulnerability and secret scan workflows | **NOT MET** | Scheduled in WP10.1 (Trivy, Gitleaks CI action) | Sprint 10 |
+| 19.5 | Automated dependency vulnerability and secret scan workflows | **MET** | `.github/workflows/ci.yml:security`, `.gitleaks.toml` (0 secrets across 18 commits), `npm audit` (0 vulnerabilities) | Sprint 10 |
 | **20** | **Required Deliverables (The 11 Official Deliverables)** | | | |
 | 20.1 | Deliverable 1: Working Application | **MET** | 8 healthy Docker containers, full operator web interface | Sprint 7 |
 | 20.2 | Deliverable 2: Source Repository | **MET** | Clean git history, structured modules, documented ADRs | Sprints 1–7 |
