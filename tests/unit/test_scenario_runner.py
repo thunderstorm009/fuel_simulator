@@ -67,7 +67,18 @@ def test_naive_policy_refills_low_inventory():
 
 def test_scenario_yaml_definitions():
     scenarios_dir = ROOT_DIR / "scenarios"
-    for name in ("baseline", "spike", "route", "combined"):
+    all_scenarios = (
+        "baseline",
+        "spike",
+        "route",
+        "combined",
+        "shipment_delay",
+        "depot_constraint",
+        "station_outage",
+        "supply_shortfall",
+        "crisis_combined",
+    )
+    for name in all_scenarios:
         yaml_path = scenarios_dir / f"{name}.yaml"
         assert yaml_path.exists(), f"missing {name}.yaml"
         with open(yaml_path) as f:

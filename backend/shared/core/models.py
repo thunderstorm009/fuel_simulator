@@ -227,6 +227,7 @@ class Explanation(ContractModel):
     drivers: dict[str, Any] = Field(default_factory=dict)
     constraints_applied: list[dict[str, Any]] = Field(default_factory=list)
     alternatives: list[dict[str, Any]] = Field(default_factory=list)
+    triage: dict[str, Any] = Field(default_factory=dict)
     risk_before: dict[str, Any] = Field(default_factory=dict)
     risk_after: dict[str, Any] = Field(default_factory=dict)
     policy_used: str

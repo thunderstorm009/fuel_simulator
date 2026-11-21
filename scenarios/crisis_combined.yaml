@@ -1,0 +1,25 @@
+name: crisis_combined
+description: Severe multi-hazard crisis with demand spike in Dhaka, Gazipur-Mirpur route disruption, and Gazipur supply shortfall.
+events:
+  - type: demand_spike
+    start_tick: 4
+    end_tick: 14
+    parameters:
+      region_ids:
+        - region-dhaka
+      multiplier: 1.8
+  - type: route_disruption
+    start_tick: 6
+    end_tick: 16
+    parameters:
+      route_ids:
+        - route-gazipur-mirpur
+  - type: supply_shortfall
+    start_tick: 4
+    end_tick: 6
+    parameters:
+      factor: 0.5
+      depot_ids:
+        - depot-gazipur
+      fuel_types:
+        - DIESEL

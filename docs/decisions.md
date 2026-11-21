@@ -29,6 +29,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
 | ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
 | ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
+| ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -258,3 +259,17 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   5. Correct the Day 2 update tag table to list only tags that exist in `git tag` (`sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`), marking earlier sprints as preserved in branch history.
   6. Add a full scenario policy comparison benchmark table to `README.md` referencing `docs/results/scenario-summary.md`.
 - **Trade-off:** Retaining strict transparency eliminates unsubstantiated claims and aligns public documentation with proven operational reality.
+
+### ADR-037 — Two-pass emergency triage policy and full event coverage
+
+- **Status:** ACCEPTED
+- **Context:** During constrained supply conditions (such as refinery shortfalls, shipment delays, or depot throughput throttling), naive single-pass greedy allocation risks exhausting bulk depot reserves on the first station that reaches 70% capacity, leaving neighboring stations to starve. Furthermore, the platform must handle all six crisis event types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`).
+- **Decision:**
+  1. Implement a deterministic two-pass triage heuristic in `core/policies/heuristic.py`:
+     - **Pass 1:** Computes the exact 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk station, allocating emergency fuel to the most urgent stations first.
+     - **Pass 2:** Allocates remaining depot inventory and dispatch capacity toward the 70% target inventory.
+     - Physical reservations carry across Pass 1 and Pass 2 monotonically.
+     - If supply is exhausted before full target is met, recommendations are explicitly tagged `is_partial = True` with unserved liters, root physical bottleneck reason, and priority rule `two_pass_urgency_12h_then_target`.
+  2. Implement event semantics: stations in `OUTAGE` receive zero recommendations; `CONSTRAINED` depots remain shippable but are deprioritized behind `OPEN` depots where equivalent routes exist.
+  3. Add 5 crisis scenarios (`shipment_delay.yaml`, `depot_constraint.yaml`, `station_outage.yaml`, `supply_shortfall.yaml`, `crisis_combined.yaml`) and document handling across all 6 crisis types in `docs/event-handling.md`.
+- **Trade-off:** Multi-pass triage slightly increases computational complexity but prevents cascading regional fuel stockouts during severe supply shocks.

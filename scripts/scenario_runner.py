@@ -280,6 +280,7 @@ def run_single_scenario(
             snapshot = build_snapshot_from_sim(client)
             forecasts = build_forecasts(snapshot)
             plans = policy_obj.recommend(snapshot, forecasts)
+            step_reservations: list[AllocationTerms] = []
             for i, p in enumerate(plans):
                 # Re-validate before submission
                 key = (
@@ -295,10 +296,12 @@ def run_single_scenario(
                     quantity=p.request.quantity,
                 )
                 if policy_name == "heuristic":
-                    violations = validate(req, snapshot, [])
+                    violations = validate(req, snapshot, step_reservations)
                     if violations:
                         continue
-                client.post("/v1/allocations", json=req.model_dump(mode="json"))
+                resp = client.post("/v1/allocations", json=req.model_dump(mode="json"))
+                if resp.status_code == 200:
+                    step_reservations.append(p.request)
 
         client.post("/admin/step")
 
@@ -396,12 +399,13 @@ def render_scenario_summary(
 
 
 def main() -> None:
+    available_scenarios = sorted([p.stem for p in SCENARIOS_DIR.glob("*.yaml")])
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scenario", choices=["baseline", "spike", "route", "combined"])
+    parser.add_argument("--scenario", choices=available_scenarios)
     parser.add_argument("--policy", choices=["none", "naive", "heuristic"])
     parser.add_argument("--ticks", type=int, default=20)
     parser.add_argument(
-        "--all", action="store_true", help="Run all 4 scenarios × 3 policies × 2 runs"
+        "--all", action="store_true", help="Run all available scenarios × 3 policies × 2 runs"
     )
     parser.add_argument("--sim-url", default=DEFAULT_SIM_URL)
     parser.add_argument("--out", default=str(DEFAULT_OUT_DIR))
@@ -411,7 +415,7 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     if args.all or (args.scenario is None and args.policy is None):
-        scenarios = ["baseline", "spike", "route", "combined"]
+        scenarios = available_scenarios
         policies = ["none", "naive", "heuristic"]
     else:
         scenarios = [args.scenario] if args.scenario else ["baseline"]

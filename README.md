@@ -194,22 +194,37 @@ The API read paths (`/api/state`, `/api/risks`, `/api/recommendations`, `/api/ev
 
 ### Scenario Determinism Verification & Policy Results
 
-The scenario runner (`scripts/scenario_runner.py`) evaluated candidate policies across disruption scenarios over 24 independent runs. Every paired run achieved **100% identical outputs (delta 0.0000)**.
+The scenario runner (`scripts/scenario_runner.py`) evaluated candidate policies across disruption scenarios over 54 independent runs (9 scenarios × 3 policies × 2 runs). Every paired run achieved **100% identical outputs (delta 0.0000)**.
 
-Measured empirical results across candidate allocation policies (`none` / do-nothing, `naive`, `heuristic`) across 24 evaluation runs (source: [docs/results/scenario-summary.md](docs/results/scenario-summary.md)):
+Measured empirical results across candidate allocation policies (`none` / do-nothing, `naive`, `heuristic`) across 54 evaluation runs (source: [docs/results/scenario-summary.md](docs/results/scenario-summary.md)):
 
 | Scenario | Policy | Service Level | Served Demand | Unmet Demand | Dispatched Fuel | Stockout Events |
 |---|---|---:|---:|---:|---:|---:|
 | **baseline** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
-| **spike** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| **combined** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **crisis_combined** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **depot_constraint** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
 | **route** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
-| **combined** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| **shipment_delay** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **spike** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **station_outage** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
+| | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
+| **supply_shortfall** | `none` (do-nothing) | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `naive` | 100.0% | 12,860 L | 0 L | 0 L | 0 |
 | | `heuristic` | 100.0% | 12,860 L | 0 L | 15,238 L | 0 |
 
@@ -222,6 +237,11 @@ Measured empirical results across candidate allocation policies (`none` / do-not
 - `scenarios/spike.yaml`: High demand surges triggered in industrial and highway corridors.
 - `scenarios/route.yaml`: Severe transit delay disruptions on major supply corridors.
 - `scenarios/combined.yaml`: Simultaneous demand spikes and route delays.
+- `scenarios/crisis_combined.yaml`: Severe 3-way crisis (spike + route disruption + supply shortfall).
+- `scenarios/depot_constraint.yaml`: Depot dispatch throughput constraints.
+- `scenarios/shipment_delay.yaml`: Upstream bulk delivery delay.
+- `scenarios/station_outage.yaml`: Temporary station outage (closed to dispatches).
+- `scenarios/supply_shortfall.yaml`: Upstream refinery supply shortfall scaling arrivals.
 
 *Detailed comparison tables are recorded in [docs/results/scenario-summary.md](docs/results/scenario-summary.md).*
 
