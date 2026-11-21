@@ -1,5 +1,5 @@
 === 1. Cloning repository into temporary folder ===
-Cloning into '/tmp/fuel_sim_clean_verify_1795249798'...
+Cloning into '/tmp/fuel_sim_clean_verify_1795250024'...
 done.
 === 2. Verifying ignored development files are absent ===
 CONFIRMED ABSENT: .env
@@ -14,7 +14,7 @@ CONFIRMED ABSENT: prompts
 PASS: database credentials and predictor URL match Compose services
 === 4. Installing frontend dependencies in clean clone ===
 
-added 186 packages, and audited 193 packages in 2s
+added 186 packages, and audited 193 packages in 3s
 
 29 packages are looking for funding
   run `npm fund` for details
@@ -47,11 +47,11 @@ dist/index.html                             0.46 kB │ gzip:   0.30 kB
 dist/assets/index-DjcqX4BQ.css             19.18 kB │ gzip:   5.17 kB
 dist/assets/index-MPoTGyQm.js             285.66 kB │ gzip:  85.18 kB
 dist/assets/TrajectoryDrawer-ZAffjsHu.js  426.04 kB │ gzip: 122.33 kB
-✓ built in 1.73s
+✓ built in 2.21s
 pytest
 ============================= test session starts ==============================
 platform darwin -- Python 3.12.16, pytest-8.3.5, pluggy-1.7.0
-rootdir: /private/tmp/fuel_sim_clean_verify_1795249798
+rootdir: /private/tmp/fuel_sim_clean_verify_1795250024
 configfile: pyproject.toml
 testpaths: tests
 plugins: respx-0.22.0, asyncio-0.26.0, anyio-4.16.0
@@ -105,19 +105,22 @@ tests/unit/test_what_if.py ..                                            [100%]
     _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 182 passed, 1 warning in 1.73s ========================
+======================== 182 passed, 1 warning in 1.83s ========================
 npm --prefix web run test
 
 > fuel-supply-platform-frontend@0.1.0 test
 > vitest run
 
 
- RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795249798/web
+ RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795250024/web
 
- ✓ tests/NewViews.test.tsx (5 tests) 109ms
- ✓ tests/App.test.tsx (6 tests) 222ms
+ ✓ tests/NewViews.test.tsx (5 tests) 148ms
+ ✓ tests/App.test.tsx (6 tests) 332ms
 
  Test Files  2 passed (2)
       Tests  11 passed (11)
-   Start at  14:30:11
-   Duration  991ms (environment 46%, tests 21%, transform 19%, import 8%, setup 6%)
+   Start at  14:33:59
+   Duration  1.46s (environment 43%, transform 21%, tests 21%, import 9%, setup 7%)
+
+MECHANICAL GATE: PASS (Sprint 6)
+=== Clean clone verification PASSED ===
