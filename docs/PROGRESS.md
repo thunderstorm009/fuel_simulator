@@ -6,7 +6,7 @@ Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 - Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`.
 - Sprints 1–7: All gates passed and tagged.
-- Sprint 8: IN PROGRESS. WP8.0 (Truth pass, admin route remediation, tag alignment, README results table) COMPLETE. Audit report generated in `docs/reviews/sprint-08-audit.md`. Next: WP8.1 (Brief compliance matrix).
+- Sprint 8: IN PROGRESS. WP8.0 (Truth pass, admin route remediation) and WP8.1 (Brief compliance matrix) COMPLETE. Next: WP8.2 (Full event coverage and constrained-supply triage).
 
 ## Verification in this work package
 
