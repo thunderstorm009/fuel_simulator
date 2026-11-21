@@ -23,6 +23,8 @@ Metric definitions are in `backend/shared/core/metrics.py`; route and job instru
 | `worker_sse_events_total`, `worker_sse_reconnects_total` | SSE hints and reconnect activity |
 | `policy_fallback_total{reason}`, `forecast_mape{station,fuel}`, `hours_to_stockout{station,fuel}`, `stockout_probability{station,fuel}` | Predictor fallback and forecast quality/risk |
 | `recommendations_total{status}`, `sim_service_level`, `alerts_active{severity}` | Recommendation lifecycle, service level, and active alert gauges |
+| `detections_total{type}` | Automated anomaly and incident detections by type (`demand_anomaly`, `regional_surge`, `abnormal_inventory`, `bottleneck`, `emerging_regional_disruption`) |
+
 
 Prometheus counters are process-local and reset when a service restarts. No metrics should include recommendation IDs, operator tokens, raw URLs, or other unbounded values.
 

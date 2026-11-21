@@ -77,6 +77,35 @@ export interface StateResponse {
   data_age_seconds: number;
   data_status: DataStatus;
   stale: boolean;
+  ticks_per_second?: number;
+  snapshot_age_ticks?: number;
+  speed_warning?: boolean;
+  simulated: true;
+}
+
+export interface DepotRisk {
+  depot_id: string;
+  depot_name?: string;
+  fuel_type: Fuel;
+  tick: number;
+  current_inventory: number;
+  scheduled_arrivals: number;
+  committed_allocations: number;
+  projected_demand: number;
+  net_cover_liters: number;
+  cover_hours: number;
+  is_bottleneck: boolean;
+  dispatch_utilization: number;
+  evidence: Record<string, unknown>;
+}
+
+export interface DepotRiskResponse {
+  depot_risks: DepotRisk[];
+  count: number;
+  fetched_at: string;
+  data_age_seconds: number;
+  data_status: DataStatus;
+  stale: boolean;
   simulated: true;
 }
 

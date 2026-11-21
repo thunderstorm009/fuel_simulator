@@ -245,12 +245,15 @@ def run_single_scenario(
     # 2. Schedule scenario events
     events = load_scenario_events(scenario_name)
     for ev in events:
+        start_tick = ev["start_tick"]
+        end_tick = ev.get("end_tick", start_tick + 1)
+        duration_ticks = ev.get("duration_ticks", max(1, end_tick - start_tick))
         client.post(
             "/admin/events",
             json={
                 "type": ev["type"],
-                "start_tick": ev["start_tick"],
-                "end_tick": ev["end_tick"],
+                "start_tick": start_tick,
+                "duration_ticks": duration_ticks,
                 "parameters": ev.get("parameters", {}),
             },
         )

@@ -1,0 +1,25 @@
+=== SPRINT 8 SIMULATOR SPEED BENCHMARK MATRIX ===
+Timestamp: 2026-11-21T12:30:13+06:00
+Host: macOS Darwin 24.3.0 (Apple Silicon, ARM64)
+Simulator Image: asifmahmoud414/bup-fuel-supply-simulator:1.0.0 (AMD64 via Rosetta emulation)
+
+Measured Matrix:
+
+| SIMULATION_SPEED | Configured Rate | Observed Rate | Ingest Lag (Ticks) | Forecast Age (Ticks) | Recommendation Window | Warning Banner Triggered | Stale / Error Rejection |
+|---|---|---|---|---|---|---|---|
+| 1 (Project Default) | 1.0 tick/s | 0.99 ticks/s | 0.3 - 1.9 ticks | 1 - 2 ticks | 4 ticks (4.0s) | Yes (speed_warning: true) | Submissions revalidated against fresh tick |
+| 4 | 4.0 ticks/s | 3.58 ticks/s | 2.5 - 13.6 ticks | 4 - 8 ticks | 4 ticks (1.1s) | Yes (speed_warning: true) | 409/422 handled; stale write blocked |
+| 8 (Image Default) | 8.0 ticks/s | 5.97 ticks/s | 1.5 - 15.0 ticks | 6 - 12 ticks | 4 ticks (0.67s) | Yes (speed_warning: true) | Stale flag lowered; submission blocked |
+
+Key Operational Findings:
+1. Controllable Judging Demo:
+   At default image speed (8.0 ticks/s, ~6.0 observed), ticks advance every 160ms. An operator attempting manual review and approval cannot inspect and click before the 1-hour expiry (4 ticks = 670ms) elapses.
+   Recommendation: For live judging and demonstrations, run the controllable clock script:
+   `./scripts/demo_clock.py --rate 0.5`
+   This advances the simulator at 0.5 ticks/second (1 tick every 2 seconds, 8 seconds per simulated hour), providing ample time for operator inspection, triage review, and manual approval.
+
+2. Freshness & Safety Safeguards:
+   - GET /api/state returns `ticks_per_second` and `snapshot_age_ticks`.
+   - When ticks_per_second > 0.5, the frontend and API set `speed_warning: true`, rendering the operator notice:
+     "High simulation speed detected. Recommendations may expire before operator approval."
+   - The platform never submits on stale data: even if an operator clicks approve on an expiring recommendation, the executor fetches fresh authoritative REST snapshot and re-validates all depot, route, and destination constraints immediately prior to POST /v1/allocations.

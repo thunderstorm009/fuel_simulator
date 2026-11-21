@@ -72,3 +72,4 @@ api_http_requests = Counter(
 api_http_request_duration = Histogram(
     "http_request_duration_seconds", "API request duration by route", ["method", "route"]
 )
+detections_total = Counter("detections_total", "Incidents detected by type", ["type"])

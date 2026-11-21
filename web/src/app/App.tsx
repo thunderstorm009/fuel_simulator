@@ -6,7 +6,7 @@ import DashboardPage from "../features/dashboard/DashboardPage";
 import RecommendationsPage from "../features/allocations/RecommendationsPage";
 import ShortageRiskPage from "../features/shortage-risk/ShortageRiskPage";
 import HealthPage from "../features/system-health/HealthPage";
-import { fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
+import { fetchDepotRisks, fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
 import type { Fuel } from "../types/api";
 import { localTime } from "../lib/format";
 
@@ -18,6 +18,7 @@ export default function App() {
   const eventsQuery = useQuery({ queryKey: ["events"], queryFn: fetchEvents, refetchInterval: 3000 });
   const risksQuery = useQuery({ queryKey: ["risks"], queryFn: fetchRisks, refetchInterval: 3000 });
   const healthQuery = useQuery({ queryKey: ["health"], queryFn: fetchHealth, refetchInterval: 5000 });
+  const depotRisksQuery = useQuery({ queryKey: ["depotRisks"], queryFn: fetchDepotRisks, refetchInterval: 3000 });
   const trajectoryQuery = useQuery({
     queryKey: ["trajectory", selected?.stationId, selected?.fuel],
     queryFn: () => fetchTrajectory(selected!.stationId, selected!.fuel),
@@ -29,6 +30,7 @@ export default function App() {
   const snapshot = state?.snapshot;
   const events = eventsQuery.data?.events ?? snapshot?.events ?? [];
   const incidents = eventsQuery.data?.incidents ?? [];
+  const depotRisks = depotRisksQuery.data?.depot_risks ?? [];
   const apiUnavailable = stateQuery.isError || eventsQuery.isError || (page === "risk" && risksQuery.isError);
 
   return (
@@ -40,6 +42,11 @@ export default function App() {
       {state && (state.stale || state.data_status !== "HEALTHY") && (
         <div className="notice notice-degraded" role="status">
           <strong>Data is {state.data_status.toLowerCase()}.</strong> The snapshot is {Math.floor(state.data_age_seconds)} seconds old{state.stale ? " and marked stale by the simulator" : ""}.
+        </div>
+      )}
+      {state?.speed_warning && (
+        <div className="notice notice-warning" role="status">
+          <strong>High simulation speed detected ({state.ticks_per_second?.toFixed(2)} ticks/sec).</strong> Recommendations may expire before operator approval.
         </div>
       )}
       {page === "health" ? (
@@ -62,7 +69,7 @@ export default function App() {
           onClose={() => setSelected(null)}
         />
       ) : (
-        <DashboardPage snapshot={snapshot} events={events} incidents={incidents} />
+        <DashboardPage snapshot={snapshot} events={events} incidents={incidents} depotRisks={depotRisks} />
       )}
       {state && <footer className="page-footer">All information is simulated. Last successful refresh {localTime(state.fetched_at)}.</footer>}
     </main>

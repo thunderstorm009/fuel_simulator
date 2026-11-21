@@ -40,13 +40,13 @@
 | 6.8 | Aggregated service health with data freshness telemetry | **MET** | `web/src/features/health/SystemHealthTab.tsx`, `docs/evidence/day-2/06-system-health.png` | Sprint 5 |
 | 6.9 | Regional fuel demand view (aggregated demand across corridors) | **PARTIAL** | Core rates calculated in `forecast.py`; corridor rollup UI planned in WP9.3 | Sprint 9 |
 | 6.10 | Incoming supply view (scheduled arrivals + in-transit allocations) | **PARTIAL** | Modeled in `forecast.py:KnownArrival`; dedicated panel planned in WP9.3 | Sprint 9 |
-| 6.11 | Incident and alerts center | **PARTIAL** | Active events shown in dashboard; pure incident list planned in WP8.3 | Sprint 8 |
+| 6.11 | Incident and alerts center | **MET** | `web/src/features/incidents/EventsPanel.tsx`, `GET /api/incidents`, `backend/shared/core/detect.py` | Sprint 8 |
 | **7** | **Intelligence Requirement (Prediction, Detection, Optimization)** | | | |
 | 7.1 | Demand rate prediction with diurnal variation and noise modeling | **MET** | `backend/shared/core/forecast.py`, `tests/unit/test_forecast.py` | Sprint 3 |
 | 7.2 | Stockout risk projection (probability, hours to stockout) via Monte Carlo | **MET** | `backend/shared/core/risk.py`, `tests/unit/test_risk.py` | Sprint 3 |
 | 7.3 | Multi-tier heuristic allocation policy with physical constraints | **MET** | `backend/shared/core/policies/heuristic.py`, `backend/shared/core/validator.py` | Sprint 4 |
-| 7.4 | Pure detection engine (demand anomaly, regional surge, inventory change, bottlenecks, emerging disruption) | **NOT MET** | Scheduled in WP8.3 (`backend/shared/core/detect.py`, `GET /api/incidents`) | Sprint 8 |
-| 7.5 | Constrained-supply emergency triage (two-pass stockout prevention) | **NOT MET** | Scheduled in WP8.2 (`backend/shared/core/policies/heuristic.py`) | Sprint 8 |
+| 7.4 | Pure detection engine (demand anomaly, regional surge, inventory change, bottlenecks, emerging disruption) | **MET** | `backend/shared/core/detect.py`, `tests/unit/test_detect.py`, `docs/evidence/sprint-08-demand-spike-detection.txt` | Sprint 8 |
+| 7.5 | Constrained-supply emergency triage (two-pass stockout prevention) | **MET** | `backend/shared/core/policies/heuristic.py`, `tests/unit/test_triage_policy.py`, ADR-037 | Sprint 8 |
 | 7.6 | Optimization-based allocation (LP / MIP solver) | **OPTIONAL-SKIPPED** | Heuristic policy satisfies all requirements; LP solver scheduled in WP9.4 if time permits | Sprint 9 |
 | **8** | **Reinforcement Learning (OPTIONAL)** | | | |
 | 8.1 | Reinforcement learning allocation policy | **OPTIONAL-SKIPPED** | Explicitly out of scope per `AGENTS.md` and brief section 8 | — |
@@ -59,14 +59,14 @@
 | **10** | **Crisis and Event Handling** | | | |
 | 10.1 | `demand_spike` handling (surge multiplier, rate adaptation) | **MET** | Handled in `forecast.py:150`; scenario in `scenarios/spike.yaml` | Sprint 6 |
 | 10.2 | `route_disruption` handling (corridor blockage, rerouting) | **MET** | Handled in `validator.py:82`; scenario in `scenarios/route.yaml` | Sprint 6 |
-| 10.3 | `shipment_delay` handling (delayed depot supply cover) | **NOT MET** | Scheduled in WP8.2 (`scenarios/shipment_delay.yaml`, `docs/event-handling.md`) | Sprint 8 |
-| 10.4 | `depot_constraint` handling (depot throughput limits, prefer alternate) | **NOT MET** | Scheduled in WP8.2 (`scenarios/depot_constraint.yaml`, `docs/event-handling.md`) | Sprint 8 |
-| 10.5 | `station_outage` handling (block allocations during outage, resume after) | **NOT MET** | Scheduled in WP8.2 (`scenarios/station_outage.yaml`, `docs/event-handling.md`) | Sprint 8 |
-| 10.6 | `supply_shortfall` handling (reduced bulk deliveries, triage scarce stock) | **NOT MET** | Scheduled in WP8.2 (`scenarios/supply_shortfall.yaml`, `docs/event-handling.md`) | Sprint 8 |
-| 10.7 | Combined crisis scenario (demand surge + route disruption + shortfall) | **PARTIAL** | `scenarios/combined.yaml` covers surge+route; harder 3-way crisis in WP8.2 | Sprint 8 |
+| 10.3 | `shipment_delay` handling (delayed depot supply cover) | **MET** | `scenarios/shipment_delay.yaml`, `backend/shared/core/depot_risk.py`, `tests/unit/test_depot_risk.py`, `docs/event-handling.md` | Sprint 8 |
+| 10.4 | `depot_constraint` handling (depot throughput limits, prefer alternate) | **MET** | `scenarios/depot_constraint.yaml`, `backend/shared/core/policies/heuristic.py`, `docs/event-handling.md` | Sprint 8 |
+| 10.5 | `station_outage` handling (block allocations during outage, resume after) | **MET** | `scenarios/station_outage.yaml`, `backend/shared/core/policies/heuristic.py`, `tests/unit/test_triage_policy.py`, `docs/event-handling.md` | Sprint 8 |
+| 10.6 | `supply_shortfall` handling (reduced bulk deliveries, triage scarce stock) | **MET** | `scenarios/supply_shortfall.yaml`, `backend/shared/core/depot_risk.py`, `tests/unit/test_depot_risk.py`, `docs/event-handling.md` | Sprint 8 |
+| 10.7 | Combined crisis scenario (demand surge + route disruption + shortfall) | **MET** | `scenarios/crisis_combined.yaml`, `docs/results/scenario-summary.md` (54 runs, delta 0.0000) | Sprint 8 |
 | **11** | **Surprise Hackathon Events (Demonstration Loop)** | | | |
-| 11.1 | Complete operational loop: Observe, Detect, Predict, Decide, Simulate, Approve, Act, Monitor, Recover | **PARTIAL** | Observe, Predict, Decide, Approve, Act, Monitor proven; Detect in WP8.3; Simulate in WP9.2 | Sprints 8–9 |
-| 11.2 | Evidence documentation per crisis event | **NOT MET** | Scheduled in WP8.2 (`docs/event-handling.md`) | Sprint 8 |
+| 11.1 | Complete operational loop: Observe, Detect, Predict, Decide, Simulate, Approve, Act, Monitor, Recover | **PARTIAL** | Observe, Detect, Predict, Decide, Approve, Act, Monitor proven; Simulate in WP9.2 | Sprints 8–9 |
+| 11.2 | Evidence documentation per crisis event | **MET** | `docs/event-handling.md` covering detection, evaluation, response, explanation, recovery | Sprint 8 |
 | **12** | **Application Resilience & Fallbacks** | | | |
 | 12.1 | Simulator latency / transient 503 resilience (retries + jitter) | **MET** | `backend/shared/core/sim_client.py:40`, `docs/resilience.md` | Sprint 5 |
 | 12.2 | Simulator circuit breaker on repeated failures | **MET** | `backend/shared/core/sim_client.py:65`, `tests/integration/test_resilience.py` | Sprint 5 |
@@ -87,7 +87,7 @@
 | 15.2 | Low-cardinality Prometheus metrics on read, write, and processing paths | **MET** | `backend/shared/core/metrics.py`, exposed via `/metrics` on ports 8101, 8102, 8103 | Sprint 5 |
 | 15.3 | Automated Grafana dashboard provisioning (HTTP rates, p95, worker lag) | **MET** | `observability/grafana/provisioning/`, `docs/evidence/day-2/07-grafana.png` | Sprint 5 |
 | 15.4 | Container resource monitoring (CPU, memory) | **MET** | Sampled during k6 load runs (`docs/results/docker-stats-*.csv`) | Sprint 6 |
-| 15.5 | Intelligence metrics (`detections_total`, forecast error, fallback rate) | **PARTIAL** | Fallback metrics exist; `detections_total` scheduled in WP8.3 | Sprint 8 |
+| 15.5 | Intelligence metrics (`detections_total`, forecast error, fallback rate) | **MET** | `backend/shared/core/metrics.py:detections_total`, `docs/observability.md` | Sprint 8 |
 | **16** | **Health and Status Endpoints** | | | |
 | 16.1 | Liveness and readiness endpoints on all services | **MET** | `GET /v1/health` (8000), `GET /health` (8101, 8102, 8103) | Sprint 1 |
 | 16.2 | Aggregated platform health endpoint (`/api/health`) | **MET** | `backend/api/routes/health.py`, `tests/integration/test_health_api.py` | Sprint 1 |
@@ -95,7 +95,7 @@
 | 17.1 | Detect `X-Simulator-Stale: true` and flag cached state as degraded | **MET** | `backend/worker/ingest.py:95`, `backend/api/routes/state.py` | Sprint 2 |
 | 17.2 | Block allocation submission when data is stale or degraded | **MET** | `backend/worker/executor.py:64`, `tests/unit/test_executor.py:85` | Sprint 4 |
 | 17.3 | Operator-visible data age and stale warning banners | **MET** | `web/src/features/dashboard/`, `web/src/features/health/` | Sprint 2 |
-| 17.4 | Adaptive polling and tick rate awareness for fast simulator speeds | **NOT MET** | Scheduled in WP8.5 (`backend/api/routes/state.py`, UI speed warning) | Sprint 8 |
+| 17.4 | Adaptive polling and tick rate awareness for fast simulator speeds | **MET** | `backend/api/routes/read.py:state` (`ticks_per_second`), `web/src/app/App.tsx`, `docs/evidence/sprint-08-speed-matrix.txt` | Sprint 8 |
 | **18** | **Load Testing** | | | |
 | 18.1 | Stress testing under normal conditions with reported p50, p95, throughput | **MET** | `loadtest/k6.js`, 71k requests, 0% errors, 3.4ms p50 (`docs/loadtest.md`) | Sprint 6 |
 | 18.2 | Stress testing under upstream simulator latency fault | **MET** | 71k requests, 0% errors, 3.5ms p50 (`docs/results/loadtest-latency.md`) | Sprint 6 |
@@ -129,7 +129,7 @@
 | 22.2 | Advanced mathematical optimization (LP / MIP) | **NOT MET** | Scheduled in WP9.4 | Sprint 9 |
 | **23** | **Demonstration Story (The Operational Loop)** | | | |
 | 23.1 | Step 1: Normal operational state observation | **MET** | Documented in `docs/final-demo-script.md` | Sprint 7 |
-| 23.2 | Step 2: Demand surge / disruption detection | **PARTIAL** | Planned in WP8.3 (detection engine) | Sprint 8 |
+| 23.2 | Step 2: Demand surge / disruption detection | **MET** | `backend/shared/core/detect.py`, `docs/evidence/sprint-08-demand-spike-detection.txt` | Sprint 8 |
 | 23.3 | Step 3: Predictive shortage forecasting | **MET** | Documented in `docs/final-demo-script.md` | Sprint 3 |
 | 23.4 | Step 4: Constrained allocation generation | **MET** | Documented in `docs/final-demo-script.md` | Sprint 4 |
 | 23.5 | Step 5: What-if impact simulation | **PARTIAL** | Planned in WP9.2 | Sprint 9 |

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from typing import Any, Protocol
 
 import asyncpg
@@ -11,7 +12,13 @@ import asyncpg
 class ReadRepository(Protocol):
     async def get_latest_snapshot(self) -> dict[str, Any] | None: ...
 
-    async def get_incidents(self) -> list[dict[str, Any]]: ...
+    async def get_incidents(
+        self, include_resolved: bool = False, limit: int = 100
+    ) -> list[dict[str, Any]]: ...
+
+    async def get_depot_risks(self) -> list[dict[str, Any]]: ...
+
+    async def get_tick_freshness(self) -> dict[str, float]: ...
 
     async def get_latest_forecasts(self) -> list[dict[str, Any]]: ...
 
@@ -59,14 +66,14 @@ class PostgresReadRepository:
             "data_status": row["data_status"],
         }
 
-    async def get_incidents(self) -> list[dict[str, Any]]:
-        rows = await self.pool.fetch(
-            """
-            SELECT id, type, severity, detected_at, resolved_at, detail
-            FROM incidents WHERE resolved_at IS NULL
-            ORDER BY detected_at DESC LIMIT 100
-            """
-        )
+    async def get_incidents(
+        self, include_resolved: bool = False, limit: int = 100
+    ) -> list[dict[str, Any]]:
+        query = "SELECT id, type, severity, detected_at, resolved_at, detail FROM incidents"
+        if not include_resolved:
+            query += " WHERE resolved_at IS NULL"
+        query += " ORDER BY detected_at DESC LIMIT $1"
+        rows = await self.pool.fetch(query, max(1, limit))
         result = []
         for row in rows:
             item = dict(row)
@@ -74,6 +81,43 @@ class PostgresReadRepository:
                 item["detail"] = json.loads(item["detail"])
             result.append(item)
         return result
+
+    async def get_depot_risks(self) -> list[dict[str, Any]]:
+        rows = await self.pool.fetch(
+            """
+            SELECT DISTINCT ON (depot_id, fuel_type)
+                depot_id, fuel_type, tick, current_inventory,
+                scheduled_arrivals, committed_allocations, projected_demand,
+                net_cover_liters, cover_hours, is_bottleneck, dispatch_utilization,
+                evidence
+            FROM depot_risks
+            ORDER BY depot_id, fuel_type, snapshot_id DESC
+            """
+        )
+        result = []
+        for row in rows:
+            item = dict(row)
+            if isinstance(item.get("evidence"), str):
+                item["evidence"] = json.loads(item["evidence"])
+            result.append(item)
+        return result
+
+    async def get_tick_freshness(self) -> dict[str, float]:
+        rows = await self.pool.fetch(
+            """
+            SELECT tick, fetched_at FROM snapshots
+            ORDER BY fetched_at DESC, id DESC LIMIT 2
+            """
+        )
+        if len(rows) < 2:
+            return {"ticks_per_second": 0.0, "snapshot_age_ticks": 0.0}
+        t1, t2 = rows[0]["tick"], rows[1]["tick"]
+        f1, f2 = rows[0]["fetched_at"], rows[1]["fetched_at"]
+        dt = (f1 - f2).total_seconds()
+        tps = max(0.0, (t1 - t2) / max(0.001, dt)) if dt > 0 else 0.0
+        age_seconds = max(0.0, (datetime.now(timezone.utc) - f1).total_seconds())
+        age_ticks = round(age_seconds * tps, 1)
+        return {"ticks_per_second": round(tps, 3), "snapshot_age_ticks": age_ticks}
 
     async def get_latest_forecasts(self) -> list[dict[str, Any]]:
         rows = await self.pool.fetch(

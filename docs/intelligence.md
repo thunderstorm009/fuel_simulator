@@ -35,3 +35,31 @@ Sprint 4 adds an urgency-first heuristic that considers station/fuel pairs under
 The recommendation worker stores a permanent `rec-<uuid>` idempotency key together with its exact request body. The explanation records forecast drivers, applied limits, rejected route alternatives, before/after risk from re-running the forecast with the proposed known station arrival, confidence, policy, and snapshot status. The UI labels all values SIMULATED and requires an operator decision. Approvals and rejections are stored in the decision log; operator credentials exist only in browser memory.
 
 Forecasts still describe the do-nothing path plus already-known station allocation arrivals. Depot supply schedule changes affect station risk only when a verified station allocation depends on that supply; the current implementation does not invent future dispatches.
+
+## Two-pass constrained triage (Sprint 8)
+
+During constrained supply (refinery shortfalls, depot throughput limits, or multiple competing stations), single-pass greedy allocation risks starving downstream stations. Sprint 8 introduces a deterministic two-pass triage policy in `core/policies/heuristic.py`:
+- **Pass 1 (Emergency stockout prevention):** Determines the minimum 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk pair, allocating survival fuel to the most urgent stations first.
+- **Pass 2 (Target top-up):** Uses remaining depot physical inventory and remaining tick dispatch capacity to top stations up toward their 70% target inventory.
+- Physical reservations carry across passes monotonically.
+- When depot stock or dispatch limits truncate an allocation, it is flagged with `is_partial=True`, `unserved_liters`, and `unserved_reason` (e.g. `depot gazipur DIESEL exhausted`), identifying the physical constraint for the operator.
+
+## Pure detection layer (Sprint 8)
+
+`backend/shared/core/detect.py` implements pure detection algorithms with zero I/O, no database imports, and no simulator network calls. All detectors evaluate snapshot history deterministically:
+1. **Demand anomaly (`demand_anomaly`):** Observed station demand is compared against the diurnal baseline WITHOUT the station multiplier over the last 4 observations. Flags when the observed/baseline ratio exceeds 1.3 for 3 consecutive ticks, enforcing `PROFILE_NOISE` as the noise floor. Recovery condition: demand returns below 1.3x baseline for 2 ticks.
+2. **Regional surge (`regional_surge`):** Flags when 2 or more stations in the same geographic region exhibit demand anomalies within 8 ticks. Recovery condition: fewer than 2 regional stations remain flagged.
+3. **Abnormal inventory change (`abnormal_inventory`):** Detects volume variances not accounted for by deliveries or recorded demand. Stations in `OUTAGE` or `CLOSED` status are explicitly excluded to prevent false positives.
+4. **Bottleneck (`bottleneck`):** Flags when depot dispatch capacity utilization reaches or exceeds 80%, or when served 24-hour station demand exceeds depot physical stock plus scheduled arrivals within the 24-hour horizon.
+5. **Emerging regional disruption (`emerging_regional_disruption`):** Flags active station outages or 2+ disrupted transport routes connecting into a region.
+
+All detections create deduplicated incident records with type, severity, entity ID, stable `dedup_key`, plain-language explanation, recovery condition, and evidence JSON, and increment `detections_total{type}`.
+
+## Forward depot supply risk (Sprint 8)
+
+`backend/shared/core/depot_risk.py` computes forward supply cover across all network depots:
+$$\text{Net 24h Cover} = \text{Current Inventory} + \text{Scheduled Arrivals}_{\le 24h} - \text{Committed Allocations} - \text{Projected 24h Served Demand}$$
+- **Shipment delay effect:** When scheduled arrivals are delayed beyond the 24-hour horizon, they fall out of $\text{Scheduled Arrivals}_{\le 24h}$, lowering net cover and cover hours.
+- **Supply shortfall effect:** When an arrival volume is reduced (e.g. halved by factor 0.5), net cover drops proportionally.
+- Unrelated depots are provably unaffected.
+- Projections are persisted by the worker into `depot_risks` and rendered in the dashboard's `DepotRiskPanel`.

@@ -4,29 +4,28 @@ Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`.
-- Sprints 1–7: All gates passed and tagged.
-- Sprint 8: IN PROGRESS. WP8.0 (Truth pass), WP8.1 (Brief compliance matrix), and WP8.2 (Full event coverage and two-pass constrained triage) COMPLETE. 54 scenario runs verified with 100% determinism. Next: WP8.3 (Pure detection layer).
+- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`.
+- Sprints 1–8: All gates passed and tagged.
+- Sprint 8: COMPLETE. WP8.0 (Truth pass), WP8.1 (Brief compliance matrix), WP8.2 (Full event coverage and two-pass constrained triage), WP8.3 (Pure detection engine), WP8.4 (Depot supply risk & 24h cover), WP8.5 (Running-simulator robustness) all verified. 158 Python tests, 6 frontend tests, 54 scenario runs with 100% determinism.
+- Next: Sprint 9 (prompts/SPRINT-09.md: continuous backtesting, what-if simulator, regional supply views, LP/MIP optimization, LLM incident explainer).
 
 ## Verification in this work package
 
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make lint`: Ruff and formatting passed; TypeScript typecheck and Vite production build passed.
-- `PATH=/tmp/fuel-sprint1-venv/bin:$PATH make test`: 141 Python tests and 6 frontend tests passed.
+- `.venv/bin/ruff check . && .venv/bin/ruff format --check .`: passed; 73 files formatted, 0 errors.
+- `.venv/bin/pytest tests/`: 158 Python tests passed in 1.61s.
+- `npm --prefix web test -- --run && npm --prefix web run build`: 6 Vitest tests passed; Vite production build passed.
 - `FRONTEND_HOST_PORT=5174 CORS_ORIGIN=http://localhost:5174 docker compose config -q`: passed.
 - `git diff --check`: passed.
-- Cold start from scratch with volume deletion: 34 seconds (`docs/evidence/sprint-07-cold-start.txt`).
-- Clean clone in `/tmp/` with public defaults: passed all 141 Python + 6 frontend tests (`docs/evidence/clean-clone-check.txt`).
-- Random chaos test: 1.0 min with seed 20261120, zero unexplained 5xx responses, all faults cleared (`docs/evidence/sprint-07-chaos.json`).
-- All 8 Compose containers healthy (`docker compose ps`).
+- `bash scripts/smoke.sh`: passed; all 8 containers healthy.
+- Live demand-spike detection & auto-resolution: verified on running stack (`docs/evidence/sprint-08-demand-spike-detection.txt`).
+- Simulator speed matrix: measured speeds 1, 4, 8 (`docs/evidence/sprint-08-speed-matrix.txt`).
+- Mutation testing: 3 intentional mutations verified and caught by test suite.
+- Scenario determinism: 54 benchmark runs (9 scenarios × 3 policies × 2 runs), delta 0.0000.
 
 ## Current work package and exact next action
 
-All 7 Sprints (Sprint 1 through Sprint 7) are COMPLETE. All mechanical gates passed and tagged.
-
-Next action for project owner:
-1. Rehearse the 5-minute operator demo 3 times using `docs/final-demo-script.md`.
-2. Record an offline backup screen capture walkthrough video.
-3. Review branch diff and push `overnight-sprints-4-7` and tags `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7` to GitHub origin.
+Sprint 8 is COMPLETE and gated.
+Next action: Proceed to Sprint 9 work packages (WP9.1 continuous backtesting & calibration).
 
 ## Workspace constraints
 
@@ -43,11 +42,12 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | 5 | PASS; live fault/recovery matrix, Prometheus/Grafana, R4 review and mechanical gates passed; tag `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
 | 6 | PASS; deterministic scenario runner (24 runs), 3-profile k6 load benchmarks, CI hardening, and mechanical gates passed; tag `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |
 | 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
+| 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
 
 ## Five-minute status update
 
-1. **Problem:** Operators need an integrated platform providing current simulated fuel state, shortage risk prediction, feasible explained allocations, mandatory human approval, and complete operational resilience under faults.
-2. **Change:** Built, hardened, and verified the complete 7-sprint system: pure core intelligence models, live human-in-the-loop operator approval, automated circuit breakers, Prometheus/Grafana observability, 24-run deterministic scenario evaluation, empirical k6 load benchmarks, 34s cold-start recovery, and clean-clone verification.
-3. **Demo:** Open the frontend at `http://localhost:5174`; inspect health, inventories, risks and the allocation decision history. All 8 Docker containers are healthy and simulator is PAUSED with faults cleared.
-4. **Evidence:** Extensive empirical evidence in `docs/evidence/` and `docs/results/` for all sprints (Sprints 1–7), with 141 Python tests + 6 frontend tests passing cleanly.
-5. **Remaining:** Human project owner executes final live presentation rehearsal, records backup video, and pushes branch and tags to GitHub.
+1. **Problem:** Operators required complete compliance with the 26-section Hackathon brief, zero false/unsubstantiated claims, explicit handling of all six crisis events, automated anomaly detection, forward depot supply risk visibility, and robustness when the simulator runs continuous ticks without manual pausing.
+2. **Change:** Implemented a pure deterministic two-pass triage heuristic, 5 crisis scenarios, a pure detection engine (`detect.py`) with 5 detectors and auto-resolution, forward depot cover modeling (`depot_risk.py`) with dashboard panel, dynamic tick freshness monitoring (`ticks_per_second`) with operator speed warning banners, and controllable demo clock stepping (`demo_clock.py`). Remediated all `/admin` routes in app code.
+3. **Demo:** Run `./scripts/demo_clock.py --rate 0.5`. Open dashboard at `http://localhost:5174`: inspect live depot risk cover panel, events/incidents panel, and speed telemetry.
+4. **Evidence:** 158 Python tests + 6 frontend tests passing cleanly. Live demand-spike auto-resolution documented in `docs/evidence/sprint-08-demand-spike-detection.txt`; speed matrix in `docs/evidence/sprint-08-speed-matrix.txt`; 54 scenario runs with 100% determinism in `docs/results/scenario-summary.md`.
+5. **Remaining:** Proceed automatically to Sprint 9 (backtesting, what-if simulation, regional corridor views, LP optimization, LLM explainer).

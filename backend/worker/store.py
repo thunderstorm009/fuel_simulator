@@ -8,7 +8,9 @@ from typing import Any, Protocol
 
 import asyncpg
 
-from core.metrics import alerts_active, recommendations_by_status
+from core.depot_risk import DepotRiskProjection
+from core.detect import IncidentDetection
+from core.metrics import alerts_active, detections_total, recommendations_by_status
 from core.models import Snapshot
 from core.risk import ForecastRecord
 
@@ -51,6 +53,32 @@ class PostgresStore:
         )
         await pool.execute(
             "ALTER TABLE recommendations ADD COLUMN IF NOT EXISTS failure_reason TEXT"
+        )
+        await pool.execute(
+            """
+            CREATE TABLE IF NOT EXISTS depot_risks (
+                id BIGSERIAL PRIMARY KEY,
+                snapshot_id BIGINT NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,
+                tick INTEGER NOT NULL,
+                depot_id TEXT NOT NULL,
+                fuel_type TEXT NOT NULL CHECK (fuel_type IN ('DIESEL', 'PETROL', 'OCTANE')),
+                current_inventory DOUBLE PRECISION NOT NULL,
+                scheduled_arrivals DOUBLE PRECISION NOT NULL,
+                committed_allocations DOUBLE PRECISION NOT NULL,
+                projected_demand DOUBLE PRECISION NOT NULL,
+                net_cover_liters DOUBLE PRECISION NOT NULL,
+                cover_hours DOUBLE PRECISION NOT NULL,
+                is_bottleneck BOOLEAN NOT NULL DEFAULT FALSE,
+                dispatch_utilization DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+                evidence JSONB NOT NULL DEFAULT '{}'::jsonb
+            );
+            CREATE INDEX IF NOT EXISTS depot_risks_depot_tick_idx
+                ON depot_risks (depot_id, fuel_type, tick DESC);
+            CREATE UNIQUE INDEX IF NOT EXISTS depot_risks_snapshot_pair_idx
+                ON depot_risks (snapshot_id, depot_id, fuel_type);
+            CREATE INDEX IF NOT EXISTS incidents_dedup_idx
+                ON incidents (type, (detail->>'dedup_key')) WHERE resolved_at IS NULL;
+            """
         )
         return cls(pool)
 
@@ -290,13 +318,136 @@ class PostgresStore:
                 )
             await self._refresh_active_alert_metrics(connection)
 
+    async def persist_depot_risks(
+        self, snapshot: Snapshot, risks: list[DepotRiskProjection]
+    ) -> None:
+        if not risks:
+            return
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                snapshot_id = await connection.fetchval(
+                    """
+                    SELECT id FROM snapshots
+                    WHERE tick = $1
+                    ORDER BY fetched_at DESC, id DESC LIMIT 1
+                    """,
+                    snapshot.instance.tick,
+                )
+                if snapshot_id is None:
+                    return
+                for risk in risks:
+                    await connection.execute(
+                        """
+                        INSERT INTO depot_risks (
+                            snapshot_id, tick, depot_id, fuel_type,
+                            current_inventory, scheduled_arrivals, committed_allocations,
+                            projected_demand, net_cover_liters, cover_hours,
+                            is_bottleneck, dispatch_utilization, evidence
+                        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)
+                        ON CONFLICT (snapshot_id, depot_id, fuel_type) DO UPDATE SET
+                            current_inventory = EXCLUDED.current_inventory,
+                            scheduled_arrivals = EXCLUDED.scheduled_arrivals,
+                            committed_allocations = EXCLUDED.committed_allocations,
+                            projected_demand = EXCLUDED.projected_demand,
+                            net_cover_liters = EXCLUDED.net_cover_liters,
+                            cover_hours = EXCLUDED.cover_hours,
+                            is_bottleneck = EXCLUDED.is_bottleneck,
+                            dispatch_utilization = EXCLUDED.dispatch_utilization,
+                            evidence = EXCLUDED.evidence
+                        """,
+                        snapshot_id,
+                        snapshot.instance.tick,
+                        risk.depot_id,
+                        risk.fuel_type,
+                        risk.current_inventory,
+                        risk.scheduled_arrivals,
+                        risk.committed_allocations,
+                        risk.projected_demand,
+                        risk.net_cover_liters,
+                        risk.cover_hours,
+                        risk.is_bottleneck,
+                        risk.dispatch_utilization,
+                        json.dumps(risk.evidence, separators=(",", ":")),
+                    )
+
+    async def sync_detections(self, detections: list[IncidentDetection]) -> None:
+        detector_types = [
+            "demand_anomaly",
+            "regional_surge",
+            "abnormal_inventory",
+            "bottleneck",
+            "emerging_regional_disruption",
+        ]
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                open_rows = await connection.fetch(
+                    """
+                    SELECT id, type, severity, detail->>'dedup_key' AS dedup_key
+                    FROM incidents
+                    WHERE resolved_at IS NULL AND type = ANY($1::text[])
+                    """,
+                    detector_types,
+                )
+                open_by_key = {row["dedup_key"]: row for row in open_rows if row["dedup_key"]}
+                active_by_key = {d.dedup_key: d for d in detections}
+
+                # Resolve cleared incidents
+                for dedup_key, row in open_by_key.items():
+                    if dedup_key not in active_by_key:
+                        await connection.execute(
+                            "UPDATE incidents SET resolved_at = now() WHERE id = $1",
+                            row["id"],
+                        )
+
+                # Insert or update active detections
+                for d in detections:
+                    detail_json = json.dumps(
+                        {
+                            "dedup_key": d.dedup_key,
+                            "entity_id": d.entity_id,
+                            "explanation": d.explanation,
+                            "recovery_condition": d.recovery_condition,
+                            "evidence": d.evidence,
+                        },
+                        separators=(",", ":"),
+                    )
+                    existing = open_by_key.get(d.dedup_key)
+                    if existing is not None:
+                        await connection.execute(
+                            """
+                            UPDATE incidents
+                            SET severity = $1, detail = $2::jsonb
+                            WHERE id = $3
+                            """,
+                            d.severity.lower(),
+                            detail_json,
+                            existing["id"],
+                        )
+                    else:
+                        await connection.execute(
+                            """
+                            INSERT INTO incidents (type, severity, detail)
+                            VALUES ($1, $2, $3::jsonb)
+                            """,
+                            d.type,
+                            d.severity.lower(),
+                            detail_json,
+                        )
+                        detections_total.labels(type=d.type).inc()
+
+            await self._refresh_active_alert_metrics(connection)
+
     @staticmethod
     async def _refresh_active_alert_metrics(connection: asyncpg.Connection) -> None:
         rows = await connection.fetch(
-            """SELECT severity, COUNT(*) AS count FROM incidents
-            WHERE resolved_at IS NULL GROUP BY severity"""
+            """SELECT LOWER(severity) AS severity, COUNT(*) AS count FROM incidents
+            WHERE resolved_at IS NULL GROUP BY LOWER(severity)"""
         )
         counts = {str(row["severity"]): int(row["count"]) for row in rows}
+        if "warning" in counts:
+            counts["high"] = counts.get("high", 0) + counts.pop("warning")
+        if "info" in counts:
+            counts["low"] = counts.get("low", 0) + counts.pop("info")
         for severity in ("critical", "high", "medium", "low"):
             alerts_active.labels(severity=severity).set(counts.get(severity, 0))
 

@@ -75,6 +75,7 @@ describe("operator application", () => {
       if (url.endsWith("/api/state")) return jsonResponse(stateResponse());
       if (url.endsWith("/api/events")) return jsonResponse({ events: [], incidents: [], data_status: "HEALTHY", data_age_seconds: 0, simulated: true });
       if (url.endsWith("/api/risks")) return jsonResponse({ forecasts: [], data_status: "HEALTHY", data_age_seconds: 0, stale: false, simulated: true });
+      if (url.endsWith("/api/depots/risk")) return jsonResponse({ depot_risks: [], count: 0, data_status: "HEALTHY", data_age_seconds: 0, stale: false, simulated: true });
       if (url.endsWith("/api/health")) return jsonResponse({
         status: "DEGRADED",
         components: {
@@ -112,6 +113,7 @@ describe("operator application", () => {
       if (url.endsWith("/api/state")) return jsonResponse(stateResponse("DEGRADED", true));
       if (url.endsWith("/api/events")) return jsonResponse({ events: [], incidents: [], data_status: "DEGRADED", data_age_seconds: 20, simulated: true });
       if (url.endsWith("/api/risks")) return jsonResponse({ forecasts: [], data_status: "DEGRADED", data_age_seconds: 20, stale: true, simulated: true });
+      if (url.endsWith("/api/depots/risk")) return jsonResponse({ depot_risks: [], count: 0, data_status: "DEGRADED", data_age_seconds: 20, stale: true, simulated: true });
       if (url.endsWith("/api/recommendations")) return jsonResponse({ recommendations: [] });
       if (url.endsWith("/api/decisions")) return jsonResponse({ decisions: [] });
       return jsonResponse({ detail: "not found" }, 404);

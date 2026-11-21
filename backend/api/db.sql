@@ -72,6 +72,28 @@ CREATE TABLE IF NOT EXISTS incidents (
     detail JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 CREATE INDEX IF NOT EXISTS incidents_open_idx ON incidents (severity, detected_at DESC) WHERE resolved_at IS NULL;
+CREATE INDEX IF NOT EXISTS incidents_dedup_idx ON incidents (type, (detail->>'dedup_key')) WHERE resolved_at IS NULL;
+
+CREATE TABLE IF NOT EXISTS depot_risks (
+    id BIGSERIAL PRIMARY KEY,
+    snapshot_id BIGINT NOT NULL REFERENCES snapshots(id) ON DELETE CASCADE,
+    tick INTEGER NOT NULL,
+    depot_id TEXT NOT NULL,
+    fuel_type TEXT NOT NULL CHECK (fuel_type IN ('DIESEL', 'PETROL', 'OCTANE')),
+    current_inventory DOUBLE PRECISION NOT NULL,
+    scheduled_arrivals DOUBLE PRECISION NOT NULL,
+    committed_allocations DOUBLE PRECISION NOT NULL,
+    projected_demand DOUBLE PRECISION NOT NULL,
+    net_cover_liters DOUBLE PRECISION NOT NULL,
+    cover_hours DOUBLE PRECISION NOT NULL,
+    is_bottleneck BOOLEAN NOT NULL DEFAULT FALSE,
+    dispatch_utilization DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+    evidence JSONB NOT NULL DEFAULT '{}'::jsonb
+);
+CREATE INDEX IF NOT EXISTS depot_risks_depot_tick_idx ON depot_risks (depot_id, fuel_type, tick DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS depot_risks_snapshot_pair_idx
+    ON depot_risks (snapshot_id, depot_id, fuel_type);
+
 
 CREATE TABLE IF NOT EXISTS integration_events (
     id BIGSERIAL PRIMARY KEY,

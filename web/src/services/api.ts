@@ -1,5 +1,6 @@
 import type {
   Decision,
+  DepotRiskResponse,
   EventsResponse,
   Fuel,
   HealthResponse,
@@ -50,3 +51,5 @@ export const approveRecommendation = (id: string, token: string): Promise<{ stat
   postJson(`/api/recommendations/${encodeURIComponent(id)}/approve`, token);
 export const rejectRecommendation = (id: string, token: string, reason: string): Promise<{ status: string }> =>
   postJson(`/api/recommendations/${encodeURIComponent(id)}/reject`, token, { reason });
+export const fetchDepotRisks = (): Promise<DepotRiskResponse> =>
+  getJson<DepotRiskResponse>("/api/depots/risk");

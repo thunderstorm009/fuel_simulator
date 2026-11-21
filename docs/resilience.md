@@ -35,3 +35,11 @@ Prometheus had three active targets and all were `up`. Grafana `/api/health` ret
 - The local `.env` contains values that differ from the public Compose defaults. It was left untouched. The safe configuration check passes with `.env.example` and reports the local mismatch by variable name only, without printing values. Run `python3 scripts/check_compose_env.py --env-file .env.example` to check clean-clone defaults.
 - Grafana dashboards and alert rules are provisioned and evaluate locally. Email delivery is not configured (Grafana logs report SMTP is unconfigured), so notification delivery is not verified.
 - Fault durations are bounded and the script does not clear unrelated/pre-existing faults; it refuses to start if any are active.
+
+## Running simulator resilience & speed adaptation (Sprint 8)
+
+When the simulator runs in continuous `RUNNING` mode (rather than paused and stepped), ticks advance at real-time speeds:
+1. **Adaptive Freshness:** `GET /api/state` reports dynamic `ticks_per_second` and `snapshot_age_ticks`.
+2. **Speed Warning Banner:** When observed tick velocity exceeds 0.5 ticks/s, a high-priority warning banner is displayed to the operator warning that recommendations may expire before manual approval.
+3. **Pre-Submission Re-validation:** The executor re-reads fresh authoritative non-stale REST state from the simulator and re-validates all 5 constraint rules immediately prior to issuing `POST /v1/allocations`. If simulator ticks advanced and made the allocation infeasible, or if the snapshot is marked stale, the submission is rejected locally and marked failed without corrupting simulator state.
+4. **Idempotency Stability:** Recommendation IDs and idempotency keys are permanent UUIDs stored in PostgreSQL and never reused across different allocation bodies.

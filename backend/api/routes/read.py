@@ -58,12 +58,21 @@ async def _latest(repository: ReadRepository) -> tuple[dict[str, Any], datetime,
 @router.get("/state")
 async def state(repository: RepositoryDep) -> dict[str, Any]:
     snapshot, fetched_at, age, status, stale = await _latest(repository)
+    if hasattr(repository, "get_tick_freshness"):
+        freshness = await repository.get_tick_freshness()
+    else:
+        freshness = {"ticks_per_second": 0.0, "snapshot_age_ticks": 0.0}
+    tps = freshness.get("ticks_per_second", 0.0)
+    warning = tps > 0.5
     return {
         "snapshot": snapshot,
         "fetched_at": fetched_at.isoformat(),
         "data_age_seconds": age,
         "data_status": status,
         "stale": stale,
+        "ticks_per_second": tps,
+        "snapshot_age_ticks": freshness.get("snapshot_age_ticks", 0.0),
+        "speed_warning": warning,
         "simulated": True,
     }
 
@@ -83,10 +92,49 @@ async def data_health(repository: RepositoryDep) -> dict[str, Any]:
 @router.get("/events")
 async def events(repository: RepositoryDep) -> dict[str, Any]:
     snapshot, fetched_at, age, status, stale = await _latest(repository)
-    incidents = await repository.get_incidents()
+    incidents_list = await repository.get_incidents()
     return {
         "events": snapshot.get("events", []),
-        "incidents": incidents,
+        "incidents": incidents_list,
+        "fetched_at": fetched_at.isoformat(),
+        "data_age_seconds": age,
+        "data_status": status,
+        "stale": stale,
+        "simulated": True,
+    }
+
+
+@router.get("/incidents")
+async def incidents(
+    repository: RepositoryDep,
+    status: str = "open",
+    limit: int = 100,
+) -> dict[str, Any]:
+    include_resolved = status.lower() in ("all", "resolved")
+    all_incidents = await repository.get_incidents(include_resolved=include_resolved, limit=limit)
+    if status.lower() == "resolved":
+        filtered = [i for i in all_incidents if i.get("resolved_at") is not None]
+    elif status.lower() == "open":
+        filtered = [i for i in all_incidents if i.get("resolved_at") is None]
+    else:
+        filtered = all_incidents
+    return {
+        "incidents": filtered,
+        "count": len(filtered),
+        "simulated": True,
+    }
+
+
+@router.get("/depots/risk")
+async def depot_risk(repository: RepositoryDep) -> dict[str, Any]:
+    _, fetched_at, age, status, stale = await _latest(repository)
+    if hasattr(repository, "get_depot_risks"):
+        risks_list = await repository.get_depot_risks()
+    else:
+        risks_list = []
+    return {
+        "depot_risks": risks_list,
+        "count": len(risks_list),
         "fetched_at": fetched_at.isoformat(),
         "data_age_seconds": age,
         "data_status": status,

@@ -273,3 +273,25 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   2. Implement event semantics: stations in `OUTAGE` receive zero recommendations; `CONSTRAINED` depots remain shippable but are deprioritized behind `OPEN` depots where equivalent routes exist.
   3. Add 5 crisis scenarios (`shipment_delay.yaml`, `depot_constraint.yaml`, `station_outage.yaml`, `supply_shortfall.yaml`, `crisis_combined.yaml`) and document handling across all 6 crisis types in `docs/event-handling.md`.
 - **Trade-off:** Multi-pass triage slightly increases computational complexity but prevents cascading regional fuel stockouts during severe supply shocks.
+
+### ADR-038 — Pure detection engine, depot supply risk projection, and adaptive simulator freshness
+
+- **Status:** ACCEPTED
+- **Context:** Sprint 8 requires an automated detection layer for operational anomalies, forward depot-level risk projections, and platform resilience when the simulator advances in continuous RUNNING mode at arbitrary speeds.
+- **Decision:**
+  1. Implement pure detection functions in `backend/shared/core/detect.py` with zero I/O and deterministic behavior:
+     - `detect_demand_anomalies`: Flags when observed station demand exceeds baseline expected consumption (>1.3x) for 3 consecutive ticks, filtering noise via `PROFILE_NOISE`.
+     - `detect_regional_surges`: Flags coordinated surges when 2+ stations in the same region surge within 8 ticks.
+     - `detect_abnormal_inventory_changes`: Flags unexplained inventory drops, explicitly excluding stations in `OUTAGE` to prevent false positives.
+     - `detect_bottlenecks`: Flags depot dispatch capacity utilization >= 80% or 24-hour projected fuel deficits.
+     - `detect_emerging_regional_disruptions`: Flags station outages or 2+ disrupted transit routes into a region.
+     - Deduplicate incidents via stable `dedup_key` and expose `GET /api/incidents` (open and resolved). Increment `detections_total{type}`.
+  2. Implement pure forward depot risk calculation in `backend/shared/core/depot_risk.py`:
+     - Net 24h cover = current inventory + scheduled arrivals within horizon - committed active allocations - 24h served station demand.
+     - Persist via `depot_risks` table and expose `GET /api/depots/risk`. Render interactive `DepotRiskPanel` on the operator dashboard.
+  3. Running-simulator robustness:
+     - Track `ticks_per_second` and `snapshot_age_ticks` dynamically in `GET /api/state`.
+     - Fire speed warning banner in operator UI when tick advance rate exceeds human review threshold (>0.5 ticks/sec).
+     - Make recommendation expiry configurable via `RECOMMENDATION_EXPIRY_TICKS` and `RECOMMENDATION_EXPIRY_HOURS`.
+     - Provide `scripts/demo_clock.py` stepping `/admin/step` at controllable operator rates (default 0.5 ticks/s) for demo and judging walkthroughs.
+- **Trade-off:** Pure functions ensure all detection and risk algorithms are 100% testable without database or network mocks; worker manages persistence asynchronously.

@@ -10,10 +10,12 @@ Base URL: `http://localhost:8101`.
 |---|---|---|
 | GET | `/health` | API liveness. |
 | GET | `/metrics` | Prometheus request/latency and service-health metrics. |
-| GET | `/api/state` | Latest persisted simulator snapshot and freshness/stale metadata. |
+| GET | `/api/state` | Latest persisted simulator snapshot, freshness metadata (`ticks_per_second`, `snapshot_age_ticks`, `speed_warning`). |
 | GET | `/api/data-health` | Snapshot age, status and stale marker. |
 | GET | `/api/health` | Database-backed component health and API latency/error summary. |
 | GET | `/api/events` | Latest simulator events and open platform incidents. |
+| GET | `/api/incidents` | Deduplicated anomaly/incident detections from the database (`?status=open|resolved|all`). |
+| GET | `/api/depots/risk` | Forward 24-hour depot supply cover, scheduled arrivals, projected demand, and bottleneck indicators. |
 | GET | `/api/metrics-summary` | Simulator service-level and allocation metrics from the latest snapshot. |
 | GET | `/api/risks` | Latest forecast per station/fuel pair and freshness. |
 | GET | `/api/risks/{station_id}/{fuel_type}/trajectory` | Persisted inventory trajectory and risk details for one pair. |
