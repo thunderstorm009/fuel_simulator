@@ -6,27 +6,28 @@ Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 - Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
 - Sprints 1–10: All gates passed and tagged.
-- Sprint 10: COMPLETE. WP10.1 (CI/CD release workflow, /api/version, token rate limiter, rollback drill), WP10.2 (Resilience extension, database outage, per-service kill -9 recovery, physical failure boundaries), WP10.3 (Observability completion, alert rules as code, decision lifecycle trace), WP10.4 (Decision-path load testing, k6 what-if benchmark), WP10.5 (Judging-day runbook, surprise drill script, 100% brief compliance). 182 Python tests, 11 frontend tests.
-- Next: Final judging rehearsal and project handover.
+- Day 3 Verification & Publication: COMPLETE. 182 Python tests, 11 Vitest tests, 17 genuine screenshots captured, 54 deterministic scenario runs (delta 0.0000), 2,000-tick backtest calibration, decision-path k6 benchmark, and full Hackathon Brief Compliance Matrix (100% MET/OPTIONAL-SKIPPED).
+- Next: Branch publish and pull request creation.
 
 ## Verification in this work package
 
-- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 86 files checked, 0 errors.
-- `.venv/bin/pytest tests/`: 182 Python tests passed in 1.38s.
-- `npm --prefix web test -- --run && npm --prefix web run build`: 11 Vitest tests passed; Vite production build passed cleanly.
+- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 88 files checked, 0 errors.
+- `.venv/bin/pytest tests/`: 182 Python tests passed in 1.63s.
+- `npm --prefix web test -- --run && npm --prefix web run build`: 11 Vitest tests passed; Vite production build passed cleanly (508 modules).
 - `docker compose config -q`: passed.
 - `git diff --check`: passed.
-- `bash scripts/sprint_gate.sh 10`: passed.
-- Gitleaks & npm audit: 0 secrets leaked across 18 commits, 0 npm vulnerabilities.
-- Automated rollback: tested live in `docs/evidence/sprint-10-rollback-drill.txt`.
-- Decision load test: 9,584 requests @ 100 VUs, median 122ms, 0.0% error rate.
-- Per-service kill -9 recovery: measured 0.10s-0.23s across all containers.
+- `bash scripts/sprint_gate.sh 8, 9, 10`: all passed exit 0.
+- `bash scripts/verify_clean_clone.sh`: passed exit 0.
+- Gitleaks & npm audit: 0 secrets leaked across 20 commits, 0 npm vulnerabilities.
+- Real screenshots: 17 PNG captures in `docs/evidence/day-3/screens/` verified < 440 KB.
+- Automated rollback: tested live with `scripts/deploy.sh` and `scripts/rollback.sh`.
+- Decision load test: 8,540 requests @ 100 VUs, median 150.1ms, 0.0% error rate.
 - Brief compliance: 100% of requirements across sections 4-26 verified as MET or OPTIONAL-SKIPPED.
 
 ## Current work package and exact next action
 
-All 10 Sprints are COMPLETE and gated.
-Next action: Maintain stack in healthy, verified, PAUSED state for project owner review and live judging.
+All 10 Sprints and Day 3 deliverables are COMPLETE, audited, and committed.
+Next action: Pre-push verification, push branch `sprints-8-10` and tags to origin, and create pull request.
 
 ## Workspace constraints
 
