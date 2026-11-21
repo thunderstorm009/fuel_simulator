@@ -1,16 +1,12 @@
 # Project progress
 
-Last updated: 2026-11-20. Resume point for the shared repository worktree.
+Last updated: 2026-11-21. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `overnight-sprints-4-7`, based on `b1fc38b`. Tags: `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`. No pushes have been made to remote (owner pushes after morning review).
-- Sprint 1–3: historical reports record those sprint gates as passed. Implementation preserved and extended.
-- Sprint 4: **PASS**. Single authorized live approval completed at tick 134, submitted by worker, reached `ARRIVED` at tick 137, exact replay returned identical ID 1. Simulator PAUSED at tick 138. Tag: `sprint-4`.
-- Sprint 5: **PASS**. Resilience matrix verified live against all 5 simulator faults + payload corruption + worker/predictor outages. Prometheus metrics and Grafana alerts provisioned as code and verified live. Tag: `sprint-5`.
-- Sprint 6: **PASS**. Declarative scenario runner (`scripts/scenario_runner.py`), 4 scenarios in `scenarios/*.yaml`, 24 evaluation runs (4 scenarios × 3 policies × 2 runs) with 100% determinism (delta 0.0000). Three k6 load benchmark profiles completed with 205k+ requests, 0% errors, knee at 100 VUs. CI hardened with actionlint clean. Tag: `sprint-6`.
-- Sprint 7: **PASS**. Cold-start recovery from wiped volumes measured at 34 seconds (`scripts/cold_start_check.sh`). Isolated clean-clone verification passed in `/tmp/` without private prompts (`scripts/verify_clean_clone.sh`). Reversible random chaos testing completed with zero unexplained 5xx errors (`scripts/chaos_random.py`). Dual-port predictor routing (8103/8100) implemented. Operator demo script and judge Q&A finalized. Documentation audit complete. Tag: `sprint-7`.
-- Public local-instruction check: Private development instructions and sprint prompts are intentionally absent from clean clones. `scripts/sprint_gate_public.sh` reports absent local-only inputs as SKIP. Clean clone passes all tests and builds without local files.
+- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`.
+- Sprints 1–7: All gates passed and tagged.
+- Sprint 8: IN PROGRESS. WP8.0 (Truth pass, admin route remediation, tag alignment, README results table) COMPLETE. Audit report generated in `docs/reviews/sprint-08-audit.md`. Next: WP8.1 (Brief compliance matrix).
 
 ## Verification in this work package
 

@@ -102,7 +102,7 @@ def predict(payload: PredictRequest, request: Request) -> dict[str, Any]:
     }
 
 
-@app.post("/admin/fail")
+@app.post("/chaos/fail")
 def set_failure(payload: FailForecastRequest, request: Request) -> dict[str, bool]:
     token = request.headers.get("X-Operator-Token", "")
     expected = os.getenv("OPERATOR_TOKEN", "")

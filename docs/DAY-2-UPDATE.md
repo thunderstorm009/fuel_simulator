@@ -14,8 +14,8 @@ The **Fuel Supply Intelligence & Resilience Platform** is an operator-facing com
 
 1. **Monitor live inventory** across regional depots and retail stations with explicit capacity utilization tracking.
 2. **Anticipate shortage risk** via pure, empirical demand forecasting and Monte Carlo stockout trajectory projections.
-3. **Decide constrained replenishments** through heuristic recommendation policies that respect depot stocks, station capacities, transit times, and vehicle quotas.
-4. **Enforce human authority** via mandatory authenticated operator approval (`OPERATOR_TOKEN`) before any dispatch can reach the simulator.
+3. **Decide constrained replenishments** through heuristic recommendation policies that respect depot stocks, station capacities, transit times, and depot dispatch limits.
+4. **Enforce human authority** via mandatory authenticated operator approval (`OPERATOR_TOKEN`) before any dispatch can reach the simulator. The operator app provides no auto-approve path; dispatches require authenticated operator approval, while scripts/scenario_runner.py auto-approves in closed simulation mode only.
 5. **Survive network and service disruptions** through typed circuit breakers, bounded retries with jitter, baseline heuristic fallbacks, and real-time Prometheus/Grafana observability.
 
 ---
@@ -27,7 +27,7 @@ The **Fuel Supply Intelligence & Resilience Platform** is an operator-facing com
 - **Operator Dashboard:** Live supply overview with service level percentage, total unmet demand, tick progression, and data age indicators.
 - **Inventory Monitoring:** Color-coded station capacity bars across DIESEL, PETROL, and OCTANE alongside regional depot stock reserves.
 - **Forecast & Risk Visualization:** Multi-station stockout risk matrix with drill-down `TrajectoryDrawer` powered by Recharts, showing 24-hour stock projections and confidence uncertainty intervals.
-- **Incident & Disruption Monitoring:** Real-time visibility into active simulator incidents, price spikes, route closures, and transit trucks.
+- **Incident & Disruption Monitoring:** Real-time visibility into active simulator incidents, demand surges, route closures, and transit trucks.
 - **Allocation Recommendations:** Urgency-ranked replenishment cards with detailed physical constraint audits, human-readable explanations, and approval/rejection forms.
 - **System Health Page:** Status pills for Backend API, Worker, Predictor, Simulator, and PostgreSQL with data age tracking and p95 latency telemetry.
 
@@ -46,7 +46,7 @@ The **Fuel Supply Intelligence & Resilience Platform** is an operator-facing com
 ### Allocation Workflow & Governance
 - **Mandatory Operator Authority:** Simulator writes require an explicit operator decision with `OPERATOR_TOKEN`. AI agents and automated scripts cannot auto-submit dispatches.
 - **Pre-Submission Revalidation:** The worker re-fetches authoritative state and re-verifies physical constraints immediately prior to dispatch.
-- **Permanent Idempotency:** Cryptographically stable idempotency keys stored alongside exact JSON request payloads prevent duplicate dispatches during network retries.
+- **Permanent Idempotency:** Stable persisted idempotency keys stored alongside exact JSON request payloads prevent duplicate dispatches during network retries.
 - **Complete Lifecycle Auditing:** Tracks allocations across `PROPOSED`, `APPROVED`, `SUBMITTED`, `IN_TRANSIT`, `ARRIVED`, and `FAILED` states.
 
 ### Resilience & Observability (`observability/`)
@@ -63,9 +63,9 @@ All seven project sprints have been completed, verified with live commands, mech
 
 | Sprint | Goal | Acceptance Status | Git Tag | Detailed Report |
 |---|---|---|---|---|
-| **Sprint 1** | Project Topology & Simulator Contract | **PASS** | `sprint-0` / S1 | [sprint-01.md](sprint-reports/sprint-01.md) |
-| **Sprint 2** | Synchronization, Ingestion & Dashboard | **PASS** | S2 | [sprint-02.md](sprint-reports/sprint-02.md) |
-| **Sprint 3** | Demand Forecasting & Shortage Risk | **PASS** | S3 | [sprint-03.md](sprint-reports/sprint-03.md) |
+| **Sprint 1** | Project Topology & Simulator Contract | **PASS** | `sprint-0` (bootstrap) | [sprint-01.md](sprint-reports/sprint-01.md) |
+| **Sprint 2** | Synchronization, Ingestion & Dashboard | **PASS** | Preserved in branch | [sprint-02.md](sprint-reports/sprint-02.md) |
+| **Sprint 3** | Demand Forecasting & Shortage Risk | **PASS** | Preserved in branch | [sprint-03.md](sprint-reports/sprint-03.md) |
 | **Sprint 4** | Allocation Engine & Live Approval Verification | **PASS** | `sprint-4` | [sprint-04.md](sprint-reports/sprint-04.md) |
 | **Sprint 5** | Observability, Resilience & Fault Demo | **PASS** | `sprint-5` | [sprint-05.md](sprint-reports/sprint-05.md) |
 | **Sprint 6** | Scenario Evaluation & k6 Load Benchmarks | **PASS** | `sprint-6` | [sprint-06.md](sprint-reports/sprint-06.md) |

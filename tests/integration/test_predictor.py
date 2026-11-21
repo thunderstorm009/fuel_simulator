@@ -72,9 +72,9 @@ def test_predictor_rejects_unknown_station() -> None:
 def test_predictor_failure_switch_requires_operator_token(monkeypatch) -> None:
     monkeypatch.setenv("OPERATOR_TOKEN", "test-operator")
     with TestClient(app) as client:
-        denied = client.post("/admin/fail", json={"enabled": True})
+        denied = client.post("/chaos/fail", json={"enabled": True})
         enabled = client.post(
-            "/admin/fail",
+            "/chaos/fail",
             json={"enabled": True},
             headers={"X-Operator-Token": "test-operator"},
         )
@@ -88,7 +88,7 @@ def test_predictor_failure_switch_requires_operator_token(monkeypatch) -> None:
             },
         )
         client.post(
-            "/admin/fail",
+            "/chaos/fail",
             json={"enabled": False},
             headers={"X-Operator-Token": "test-operator"},
         )

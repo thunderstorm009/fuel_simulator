@@ -28,6 +28,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-022 | Keep personal AI workspace local and publish application/engineering artifacts only | ACCEPTED | Publication |
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
 | ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
+| ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -244,3 +245,16 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** Sprint 7 requires full freeze, cold-start recovery proof from wiped volumes, clean-clone verification in an isolated directory, reversible chaos testing, and demo readiness. During testing, legacy environment configurations using `PREDICTOR_URL=http://predictor:8100` alongside newer `8103` definitions caused startup and health-check degradation if ports were hardcoded.
 - **Decision:** Enable transparent dual-port listening in `intel/predictor` (uvicorn on port 8103 with an asynchronous TCP forwarder on port 8100) and candidate port discovery in `backend/api/routes/health.py`. Fix `scripts/chaos_random.py` to issue HTTP POST to `/admin/faults/clear`. Execute cold-start recovery with volume destruction timing at 34 seconds (`scripts/cold_start_check.sh`), verify clean clone in an isolated temporary clone without private prompts (`scripts/verify_clean_clone.sh`), and verify zero unexplained 5xx responses during random chaos testing (`docs/evidence/sprint-07-chaos.json`).
 - **Trade-off:** Retaining port 8100 compatibility preserves backward compatibility across historical local environment files without requiring unauthorized `.env` modifications.
+
+### ADR-036 — WP8.0 truth pass, admin endpoint route remediation, and tag alignment
+
+- **Status:** ACCEPTED
+- **Context:** An adversarial audit of the codebase following Sprint 7 identified non-compliant `/admin/fail` paths in `intel/predictor` and `backend/api/routes/chaos.py`, inaccurate claims in public documentation ("vehicle quotas", "price spikes", "cryptographically stable" keys, and "independent review" descriptions for single-agent self-reviews), non-existent git tags (`S1`, `S2`, `S3`) cited in the Day 2 update, and an omitted policy comparison table in `README.md`.
+- **Decision:**
+  1. Rename predictor failure endpoint from `/admin/fail` to `/chaos/fail`, ensuring `git grep -n "/admin" -- backend web intel` returns zero hits.
+  2. Remove all references to "vehicle quotas" (the simulator enforces route max shipment and depot dispatch capacity) and "price spikes" (the simulator has no pricing model).
+  3. Re-label stored idempotency keys truthfully as stable persisted keys rather than cryptographically generated tokens.
+  4. Explicitly label reviews conducted by the same model/agent as self-reviews using the `code-review-strict` skill.
+  5. Correct the Day 2 update tag table to list only tags that exist in `git tag` (`sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`), marking earlier sprints as preserved in branch history.
+  6. Add a full scenario policy comparison benchmark table to `README.md` referencing `docs/results/scenario-summary.md`.
+- **Trade-off:** Retaining strict transparency eliminates unsubstantiated claims and aligns public documentation with proven operational reality.

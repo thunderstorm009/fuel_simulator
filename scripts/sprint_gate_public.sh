@@ -2,9 +2,9 @@
 # Public mechanical gate. Private sprint prompts and repository instructions are
 # intentionally absent from clean clones, so report those checks as skipped.
 set -euo pipefail
-N=${1:?usage: scripts/sprint_gate_public.sh <1-7>}
-if ! [[ "$N" =~ ^[1-7]$ ]]; then
-  echo "FAIL: sprint number must be 1-7" >&2
+N=${1:?usage: scripts/sprint_gate_public.sh <1-10>}
+if ! [[ "$N" =~ ^([1-9]|10)$ ]]; then
+  echo "FAIL: sprint number must be 1-10" >&2
   exit 2
 fi
 printf -v NN '%02d' "$N"

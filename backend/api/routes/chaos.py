@@ -28,7 +28,7 @@ async def forecast_failure(
     try:
         async with httpx.AsyncClient(timeout=1.0) as client:
             response = await client.post(
-                f"{predictor_url}/admin/fail",
+                f"{predictor_url}/chaos/fail",
                 json=payload.model_dump(),
                 headers={"X-Operator-Token": token},
             )
