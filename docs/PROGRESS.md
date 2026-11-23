@@ -6,10 +6,16 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`.
 - Sprints 1–11: All gates passed and tagged.
-- Sprint 12: In progress. WP12.1 (API Performance) and WP12.5 (Backup, Restore & Measured Recovery) COMPLETE.
-- Next: WP12.3 Soak test (P0).
+- Sprint 12: In progress. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), and WP12.3 (Soak test) COMPLETE.
+- Next: WP12.2 Push updates over SSE (P1).
 
 ## Verification in this work package
+
+- WP12.3 Soak test complete:
+  - Implemented `scripts/soak_test.sh` and `scripts/run_soak_test.py` with automated container stats, DB metrics, API probes, and graceful cleanup.
+  - Executed soak test with live simulator running at speed=2 under active randomized chaos injection.
+  - Metrics verified: API memory drift +14.4 MiB (STABLE < 25 MiB), worker drift +2.4 MiB (STABLE < 15 MiB), database size bounded (33.1 to 35.7 MiB), snapshot pruning active, API read p95 8.7–12.5 ms, 0.0% unexplained errors.
+  - Generated `docs/results/soak-test-timeseries.csv` and `docs/results/soak-test-summary.md`. Simulator left PAUSED at tick 153 with zero active faults.
 
 - WP12.5 Backup, restore and measured recovery complete:
   - Created `scripts/backup_db.sh` and `scripts/restore_db.sh` targeting this project's PostgreSQL container.
