@@ -11,9 +11,11 @@ import asyncpg
 from core.depot_risk import DepotRiskProjection
 from core.detect import IncidentDetection
 from core.metrics import (
+    active_policy,
     alerts_active,
     detections_total,
     forecast_drift_total,
+    policy_changes_total,
     recommendations_by_status,
 )
 from core.models import Snapshot
@@ -91,6 +93,16 @@ class PostgresStore:
                 ON depot_risks (snapshot_id, depot_id, fuel_type);
             CREATE INDEX IF NOT EXISTS incidents_dedup_idx
                 ON incidents (type, (detail->>'dedup_key')) WHERE resolved_at IS NULL;
+            CREATE TABLE IF NOT EXISTS policy_changes (
+                id BIGSERIAL PRIMARY KEY,
+                policy TEXT NOT NULL,
+                previous_policy TEXT NOT NULL,
+                actor TEXT NOT NULL,
+                reason TEXT NOT NULL,
+                changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            );
+            CREATE INDEX IF NOT EXISTS policy_changes_changed_at_idx
+                ON policy_changes (changed_at DESC);
             """
         )
         return cls(pool)
@@ -611,6 +623,44 @@ class PostgresStore:
                 """,
                 keep,
             )
+
+    async def get_active_policy(self) -> str:
+        row = await self.pool.fetchrow("SELECT policy FROM policy_changes ORDER BY id DESC LIMIT 1")
+        return str(row["policy"]) if row else "heuristic"
+
+    async def record_policy_rollback(
+        self, failed_policy: str, reason: str, violations: list[str]
+    ) -> None:
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                await connection.execute(
+                    """
+                    INSERT INTO policy_changes (policy, previous_policy, actor, reason)
+                    VALUES ('heuristic', $1, 'system:rollback', $2)
+                    """,
+                    failed_policy,
+                    f"automatic rollback: {reason}",
+                )
+                detail = {
+                    "policy": failed_policy,
+                    "reason": reason,
+                    "violations": violations,
+                    "rolled_back_to": "heuristic",
+                }
+                await connection.execute(
+                    """
+                    INSERT INTO incidents (type, severity, detail)
+                    VALUES ('policy_rollback', 'warning', $1::jsonb)
+                    """,
+                    json.dumps(detail),
+                )
+                await connection.execute(
+                    "SELECT pg_notify('platform_events', $1)",
+                    json.dumps({"type": "policy_change", "policy": "heuristic"}),
+                )
+        for p in ("heuristic", "heuristic_buffer", "optimizer"):
+            active_policy.labels(policy=p).set(1.0 if p == "heuristic" else 0.0)
+        policy_changes_total.labels(policy="heuristic", actor="system:rollback").inc()
 
     async def close(self) -> None:
         await self.pool.close()

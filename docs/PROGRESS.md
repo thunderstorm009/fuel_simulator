@@ -6,10 +6,29 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`.
 - Sprints 1–11: All gates passed and tagged.
-- Sprint 12: In progress. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), WP12.3 (Soak test), WP12.2 (Push updates over SSE), and WP12.4 (Alert routing end to end) COMPLETE.
-- Next: WP12.6 Runtime policy switch with automatic rollback (P2).
+- Sprint 12: COMPLETE. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), WP12.3 (Soak test), WP12.2 (Push updates over SSE), WP12.4 (Alert routing end to end), and WP12.6 (Runtime policy switch with automatic rollback) COMPLETE.
+- Next: Sprint 12 Gate & Reviews (R4 & R5), then Sprint 13.
 
 ## Verification in this work package
+
+- WP12.6 Runtime policy switch with automatic rollback (P2) complete:
+  - Added `policy_changes` table schema in `backend/api/db.sql`, `backend/api/database.py`, and `backend/worker/store.py` with full audit fields (`id`, `policy`, `previous_policy`, `actor`, `reason`, `changed_at`).
+  - Added Prometheus metrics: `active_policy` Gauge and `policy_changes_total{policy, actor}` Counter.
+  - Implemented `POST /api/policy` and `GET /api/policy` in `backend/api/routes/policy.py` with operator token authentication, rate limiting, and database auditing.
+  - Updated `GET /api/version` to expose `active_policy`.
+  - Updated web frontend: `Footer` displays live active policy (`Policy v2.1.0 (<policy>)`) updated via TanStack query.
+  - Hardened `PolicyRunner` in `backend/worker/recommend_job.py`:
+    - Validates every candidate proposal against pure domain constraints via `core.validator.validate`.
+    - Automatically rolls back to `HeuristicPolicy` if active policy throws an exception, times out (0.5s), or emits any candidate violating validator constraints.
+    - Records rollback in `policy_changes` with actor `system:rollback` and logs warning.
+    - Creates `policy_rollback` incident in database and broadcasts push event via PostgreSQL `LISTEN/NOTIFY`.
+    - Discards invalid candidate plans and guarantees validator violations are never emitted.
+  - Unit tested in `tests/unit/test_policy_switch_and_rollback.py` (6 tests passing):
+    - Policy exception triggers automatic rollback to heuristic.
+    - Policy timeout triggers automatic rollback to heuristic.
+    - Policy constraint violation triggers automatic rollback and zero invalid proposals emitted.
+    - Token authentication and auditing verified.
+  - Recorded ADR-047 in `docs/decisions.md` and updated `docs/api.md`.
 
 - WP12.4 Alert routing end to end complete:
   - Added `alertmanager` (`prom/alertmanager:v0.28.0`) and `webhook-receiver` (`observability/webhook_receiver/receiver.py`) under Docker Compose profile `alerts`. Default `docker compose up` starts only the standard 8 services.

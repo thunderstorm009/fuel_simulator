@@ -9,6 +9,7 @@ from typing import Any, Protocol
 
 import asyncpg
 
+from core.metrics import active_policy, policy_changes_total
 from core.models import Snapshot
 
 
@@ -47,6 +48,14 @@ class ReadRepository(Protocol):
         self, recommendation_id: str, action: str, reason: str | None, actor: str
     ) -> dict[str, Any] | None: ...
 
+    async def get_active_policy(self) -> str: ...
+
+    async def record_policy_change(
+        self, policy: str, actor: str, reason: str
+    ) -> dict[str, Any]: ...
+
+    async def get_policy_history(self, limit: int = 50) -> list[dict[str, Any]]: ...
+
 
 class PostgresReadRepository:
     def __init__(self, pool: asyncpg.Pool) -> None:
@@ -74,6 +83,16 @@ class PostgresReadRepository:
                 ON forecasts (station_id, fuel_type, snapshot_id DESC);
             CREATE INDEX IF NOT EXISTS depot_risks_depot_snapshot_idx
                 ON depot_risks (depot_id, fuel_type, snapshot_id DESC);
+            CREATE TABLE IF NOT EXISTS policy_changes (
+                id BIGSERIAL PRIMARY KEY,
+                policy TEXT NOT NULL,
+                previous_policy TEXT NOT NULL,
+                actor TEXT NOT NULL,
+                reason TEXT NOT NULL,
+                changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+            );
+            CREATE INDEX IF NOT EXISTS policy_changes_changed_at_idx
+                ON policy_changes (changed_at DESC);
             """
         )
         return cls(pool)
@@ -342,6 +361,43 @@ class PostgresReadRepository:
                     "recommendation": self._decode_recommendation(updated),
                     "decision_recorded": True,
                 }
+
+    async def get_active_policy(self) -> str:
+        row = await self.pool.fetchrow("SELECT policy FROM policy_changes ORDER BY id DESC LIMIT 1")
+        return str(row["policy"]) if row else "heuristic"
+
+    async def record_policy_change(self, policy: str, actor: str, reason: str) -> dict[str, Any]:
+        async with self.pool.acquire() as connection:
+            async with connection.transaction():
+                prev_row = await connection.fetchrow(
+                    "SELECT policy FROM policy_changes ORDER BY id DESC LIMIT 1"
+                )
+                prev_policy = str(prev_row["policy"]) if prev_row else "heuristic"
+                row = await connection.fetchrow(
+                    """
+                    INSERT INTO policy_changes (policy, previous_policy, actor, reason)
+                    VALUES ($1, $2, $3, $4)
+                    RETURNING *
+                    """,
+                    policy,
+                    prev_policy,
+                    actor,
+                    reason,
+                )
+                await connection.execute(
+                    "SELECT pg_notify('platform_events', $1)",
+                    json.dumps({"type": "policy_change", "policy": policy}),
+                )
+        for p in ("heuristic", "heuristic_buffer", "optimizer"):
+            active_policy.labels(policy=p).set(1.0 if p == policy else 0.0)
+        policy_changes_total.labels(policy=policy, actor=actor).inc()
+        return dict(row)
+
+    async def get_policy_history(self, limit: int = 50) -> list[dict[str, Any]]:
+        rows = await self.pool.fetch(
+            "SELECT * FROM policy_changes ORDER BY id DESC LIMIT $1", limit
+        )
+        return [dict(r) for r in rows]
 
     @staticmethod
     def _decode_recommendation(row: Any) -> dict[str, Any]:

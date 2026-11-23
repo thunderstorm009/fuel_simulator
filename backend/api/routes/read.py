@@ -191,13 +191,21 @@ async def incident_summary(incident_id: int, repository: RepositoryDep) -> dict[
 
 
 @router.get("/version")
-async def version_info() -> dict[str, Any]:
+async def version_info(request: Request) -> dict[str, Any]:
+    repository = getattr(request.app.state, "repository", None)
+    active_policy_name = "heuristic"
+    if repository and hasattr(repository, "get_active_policy"):
+        try:
+            active_policy_name = await repository.get_active_policy()
+        except Exception:
+            pass
     return {
         "git_sha": GIT_SHA,
         "tag": GIT_TAG,
         "build_time": BUILD_TIME,
         "model_version": MODEL_VERSION,
         "policy_version": POLICY_VERSION,
+        "active_policy": active_policy_name,
         "simulated": True,
     }
 

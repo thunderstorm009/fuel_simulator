@@ -41,6 +41,10 @@ recommendation_fallbacks = Counter(
     "recommendation_fallbacks_total", "Heuristic recommendation fallbacks"
 )
 policy_fallbacks = Counter("policy_fallback_total", "Fallback invocations by cause", ["reason"])
+active_policy = Gauge("active_policy", "Currently active allocation policy", ["policy"])
+policy_changes_total = Counter(
+    "policy_changes_total", "Runtime policy changes", ["policy", "actor"]
+)
 recommendations_by_status = Gauge(
     "recommendations_total", "Recommendation lifecycle events by status", ["status"]
 )

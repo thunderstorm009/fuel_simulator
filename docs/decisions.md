@@ -33,6 +33,9 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-042 | Sprint 11 truth pass, physical boundary arithmetic, and compliance recount | ACCEPTED | 11 |
 | ADR-043 | Matplotlib plotting library as dev dependency for boundary and backtest visualization | ACCEPTED | 11 |
 | ADR-044 | Multi-worker Uvicorn, connection pool enlargement, composite indexing, and byte-level caching | ACCEPTED | 12 |
+| ADR-045 | Push invalidation over SSE with PostgreSQL LISTEN/NOTIFY and polling fallback | ACCEPTED | 12 |
+| ADR-046 | Alertmanager routing and local webhook receiver under compose profile 'alerts' | ACCEPTED | 12 |
+| ADR-047 | Runtime policy switch with automatic rollback and constraint validation | ACCEPTED | 12 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -384,3 +387,20 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   5. Implement `scripts/demonstrate_alert_routing.py` as an automated verifiable drill: starts `alerts` profile, restarts Prometheus to discover Alertmanager, injects `unavailable` fault, observes webhook receipt of firing `SimulatorCircuitBreakerOpen` alert with severity `critical` and runbook link `docs/runbook.md#circuit-breaker`, clears fault, and observes receipt of resolved notification (measured resolution duration: 15.0s).
   6. Document silencing (`amtool` CLI and web UI at port 9093) and runbook procedures in `docs/runbook.md`.
 - **Consequences:** Complete alert delivery pipeline is proven end-to-end with real timestamped evidence (`docs/evidence/day-4/alert-routing-evidence.json` and `.txt`) while preserving zero-overhead default developer environments.
+
+### ADR-047: Runtime Policy Switch with Automatic Rollback and Constraint Validation (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** In crisis situations or distinct operational modes, operators need the ability to switch between candidate allocation strategies (`heuristic`, `heuristic_buffer`, or `optimizer`) at runtime. However, autonomous policy execution risks invalid proposals if a complex optimizer experiences matrix singularities, execution timeouts, or generates candidate allocations violating physical network constraints. Furthermore, policy switching must never become an auto-approval path (human approval remains mandatory).
+- **Decision:**
+  1. Add `POST /api/policy` and `GET /api/policy`. `POST /api/policy` requires `X-Operator-Token`, rate limiting (`check_policy_rate_limit`), and an audited non-blank reason.
+  2. Persist policy switches in the `policy_changes` audit table with actor, reason, timestamp, and previous policy.
+  3. Expose active policy via Prometheus gauge `active_policy{policy=...}`, counter `policy_changes_total{policy=...,actor=...}`, `GET /api/version`, and the web application footer (`Policy v2.1.0 (<policy>)`).
+  4. In `PolicyRunner` (`backend/worker/recommend_job.py`), validate every candidate proposal using `core.validator.validate(plan.request, snapshot, step_reservations)`.
+  5. If the active policy raises an unhandled exception, exceeds its timeout window (0.5s), or emits any candidate violating validator constraints, `PolicyRunner` automatically rolls back to `HeuristicPolicy`:
+     - Discards invalid candidate plans immediately.
+     - Logs warning and raises an incident (`type="policy_rollback"`, `severity="warning"`).
+     - Persists rollback in `policy_changes` with actor `system:rollback`.
+     - Emits `platform_events` push notification.
+     - Invokes fallback `HeuristicPolicy` and validates fallback proposals before returning.
+  6. Human approval remains mandatory for all generated proposals; switching policies alters proposal generation only, never auto-approves or auto-submits.
+- **Consequences:** Guarantees zero invalid recommendations can ever be persisted or presented to operators, ensures transparent auditing of all policy alterations, and maintains automated fail-safe recovery under algorithmic failure.

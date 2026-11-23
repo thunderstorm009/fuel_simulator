@@ -11,7 +11,7 @@ import NetworkView from "../features/network/NetworkView";
 import IncomingSupplyView from "../features/inventory/IncomingSupplyView";
 import AlertCenterPage from "../features/alerts/AlertCenterPage";
 import EvaluationPage from "../features/evaluation/EvaluationPage";
-import { fetchDepotRisks, fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
+import { fetchDepotRisks, fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory, fetchVersion } from "../services/api";
 import { useEventStream } from "../features/stream/useEventStream";
 import type { Fuel } from "../types/api";
 import { localTime } from "../lib/format";
@@ -26,6 +26,7 @@ export default function App() {
   const eventsQuery = useQuery({ queryKey: ["events"], queryFn: fetchEvents, refetchInterval: pollInterval });
   const risksQuery = useQuery({ queryKey: ["risks"], queryFn: fetchRisks, refetchInterval: pollInterval });
   const healthQuery = useQuery({ queryKey: ["health"], queryFn: fetchHealth, refetchInterval: pollInterval });
+  const versionQuery = useQuery({ queryKey: ["version"], queryFn: fetchVersion, refetchInterval: 30000 });
   const depotRisksQuery = useQuery({ queryKey: ["depotRisks"], queryFn: fetchDepotRisks, refetchInterval: pollInterval });
   const trajectoryQuery = useQuery({
     queryKey: ["trajectory", selected?.stationId, selected?.fuel],
@@ -93,7 +94,10 @@ export default function App() {
       ) : (
         <DashboardPage snapshot={snapshot} events={events} incidents={incidents} depotRisks={depotRisks} />
       )}
-      <Footer lastRefresh={state ? localTime(state.fetched_at) : undefined} />
+      <Footer
+        lastRefresh={state ? localTime(state.fetched_at) : undefined}
+        activePolicy={versionQuery.data?.active_policy}
+      />
     </main>
   );
 }

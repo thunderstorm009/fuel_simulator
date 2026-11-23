@@ -114,3 +114,13 @@ CREATE TABLE IF NOT EXISTS heartbeats (
     last_seen TIMESTAMPTZ NOT NULL,
     detail JSONB NOT NULL DEFAULT '{}'::jsonb
 );
+
+CREATE TABLE IF NOT EXISTS policy_changes (
+    id BIGSERIAL PRIMARY KEY,
+    policy TEXT NOT NULL,
+    previous_policy TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS policy_changes_changed_at_idx ON policy_changes (changed_at DESC);

@@ -85,3 +85,16 @@ export const fetchIncidentSummary = (
   );
 export const fetchEvaluation = (): Promise<EvaluationResponse> =>
   getJson<EvaluationResponse>("/api/evaluation/summary");
+
+export interface VersionResponse {
+  git_sha: string;
+  tag: string;
+  build_time: string;
+  model_version: string;
+  policy_version: string;
+  active_policy: string;
+  simulated: boolean;
+}
+
+export const fetchVersion = (): Promise<VersionResponse> =>
+  getJson<VersionResponse>("/api/version");

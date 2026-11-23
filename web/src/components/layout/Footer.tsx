@@ -1,12 +1,13 @@
 interface FooterProps {
   lastRefresh?: string;
+  activePolicy?: string;
 }
 
-export default function Footer({ lastRefresh }: FooterProps) {
+export default function Footer({ lastRefresh, activePolicy = "heuristic" }: FooterProps) {
   return (
     <footer className="page-footer" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem 1rem", borderTop: "1px solid #30363d", marginTop: "1rem", fontSize: "0.8rem", color: "#8b949e" }}>
       <div>
-        <strong>Fuel Intelligence &amp; Resilience Platform</strong> &bull; Model v1.2.0 &bull; Policy v2.1.0 &bull; Tag: <code>sprint-11</code>
+        <strong>Fuel Intelligence &amp; Resilience Platform</strong> &bull; Model v1.2.0 &bull; Policy v2.1.0 (<code>{activePolicy}</code>) &bull; Tag: <code>sprint-11</code>
       </div>
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
         {lastRefresh && <span>Last refresh: {lastRefresh}</span>}
