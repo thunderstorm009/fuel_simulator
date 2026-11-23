@@ -64,7 +64,8 @@ Prove the product end to end in a real browser, raise usability and accessibilit
 - Architecture refresh: `docs/architecture.md` with complete Mermaid component topology and 5 sequence diagrams (ingestion, what-if, approval-to-submit, SSE push, fault handling).
 - Decision log refresh: `docs/decisions.md` summary table updated to index all 48 ADRs (ADR-001 through ADR-048).
 - Judge Q&A refresh: `docs/qa.md` with 20 evidence-backed, empirical answers.
-- Final engineering update: `docs/FINAL-UPDATE.md` containing real Day 4 screenshots, corrections log vs Day 3, today's verification table, and claims ledger.
+- Final engineering update: `docs/DAY-4-UPDATE.md` containing real Day 4 screenshots, corrections log vs Day 3, today's verification table, and claims ledger.
+- Post-mortem report: `docs/DAY-5-UPDATE.md` documenting CI failure diagnosis, resolution, and defect matrix.
 - Master README refresh: `README.md` updated with real test counts (234 Python, 11 Vitest, 12 Playwright), accessibility score, 625.8 req/s throughput, 60-scenario sweep with 95% bootstrap CIs, and quick start guide.
 
 ---

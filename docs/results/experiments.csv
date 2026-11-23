@@ -71,3 +71,5 @@ date,git_sha,model_version,policy_version,scenario,policy,service_level,unmet_li
 2026-11-23 06:26:48,ec36450,1.2.0,2.1.0,baseline,heuristic,1.0000,0.0,0.0211
 2026-11-23 06:27:05,ec36450,1.2.0,2.1.0,spike,heuristic,1.0000,0.0,0.0211
 2026-11-23 06:27:05,ec36450,1.2.0,2.1.0,spike,heuristic,1.0000,0.0,0.0211
+2026-11-23 09:42:20,cd9cf4b,1.2.0,2.1.0,baseline,heuristic,1.0000,0.0,0.0211
+2026-11-23 09:42:20,cd9cf4b,1.2.0,2.1.0,baseline,heuristic,1.0000,0.0,0.0211

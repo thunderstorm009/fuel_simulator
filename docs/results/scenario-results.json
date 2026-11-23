@@ -1,28 +1,28 @@
 [
   {
-    "scenario": "spike",
+    "scenario": "baseline",
     "policy": "heuristic",
     "run": 1,
-    "ticks": 45,
+    "ticks": 5,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 43678.32,
-    "allocation_liters": 43777.465,
+    "served_demand_liters": 3213.644,
+    "allocation_liters": 7441.83,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 8.507994250001502
+    "elapsed_seconds": 0.9759722919989144
   },
   {
-    "scenario": "spike",
+    "scenario": "baseline",
     "policy": "heuristic",
     "run": 2,
-    "ticks": 45,
+    "ticks": 5,
     "service_level": 1.0,
     "unmet_demand_liters": 0.0,
-    "served_demand_liters": 43678.32,
-    "allocation_liters": 43777.465,
+    "served_demand_liters": 3213.644,
+    "allocation_liters": 7441.83,
     "allocation_failures": 0,
     "station_tick_stockouts": 0,
-    "elapsed_seconds": 8.249392666999483
+    "elapsed_seconds": 0.8166536670032656
   }
 ]

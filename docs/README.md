@@ -28,7 +28,7 @@ This directory contains the complete technical, operational, architectural, and 
 ## 3. Intelligence, Policies & Verification
 
 - **[intelligence.md](intelligence.md)** — Predictive engine details: diurnal baseline models, Monte Carlo probabilistic simulation (P10/P90), event-aware calibration, and anomaly detection.
-- **[decisions.md](decisions.md)** — Architectural Decision Records (ADRs) log indexing all 48 key architectural choices (ADR-001 through ADR-048).
+- **[decisions.md](decisions.md)** — Architectural Decision Records (ADRs) log indexing all 49 key architectural choices (ADR-001 through ADR-049).
 - **[BRIEF-COMPLIANCE.md](BRIEF-COMPLIANCE.md)** — Exhaustive line-by-line verification matrix against all 109 requirements in the official hackathon specification.
 - **[security-and-guardrails.md](security-and-guardrails.md)** — Security posture: token authentication, secret scanning (Gitleaks), container vulnerability audits (Trivy), dependency checks (pip-audit), and LLM guardrails.
 - **[known-issues.md](known-issues.md)** — Transparent log of known operational boundaries, residual risks, and non-blocking edge cases.
@@ -53,7 +53,8 @@ This directory contains the complete technical, operational, architectural, and 
 ## 5. Progress & Sprint Archives
 
 - **[PROGRESS.md](PROGRESS.md)** — Cumulative sprint-by-sprint progress log, active work package tracker, and 5-minute status updates.
-- **[FINAL-UPDATE.md](FINAL-UPDATE.md)** — Day 4 final delivery summary, corrections ledger vs Day 3, today's re-run verification table, and claims ledger.
+- **[DAY-4-UPDATE.md](DAY-4-UPDATE.md)** — Day 4 final delivery summary, corrections ledger vs Day 3, today's re-run verification table, and claims ledger.
+- **[DAY-5-UPDATE.md](DAY-5-UPDATE.md)** — Day 5 post-mortem report on errors found, CI failure deep dive, root causes, permanent fixes, and regression guards.
 - **[sprint-reports/](sprint-reports/)** — Formal sprint reports for Sprints 01 through 13.
 - **[reviews/](reviews/)** — Independent architectural reviews (R1, R3, R4, R5, R6, R7, and docs audit).
 - **[evidence/](evidence/)** — Raw empirical logs, timing JSONs, and high-resolution interface screenshots.

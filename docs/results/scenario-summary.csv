@@ -1,3 +1,3 @@
 scenario,policy,run,ticks,service_level,unmet_demand_liters,served_demand_liters,allocation_liters,allocation_failures,station_tick_stockouts,elapsed_seconds
-spike,heuristic,1,45,1.0,0.0,43678.32,43777.465,0,0,8.507994250001502
-spike,heuristic,2,45,1.0,0.0,43678.32,43777.465,0,0,8.249392666999483
+baseline,heuristic,1,5,1.0,0.0,3213.644,7441.83,0,0,0.9759722919989144
+baseline,heuristic,2,5,1.0,0.0,3213.644,7441.83,0,0,0.8166536670032656

@@ -4,7 +4,7 @@
 > A simulation-driven platform for fuel inventory intelligence, demand forecasting, shortage-risk analysis and resilient allocation decision support.
 
 [![CI Status](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
-[![Python Tests](https://img.shields.io/badge/pytest-234%20passed-brightgreen)](tests/)
+[![Python Tests](https://img.shields.io/badge/pytest-237%20passed-brightgreen)](tests/)
 [![Frontend Tests](https://img.shields.io/badge/vitest-11%20passed-brightgreen)](web/tests/)
 [![E2E Tests](https://img.shields.io/badge/playwright-12%20passed-brightgreen)](tests/e2e/)
 [![Accessibility](https://img.shields.io/badge/axe--core-0%20critical%20violations-brightgreen)](docs/evidence/day-4/accessibility-audit.md)
@@ -284,15 +284,19 @@ make smoke
   - [Operational Runbook & Silencing Rules](docs/runbook.md)
   - [Production Operations & Backup/Restore](docs/operations.md)
   - [Judge Technical Q&A (Evidence-Backed Defense)](docs/qa.md)
-- **Scientific Evaluation & Delivery:**
-  - [Day 4 Final Engineering Update & Verification Table](docs/FINAL-UPDATE.md)
+- **Scientific Evaluation & Delivery Updates:**
+  - [Day 1 Engineering Update](docs/DAY-1-UPDATE.md)
+  - [Day 2 Engineering Update](docs/DAY-2-UPDATE.md)
+  - [Day 3 Engineering Update](docs/DAY-3-UPDATE.md)
+  - [Day 4 Final Engineering Update & Verification Table](docs/DAY-4-UPDATE.md)
+  - [Day 5 Post-Mortem & Fixes Report](docs/DAY-5-UPDATE.md)
   - [60-Scenario Sweep Report (95% Bootstrap CI)](docs/results/scenario-sweep.md)
   - [Physical Failure Boundaries & Truck Caps](docs/results/failure-boundary.md)
   - [Forecast Backtesting Summary (MAPE 2.11%)](docs/results/backtest-summary.md)
   - [Event-Aware Calibration Analysis](docs/results/event-calibration.md)
   - [k6 Load & Latency Benchmark Report](docs/loadtest.md)
   - [Live Soak Test 90-Minute Report](docs/results/soak-test-summary.md)
-  - [Architectural Decision Records Log (ADR-001 through ADR-048)](docs/decisions.md)
+  - [Architectural Decision Records Log (ADR-001 through ADR-049)](docs/decisions.md)
   - [Hackathon Brief Compliance Matrix (All 109 Requirements)](docs/BRIEF-COMPLIANCE.md)
 
 ---

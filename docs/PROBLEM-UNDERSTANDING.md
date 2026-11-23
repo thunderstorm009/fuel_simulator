@@ -12,7 +12,7 @@ The platform models Bangladesh's national fuel supply chain across upstream stor
 graph TD
   subgraph Depots["Upstream Storage Depots"]
     DG["Depot Gazipur (Dhaka Division)<br/>Dispatch Cap: 12,000 L/tick<br/>Storage: High Capacity"]
-    DP["Depot Patiya (Chittagong Division)<br/>Dispatch Cap: 11,000 L/tick<br/>Storage: High Capacity"]
+    DP["Depot Patiya (Chattogram Division)<br/>Dispatch Cap: 11,000 L/tick<br/>Storage: High Capacity"]
   end
 
   subgraph Corridors["Transit Corridors (Truck Logistics)"]
@@ -37,7 +37,7 @@ graph TD
 
 ### Key Physical Parameters:
 1. **Depots (2 nodes):**
-   - **Gazipur:** Upstream refinery feeder for northern and central districts; dispatch limit = **12,000 L/tick**.
+   - **Gazipur:** Upstream bulk storage depot for northern and central districts; dispatch limit = **12,000 L/tick**.
    - **Patiya:** Coastal port terminal feeder for southern maritime and industrial zones; dispatch limit = **11,000 L/tick**.
    - **Combined Dispatch Ceiling:** **23,000 L/tick**.
 2. **Transit Routes (4 active corridors):**
@@ -91,7 +91,7 @@ From the empirical baseline profiles in `core/world.py`:
 3. **Station Tank Ullage:**
    Stations cannot "hoard" fuel in anticipation of distant spikes because tank capacities are bounded. Delivering too early violates tank capacity constraints; delivering too late causes stockout.
 4. **Depot Resupply Deficits:**
-   When upstream pipeline resupply factor drops below 0.40, depot bulk tanks eventually run dry, creating supply starvation regardless of truck availability.
+   When upstream scheduled supply resupply factor drops below 0.40, depot bulk tanks eventually run dry, creating supply starvation regardless of truck availability.
 
 ---
 

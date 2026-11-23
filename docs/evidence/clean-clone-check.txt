@@ -1,5 +1,5 @@
 === 1. Cloning repository into temporary folder ===
-Cloning into '/tmp/fuel_sim_clean_verify_1795422672'...
+Cloning into '/tmp/fuel_sim_clean_verify_1795426598'...
 done.
 === 2. Verifying ignored development files are absent ===
 CONFIRMED ABSENT: .env
@@ -14,12 +14,31 @@ CONFIRMED ABSENT: prompts
 PASS: database credentials and predictor URL match Compose services
 === 4. Installing frontend dependencies in clean clone ===
 
-added 191 packages, and audited 198 packages in 2s
+added 191 packages, and audited 198 packages in 3s
 
 29 packages are looking for funding
   run `npm fund` for details
 
 found 0 vulnerabilities
+=== 4b. Verifying Playwright test discovery in clean clone ===
+
+> fuel-supply-platform-frontend@0.1.0 test:e2e
+> NODE_PATH=node_modules playwright test --list
+
+Listing tests:
+  [chromium] › platform.spec.ts:23:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 1. Dashboard loads with SIMULATED banner and version footer
+  [chromium] › platform.spec.ts:40:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 2. Interactive Guided Tour steps through judging walkthrough and is dismissible
+  [chromium] › platform.spec.ts:61:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 3. Navigation across all 8 operational views
+  [chromium] › platform.spec.ts:82:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 4. Demand spike injection creates shortage risk and human review recommendation
+  [chromium] › platform.spec.ts:101:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 5. Human decision workflow: approve with operator token and operator name
+  [chromium] › platform.spec.ts:150:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 6. Human decision workflow: reject requires non-empty reason
+  [chromium] › platform.spec.ts:186:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 7. What-If simulator displays counterfactual risk runway
+  [chromium] › platform.spec.ts:200:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 8. Simulator fault triggers degraded notification and recovers cleanly
+  [chromium] › platform.spec.ts:223:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 9. Alert Center displays incidents and exports CSV/JSON data
+  [chromium] › platform.spec.ts:235:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 10. System Health page reports component health and data age
+  [chromium] › platform.spec.ts:246:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 11. SSE push stream status indicator is visible
+  [chromium] › platform.spec.ts:255:3 › Fuel Supply Intelligence Platform - End-to-End Suite › 12. Accessibility audit (axe-core) on key operational pages
+Total: 12 tests in 1 file
 === 5. Running public mechanical gate ===
 SKIP: local-only file absent (AGENTS.md)
 SKIP: local-only file absent (.local/prompts/SPRINT-06.md)
@@ -27,7 +46,7 @@ SKIP: local-only file absent (.agents/skills)
 ruff check .
 All checks passed!
 ruff format --check .
-110 files already formatted
+111 files already formatted
 npm --prefix web run typecheck
 
 > fuel-supply-platform-frontend@0.1.0 typecheck
@@ -51,16 +70,16 @@ dist/assets/NetworkView-sZAulc1j.js           5.36 kB │ gzip:   1.71 kB
 dist/assets/AlertCenterPage-DFFO79Kl.js       6.64 kB │ gzip:   2.42 kB
 dist/assets/index-DOoTOArn.js               278.23 kB │ gzip:  84.73 kB
 dist/assets/TrajectoryDrawer-CinM8TjD.js    426.04 kB │ gzip: 122.33 kB
-✓ built in 1.66s
+✓ built in 1.67s
 pytest
 ============================= test session starts ==============================
 platform darwin -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0
-rootdir: /private/tmp/fuel_sim_clean_verify_1795422672
+rootdir: /private/tmp/fuel_sim_clean_verify_1795426598
 configfile: pyproject.toml
 testpaths: tests
 plugins: respx-0.22.0, platformdirs-4.14.8, anyio-4.16.0, asyncio-1.5.0
 asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
-collected 234 items
+collected 237 items
 
 tests/integration/test_chaos_api.py .                                    [  0%]
 tests/integration/test_compose_config.py ..                              [  1%]
@@ -72,35 +91,36 @@ tests/integration/test_predictor.py ...                                  [  8%]
 tests/integration/test_read_api.py ........                              [ 12%]
 tests/integration/test_recommendation_api.py ...                         [ 13%]
 tests/integration/test_resilience.py .....                               [ 15%]
-tests/integration/test_risk_api.py ...                                   [ 17%]
+tests/integration/test_risk_api.py ...                                   [ 16%]
 tests/integration/test_services.py .                                     [ 17%]
 tests/integration/test_sim_client.py ............                        [ 22%]
 tests/integration/test_sse.py ...                                        [ 23%]
-tests/integration/test_whatif_api.py ...                                 [ 25%]
+tests/integration/test_whatif_api.py ...                                 [ 24%]
 tests/scenarios/test_explorer.py .                                       [ 25%]
-tests/scenarios/test_sample_contract.py .............                    [ 31%]
+tests/scenarios/test_sample_contract.py .............                    [ 30%]
 tests/unit/test_api_caching_and_rate_limit.py ...                        [ 32%]
 tests/unit/test_api_recommendation_mapping.py ...                        [ 33%]
-tests/unit/test_backtest.py ...                                          [ 35%]
+tests/unit/test_backtest.py ...                                          [ 34%]
 tests/unit/test_backup_restore_idempotency.py ..                         [ 35%]
-tests/unit/test_compose_env_check.py ...                                 [ 37%]
+tests/unit/test_compose_env_check.py ...                                 [ 36%]
 tests/unit/test_depot_risk.py ....                                       [ 38%]
 tests/unit/test_detect.py .......                                        [ 41%]
 tests/unit/test_drift_detector.py ....                                   [ 43%]
 tests/unit/test_executor.py .....                                        [ 45%]
-tests/unit/test_explain.py .                                             [ 46%]
+tests/unit/test_explain.py .                                             [ 45%]
 tests/unit/test_failure_boundary.py ...........                          [ 50%]
-tests/unit/test_forecast.py ...........                                  [ 55%]
-tests/unit/test_forecast_event_aware.py ....                             [ 57%]
-tests/unit/test_forecast_job.py ...                                      [ 58%]
+tests/unit/test_forecast.py ...........                                  [ 54%]
+tests/unit/test_forecast_event_aware.py ....                             [ 56%]
+tests/unit/test_forecast_job.py ...                                      [ 57%]
 tests/unit/test_loadtest_report.py .                                     [ 58%]
-tests/unit/test_models.py ..........                                     [ 63%]
-tests/unit/test_optimizer_and_buffer.py ..                               [ 64%]
+tests/unit/test_models.py ..........                                     [ 62%]
+tests/unit/test_optimizer_and_buffer.py ..                               [ 63%]
+tests/unit/test_playwright_discovery.py ...                              [ 64%]
 tests/unit/test_policy.py ........                                       [ 67%]
 tests/unit/test_policy_switch_and_rollback.py ......                     [ 70%]
 tests/unit/test_recommend_job.py ......                                  [ 72%]
-tests/unit/test_risk.py .....                                            [ 74%]
-tests/unit/test_scenario_runner.py .....                                 [ 76%]
+tests/unit/test_risk.py .....                                            [ 75%]
+tests/unit/test_scenario_runner.py .....                                 [ 77%]
 tests/unit/test_scenario_sweep.py ......                                 [ 79%]
 tests/unit/test_sse_stream.py .......                                    [ 82%]
 tests/unit/test_store_snapshot.py ..                                     [ 83%]
@@ -117,28 +137,28 @@ tests/unit/test_what_if.py ..                                            [100%]
     from starlette.testclient import TestClient as TestClient  # noqa
 
 tests/unit/test_sse_stream.py::test_broadcaster_survives_transient_db_disconnection
-  /opt/homebrew/Cellar/python@3.12/3.12.16/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine 'Queue.get' was never awaited
-    def __init__(self, name, parent):
+  /opt/homebrew/Cellar/python@3.12/3.12.16/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:769: RuntimeWarning: coroutine 'Queue.get' was never awaited
+    def __setattr__(self, name, value):
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================= 234 passed, 2 warnings in 3.41s ========================
+======================= 237 passed, 2 warnings in 3.60s ========================
 npm --prefix web run test
 
 > fuel-supply-platform-frontend@0.1.0 test
 > vitest run
 
 
- RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795422672/web
+ RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795426598/web
 
- ✓ tests/NewViews.test.tsx (5 tests) 101ms
- ✓ tests/App.test.tsx (6 tests) 273ms
+ ✓ tests/NewViews.test.tsx (5 tests) 130ms
+ ✓ tests/App.test.tsx (6 tests) 315ms
 
  Test Files  2 passed (2)
       Tests  11 passed (11)
-   Start at  14:31:26
-   Duration  1.01s (environment 41%, tests 24%, transform 20%, import 8%, setup 7%)
+   Start at  15:36:55
+   Duration  1.19s (environment 41%, tests 23%, transform 20%, import 8%, setup 6%)
 
 MECHANICAL GATE: PASS (Sprint 6)
 === Clean clone verification PASSED ===
