@@ -37,10 +37,20 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
     - Unit tests: 4 tests in `tests/unit/test_forecast_event_aware.py` (203 Python tests, 11 Vitest tests all passing).
     - Generated `docs/results/backtest-summary.md`, `docs/results/calibration-summary.md`, and `docs/results/event-calibration.md`.
 
+  - WP11.4 Dependency & Security Debt complete:
+    - Upgraded dependencies: FastAPI 0.165.0, Starlette 1.10.0, Pytest 9.2.0, Pytest-Asyncio 1.5.0, annotated-doc 0.0.7, opentelemetry-api 1.45.2.
+    - `pip-audit`: 0 known vulnerabilities (all 16 Starlette/pytest advisories cleared).
+    - `npm audit`: 0 vulnerabilities found in frontend.
+    - Trivy Docker container scan: 0 High/Critical findings.
+    - Gitleaks Docker container scan: 0 leaks found across repository.
+    - Added `.github/dependabot.yml` (weekly updates for pip, npm, github-actions, docker).
+    - Enforced strict pip-audit in `.github/workflows/ci.yml`.
+    - Updated `docs/security-and-guardrails.md`. Full suite and smoke passed.
+
 ## Current work package and exact next action
 
-Sprint 11 WP11.3 complete.
-Next action: WP11.4 Dependency and security debt (P0) — clear pip-audit advisories (upgrade pytest to >=9.0.3, fastapi/starlette to >=0.49.1), audit npm dependencies, add dependabot configuration, verify zero High/Critical vulnerabilities.
+Sprint 11 WP11.4 complete.
+Next action: WP11.5 Tick-length and speed compatibility (P0) — run stack and scenario subset with TICK_MINUTES=8 and 15, add parametrized tests over tick_minutes, verify no hard-coded 15 anywhere.
 
 
 ## Workspace constraints
