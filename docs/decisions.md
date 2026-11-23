@@ -31,6 +31,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
 | ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
 | ADR-042 | Sprint 11 truth pass, physical boundary arithmetic, and compliance recount | ACCEPTED | 11 |
+| ADR-043 | Matplotlib plotting library as dev dependency for boundary and backtest visualization | ACCEPTED | 11 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -339,3 +340,9 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   5. Re-enumerate the Hackathon Brief Compliance Matrix directly from the brief text (109 requirements: 107 MET, 1 OPTIONAL-SKIPPED, 1 PARTIAL).
   6. Transparently record all corrections in Section 16 of `docs/DAY-3-UPDATE.md`.
 - **Trade-off:** Eliminates all non-factual or derived marketing claims in favor of empirical measurements and exact arithmetic.
+
+### ADR-043: Matplotlib Plotting Library as Dev-Only Dependency (Sprint 11)
+- **Status:** ACCEPTED
+- **Context:** Sprint 11 WP11.1 requires generating visual charts of measured failure boundaries (service level vs demand spike multiplier, supply shortfall factor, and route disruption count) into `docs/results/failure-boundary.png`. The platform policy forbids runtime bloat and requires third-party libraries beyond the core stack to be dev-only.
+- **Decision:** Add `matplotlib==3.11.2` strictly as a development dependency in `requirements-dev.txt`. Application production containers (`api`, `worker`, `predictor`) do not install or import matplotlib. Matplotlib is used exclusively in offline measurement scripts (`scripts/measure_failure_boundaries.py`).
+- **Trade-off:** Production images remain lean while allowing high-resolution empirical chart generation for reports and documentation.

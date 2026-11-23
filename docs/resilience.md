@@ -69,10 +69,17 @@ Evidence file: [docs/evidence/sprint-10-resilience-matrix.txt](evidence/sprint-1
 
 ### Failure boundary analysis
 
+Evidence and charts: [docs/results/failure-boundary.md](results/failure-boundary.md) and [failure boundary plot](results/failure-boundary.png).
+
 1. **Physical Failure Boundaries vs Dispatch Capacity:** Total network demand across all 4 stations (`station-mirpur`, `station-tongi`, `station-karnaphuli`, `station-coxsbazar`) is **91,400 L/day** across all fuels (`core/world.py`). At 15-minute ticks (96 ticks/day), average demand is **~952 L/tick** (and **~508 L/tick** at 8-minute ticks). Peak demand with maximum hour factors reaches ~1,500 L/tick, and even an extreme 1.8x global surge consumes <2,700 L/tick. The two supply depots have a combined dispatch capacity of **23,000 L/tick** (Gazipur 12,000 + Patiya 11,000 L/tick), which is >24x average demand. Therefore, depot dispatch capacity is **not** the binding constraint.
-2. **Actual Binding Constraints:** The real physical failure boundaries in the simulator are:
-   - **Depot Inventory & Resupply:** Initial combined depot stock is 252,000 L (Gazipur 131,000 L + Patiya 121,000 L), providing approximately 2.76 days of baseline cover without resupply. When scheduled supply arrivals are delayed or shortfall factors apply, depot inventory exhausts.
-   - **Route Max Shipment Limits:** Each route has a strict shipment cap of 5,000 to 7,000 L per allocation batch.
+2. **Empirically Measured Failure Boundaries (192 Ticks / 2 Days):**
+   Across comprehensive stress sweeps on the live simulator, the crossover thresholds were measured as:
+   - **99% SLA Threshold:** Heuristic sustains 99% service level up to **2.43x** demand surge (99.91% at 2.2x), whereas Naive degrades below 99% at **1.96x** (97.48% at 2.2x) and None fails immediately (**1.0x**).
+   - **95% Critical Threshold:** Heuristic holds 95% service level up to **2.80x** demand surge (98.30% at 2.6x), whereas Naive drops below 95% at **2.55x** (94.66% at 2.6x).
+   - **90% Collapse Boundary:** Heuristic maintains **>90%** service level across the entire test spectrum up to **>3.0x** (91.66% at 3.0x), whereas Naive breaches 90% at **2.95x** (89.28% at 3.0x).
+3. **Actual Binding Constraints Identified from Measurements:**
+   - **Route Max Shipment Limits:** Each route has a strict shipment cap of 5,000 to 7,000 L per allocation batch. Under demand surges >2.2x, route shipment capacity becomes the primary binding constraint.
+   - **Depot Inventory & Resupply:** Initial combined depot stock is 252,000 L (Gazipur 131,000 L + Patiya 121,000 L), providing approximately 2.76 days of baseline cover without resupply. When supply shortfall factor drops to <=0.4 (<=40% planned resupply), depot stock depletion becomes binding.
+   - **Corridor Transit Delay & Isolation:** Deliveries require 1 to 4 transit ticks; an allocation cannot arrive instantly to avert an immediate stockout. Disruption of >=3 routes isolates stations, dropping service level to ~79% regardless of policy.
    - **Station Tank Headroom (Ullage):** Allocations exceeding current station tank ullage are strictly prohibited by physical validation rules.
-   - **Corridor Transit Delay:** Deliveries require 1 to 4 transit ticks; an allocation cannot arrive instantly to avert an immediate stockout.
-3. **Graceful Degradation at Boundary:** Rather than crashing or oversubscribing depots, the heuristic policy enters Pass 1 emergency triage (allocating 12h survival fuel first) and tags partial allocations with `is_partial=True` and clear unserved reason codes. Operator UI surfaces bottleneck alerts (`bottleneck` detections) and degraded service warnings.
+4. **Graceful Degradation at Boundary:** Rather than crashing or oversubscribing depots, the heuristic policy enters Pass 1 emergency triage (allocating 12h survival fuel first) and tags partial allocations with `is_partial=True` and clear unserved reason codes. Operator UI surfaces bottleneck alerts (`bottleneck` detections) and degraded service warnings.

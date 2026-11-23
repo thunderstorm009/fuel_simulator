@@ -6,25 +6,27 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
 - Sprints 1–10: All gates passed and tagged.
-- Sprint 11: In progress. WP11.0 (Truth pass on Day 3 and related docs) COMPLETE.
-- Next: WP11.1 Measured failure boundary (P0).
+- Sprint 11: In progress. WP11.0 (Truth pass) and WP11.1 (Measured failure boundary) COMPLETE.
+- Next: WP11.2 Robust policy evaluation (P0).
 
 ## Verification in this work package
 
-- Truth-pass grep: `git grep -n -i "refinery\|pipeline capacity\|corridor throughput\|chittagong\|conservation law\|reverse proxy\|vehicle quota\|price spike\|redis\|cryptograph" -- . ':!prompts' ':!reference'`: all hits verified as true (ADRs, historical audits, or Day 3 corrections).
-- Brief compliance matrix re-enumerated from brief text: 109 requirements (107 MET, 1 OPTIONAL-SKIPPED, 1 PARTIAL).
-- Derived physical limits replaced with exact demand arithmetic from `core/world.py`: 91,400 L/day across 4 stations, ~952 L/tick (15-min) average, depot dispatch capacity (23k L/tick) is >24x demand and not binding; binding limits are depot stock, resupply arrivals, route shipment caps (5-7k L), tank ullage, and transit delay.
-- What-If latency accurately stated (<50ms unloaded, ~834ms under 100 VU load).
-- Container process restart times (0.10s-0.23s) distinguished from full query recovery (~1.2s).
-- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed.
-- `.venv/bin/pytest tests/`: 182 passed.
-- `npm --prefix web run typecheck && npm --prefix web run test`: passed (11 Vitest tests).
-- `git diff --check`: passed.
+- WP11.1 Measured failure boundary:
+  - Swept 192 ticks across 4 policies (`none`, `naive`, `heuristic`, `heuristic_buffer`) and stress dimensions (demand spike 1.0 to 3.0, shortfall 1.0 to 0.2, route disruption 0 to 4, station outage 0 to 2, combos).
+  - Measured 99%, 95%, and 90% service level crossover boundaries:
+    - 99% SLA threshold: Heuristic 2.43x vs Naive 1.96x vs None 1.0x
+    - 95% Critical threshold: Heuristic 2.80x vs Naive 2.55x vs None 1.0x
+    - 90% Collapse threshold: Heuristic >3.0x (91.66% at 3.0x) vs Naive 2.95x vs None 1.0x
+  - Identified binding constraints from measurements: route max shipment (5-7k L) under surges >2.2x, depot stock exhaustion under shortfall <0.4, corridor isolation under >=3 route disruptions.
+  - Pure module `core.failure_boundary`: unit tests in `tests/unit/test_failure_boundary.py` (11 passed in 0.03s).
+  - Full suite: 193 Python tests passed, 11 Vitest tests passed, `make lint` clean, `git diff --check` clean.
+  - Output files generated: `docs/results/failure-boundary-summary.csv`, `docs/results/failure-boundary.png`, `docs/results/failure-boundary.md`.
+  - Updated `docs/resilience.md`, `docs/qa.md`, `docs/JUDGING-DAY.md`. Simulator restored to PAUSED, faults cleared.
 
 ## Current work package and exact next action
 
-Sprint 11 WP11.0 complete.
-Next action: WP11.1 Measured failure boundary (P0) — parameter sweeps across 192+ ticks for demand spikes, supply shortfalls, disrupted routes, station outages, and combined crisis scenarios.
+Sprint 11 WP11.1 complete.
+Next action: WP11.2 Robust policy evaluation (P0) — generate 60 randomized crisis scenarios from fixed RNG seed, 192 ticks each, compare policies with bootstrap 95% confidence intervals and document losses.
 
 
 ## Workspace constraints
