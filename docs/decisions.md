@@ -4,14 +4,14 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 
 | ID | Decision | Status | Sprint |
 |---|---|---|---|
-| ADR-001 | REST is truth; SSE is only a hint to refetch | PROPOSED | 1 |
-| ADR-002 | Worker owns simulator I/O; API reads the database only | PROPOSED | 1 |
-| ADR-003 | Heuristic allocation first; optimizer only if time remains | PROPOSED | 1 |
-| ADR-004 | Monte Carlo for stockout uncertainty | PROPOSED | 3 |
+| ADR-001 | REST is truth; SSE is only a hint to refetch | ACCEPTED | 1 |
+| ADR-002 | Worker owns simulator I/O; API reads the database only | ACCEPTED | 1 |
+| ADR-003 | Heuristic allocation first; optimizer only if time remains | ACCEPTED | 1 |
+| ADR-004 | Monte Carlo for stockout uncertainty | ACCEPTED | 3 |
 | ADR-005 | Outbox-style executor: approve records intent, executor re-validates and submits | ACCEPTED | 4 |
 | ADR-006 | Idempotency key rec-<uuid>, stored, reused only for the identical body | ACCEPTED | 4 |
-| ADR-007 | Predictor as its own container with baseline fallback | PROPOSED | 5 |
-| ADR-008 | No Kubernetes or RL; Docker Compose only | PROPOSED | 1 |
+| ADR-007 | Predictor as its own container with baseline fallback | ACCEPTED | 5 |
+| ADR-008 | No Kubernetes or RL; Docker Compose only | ACCEPTED | 1 |
 | ADR-009 | Operator token from env protects approve, reject and chaos endpoints | ACCEPTED | 4 |
 | ADR-010 | Co-host API and worker in one application container while preserving the DB-only API / worker-I/O boundary | SUPERSEDED | 1 |
 | ADR-011 | Defer predictor and Prometheus/Grafana containers until their sprint; retain predictor separation for the outage demo | SUPERSEDED | 1 |
@@ -28,8 +28,23 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-022 | Keep personal AI workspace local and publish application/engineering artifacts only | ACCEPTED | Publication |
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
 | ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
+| ADR-025 | Keep recommendation identity and request body visible through operator review | ACCEPTED | 4 |
+| ADR-026 | Separate service availability from decision-pipeline freshness | ACCEPTED | 4 |
+| ADR-027 | Replace same-tick snapshot payload when refreshing its metadata | ACCEPTED | 4 |
+| ADR-028 | Keep overnight operator notes local | ACCEPTED | 4 |
+| ADR-029 | Validate resolved Compose service credentials without exposing values | ACCEPTED | 4 |
+| ADR-030 | Alert on the age of the last successful ingestion | ACCEPTED | 5 |
+| ADR-031 | Install k6 locally via brew for Sprint 6 load evidence | ACCEPTED | 6 |
+| ADR-032 | Scenario runner uses pure policy functions on frozen DB snapshot | ACCEPTED | 6 |
+| ADR-033 | Scenario runner definition and determinism verification | ACCEPTED | 6 |
+| ADR-034 | Three-condition k6 load benchmark with container resource sampling | ACCEPTED | 6 |
+| ADR-035 | Sprint 7 freeze, cold-start verification, and predictor dual-port routing | ACCEPTED | 7 |
 | ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
 | ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
+| ADR-038 | Pure detection engine, depot supply risk projection, and adaptive simulator freshness | ACCEPTED | 8 |
+| ADR-039 | Uncertainty-Aware Safety Buffer and Linear Flow Optimization Policy | ACCEPTED | 9 |
+| ADR-040 | Generative Incident Explanations and LLM Operational Boundaries | ACCEPTED | 9 |
+| ADR-041 | Token Rate Limiting, Version Metadata API, and Automated Deployment Rollback | ACCEPTED | 10 |
 | ADR-042 | Sprint 11 truth pass, physical boundary arithmetic, and compliance recount | ACCEPTED | 11 |
 | ADR-043 | Matplotlib plotting library as dev dependency for boundary and backtest visualization | ACCEPTED | 11 |
 | ADR-044 | Multi-worker Uvicorn, connection pool enlargement, composite indexing, and byte-level caching | ACCEPTED | 12 |
