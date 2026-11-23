@@ -2,7 +2,7 @@
 
 - **Project:** Fuel Supply Intelligence & Resilience Platform
 - **Source of Truth:** Official Hackathon Brief (`reference/BUP_CSE_FEST_2026_Participant_Facing_Hackathon_Draft.pdf`) and Simulator Integration Guide (`reference/BUP_Fuel_Supply_Simulator_Integration_Guide_Final.pdf`).
-- **Last Verified:** 2026-11-21 (Sprint 8)
+- **Last Verified:** 2026-11-23 (Sprint 13 Closeout)
 - **Status Values:**
   - `MET`: Fully implemented, verified with automated tests or running evidence.
   - `PARTIAL`: Core built; extensions scheduled in Sprints 8–10.
@@ -107,7 +107,7 @@
 | 19.2 | Strict schema validation on all inputs (Pydantic models) | **MET** | `backend/shared/core/models.py`, `tests/unit/test_models.py` | Sprint 1 |
 | 19.3 | Token-protected operator actions (`X-Operator-Token`) | **MET** | `backend/api/routes/recommendations.py:15`, `tests/unit/test_policy.py` | Sprint 4 |
 | 19.4 | Automated static analysis (Ruff) and TypeScript strict typechecking | **MET** | `make lint`, `ruff check`, `tsc -b` clean | Sprints 1–7 |
-| 19.5 | Automated dependency vulnerability and secret scan workflows | **PARTIAL** | Gitleaks (0 secrets) & npm audit (0 vulns) pass; pip-audit and Trivy show High Starlette advisories; upgrade scheduled in Sprint 11 WP11.4 | Sprint 11 |
+| 19.5 | Automated dependency vulnerability and secret scan workflows | **MET** | pip-audit (0 vulns), npm audit (0 vulns), Gitleaks (0 secrets), Trivy container scan (0 High/Critical findings) | Sprint 11 |
 | **20** | **Required Deliverables (The 11 Official Deliverables)** | | | |
 | 20.1 | Deliverable 1: Working Application | **MET** | 8 healthy Docker containers, full operator web interface | Sprint 7 |
 | 20.2 | Deliverable 2: Source Repository | **MET** | Clean git history, structured modules, documented ADRs | Sprints 1–7 |
