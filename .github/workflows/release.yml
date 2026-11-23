@@ -30,7 +30,7 @@ jobs:
           echo "sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push api image
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           file: backend/api/Dockerfile
@@ -40,7 +40,7 @@ jobs:
             ghcr.io/${{ github.repository }}/api:${{ steps.meta.outputs.sha }}
 
       - name: Build and push worker image
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           file: backend/worker/Dockerfile
@@ -50,7 +50,7 @@ jobs:
             ghcr.io/${{ github.repository }}/worker:${{ steps.meta.outputs.sha }}
 
       - name: Build and push predictor image
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: .
           file: intel/predictor/Dockerfile
@@ -60,7 +60,7 @@ jobs:
             ghcr.io/${{ github.repository }}/predictor:${{ steps.meta.outputs.sha }}
 
       - name: Build and push frontend image
-        uses: docker/build-push-action@v6.15.0
+        uses: docker/build-push-action@v7.4.0
         with:
           context: web
           file: web/Dockerfile
