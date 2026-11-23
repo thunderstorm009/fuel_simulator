@@ -4,12 +4,19 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
-- Sprints 1–10: All gates passed and tagged.
-- Sprint 11: In progress. WP11.0 (Truth pass), WP11.1 (Measured failure boundary), and WP11.2 (Robust policy evaluation) COMPLETE.
-- Next: WP11.3 Forecast quality: event-aware calibration & honest accuracy (P1).
+- Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`.
+- Sprints 1–11: All gates passed and tagged.
+- Sprint 12: In progress. WP12.1 (API Performance) COMPLETE.
+- Next: WP12.5 Backup, restore and measured recovery (P0).
 
 ## Verification in this work package
+
+- WP12.1 API performance complete:
+  - Baseline k6 sweep (10 to 400 VUs) executed: throughput saturated at 201 req/s, read p95 1,210.6 ms at 100 VUs, Postgres CPU 309.8% at 400 VUs.
+  - Profiled with EXPLAIN ANALYZE: identified Seq Scans and quicksorts on `forecasts` (15.342 ms) and `depot_risks` (3.815 ms).
+  - Implemented 4 Uvicorn workers, pool size 20, 3 composite indexes (query time dropped to 0.103 ms, 149x speedup), in-memory pre-serialized UTF-8 byte cache, ETag / 304 Not Modified, cached Snapshot Pydantic model for what-if, and scaled rate limiter.
+  - Optimized k6 sweep: throughput tripled to **615.3 req/s at 100 VUs** and **625.8 req/s at 200 VUs**; read p50 dropped by 78% (88.2 ms); read p95 dropped by 72% (338.3 ms); what-if p95 dropped by 67% (**288.3 ms**, target < 500 ms MET); Postgres CPU dropped to 34.1%; 0.0% errors.
+  - Added ADR-044 and updated `docs/loadtest.md`.
 
 - WP11.2 Robust policy evaluation:
   - Generated 60 randomized crisis scenarios from fixed RNG seed (seed=42) partitioned into 50 tuning scenarios and 10 hold-out scenarios never used for tuning.

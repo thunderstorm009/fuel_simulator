@@ -32,6 +32,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
 | ADR-042 | Sprint 11 truth pass, physical boundary arithmetic, and compliance recount | ACCEPTED | 11 |
 | ADR-043 | Matplotlib plotting library as dev dependency for boundary and backtest visualization | ACCEPTED | 11 |
+| ADR-044 | Multi-worker Uvicorn, connection pool enlargement, composite indexing, and byte-level caching | ACCEPTED | 12 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -346,3 +347,15 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** Sprint 11 WP11.1 requires generating visual charts of measured failure boundaries (service level vs demand spike multiplier, supply shortfall factor, and route disruption count) into `docs/results/failure-boundary.png`. The platform policy forbids runtime bloat and requires third-party libraries beyond the core stack to be dev-only.
 - **Decision:** Add `matplotlib==3.11.2` strictly as a development dependency in `requirements-dev.txt`. Application production containers (`api`, `worker`, `predictor`) do not install or import matplotlib. Matplotlib is used exclusively in offline measurement scripts (`scripts/measure_failure_boundaries.py`).
 - **Trade-off:** Production images remain lean while allowing high-resolution empirical chart generation for reports and documentation.
+
+### ADR-044: API Performance Scaling via Multi-Worker Uvicorn, Connection Pool Enlargement, Composite Indexing, and Byte-Level Caching (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** Under the baseline load test sweep (10 to 400 VUs), API throughput saturated at ~200 req/s, while read p95 latency rose to 1,210.6 ms at 100 VUs and 4,991.1 ms at 400 VUs. Profiling with EXPLAIN ANALYZE identified full table scans on `forecasts` and `depot_risks` executing `DISTINCT ON` with quicksorts taking 15.342 ms and 3.815 ms per query, asyncpg connection pool contention capped at `max_size=5`, single-core CPU saturation in single-process Uvicorn (~140% CPU), redundant `json.dumps()` serialization on repeated reads, and repeated Pydantic model validation on `POST /api/whatif`.
+- **Decision:**
+  1. Multi-Worker Uvicorn: Run Uvicorn with `--workers ${API_WORKERS:-4}` behind the published port 8101.
+  2. Connection Pool Sizing: Increase asyncpg pool bounds to `min_size=2, max_size=20` (configurable via `DB_POOL_MAX_SIZE`), staying safely within Postgres's default 100 connection limit across 4 workers (80 max).
+  3. Composite Indexing: Add `snapshots_fetched_id_idx ON snapshots (fetched_at DESC, id DESC)`, `forecasts_pair_snapshot_idx ON forecasts (station_id, fuel_type, snapshot_id DESC)`, and `depot_risks_depot_snapshot_idx ON depot_risks (depot_id, fuel_type, snapshot_id DESC)`. Constrain read queries to the latest snapshot ID via subqueries, dropping query time from 15.342 ms to 0.103 ms (149x speedup).
+  4. Byte-Level In-Memory Caching & ETag: Cache pre-serialized UTF-8 JSON bytes keyed by `(endpoint, snapshot_id)` in memory. Return HTTP 304 Not Modified when `If-None-Match` matches `W/"snap-{id}"`. Invalidate cache immediately on new snapshot arrival.
+  5. Pure What-If Optimization: Cache the parsed `Snapshot` Pydantic model in repository memory to eliminate redundant 60+ KB model re-validation per candidate simulation.
+  6. Rate Limiter Multi-Worker Scaling: Enforce `max(10, RATE_LIMIT_MAX_REQUESTS // API_WORKERS)` per worker process so aggregate operator decision limits remain bounded.
+- **Consequences:** Throughput tripled from 201 req/s to 615–626 req/s at 100–200 VUs. Read p50 dropped by 78% (393.2 ms to 88.2 ms at 100 VUs). Read p95 dropped by 72% (1,210.6 ms to 338.3 ms). WhatIf p95 dropped to 288.3 ms (<500 ms target). Postgres CPU under 400 VUs dropped from 309.8% down to 34.1%. Zero errors (0.0%) across all runs up to 400 VUs.

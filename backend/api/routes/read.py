@@ -7,7 +7,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi.encoders import jsonable_encoder
 
 from api.database import ReadRepository
 from core.models import FuelType, Snapshot
@@ -47,7 +48,30 @@ def _data_status(age_seconds: float, stale: bool, stored_status: str) -> str:
     return "HEALTHY"
 
 
-async def _latest(repository: ReadRepository) -> tuple[dict[str, Any], datetime, float, str, bool]:
+# In-memory response cache keyed by (endpoint, snapshot_id) storing serialized bytes
+_RESPONSE_CACHE: dict[str, tuple[int, bytes]] = {}
+
+
+def clear_response_cache() -> None:
+    _RESPONSE_CACHE.clear()
+
+
+def _make_etag(snap_id: int) -> str:
+    return f'W/"snap-{snap_id}"'
+
+
+def _matches_etag(request: Request, snap_id: int) -> bool:
+    header = request.headers.get("if-none-match")
+    if not header:
+        return False
+    expected = _make_etag(snap_id)
+    raw = header.strip()
+    return raw in (expected, f'"snap-{snap_id}"', f"snap-{snap_id}")
+
+
+async def _latest(
+    repository: ReadRepository,
+) -> tuple[dict[str, Any], datetime, float, str, bool, int]:
     record = await repository.get_latest_snapshot()
     if record is None:
         raise HTTPException(status_code=503, detail="No snapshot has been stored")
@@ -59,19 +83,32 @@ async def _latest(repository: ReadRepository) -> tuple[dict[str, Any], datetime,
     snapshot["fetched_at"] = fetched_at.isoformat()
     snapshot["stale"] = stale
     snapshot["data_status"] = status
-    return snapshot, fetched_at, age_seconds, status, stale
+    snap_id = int(record.get("id") or int(fetched_at.timestamp() * 1000))
+    return snapshot, fetched_at, age_seconds, status, stale, snap_id
 
 
 @router.get("/state")
-async def state(repository: RepositoryDep) -> dict[str, Any]:
-    snapshot, fetched_at, age, status, stale = await _latest(repository)
+async def state(request: Request, repository: RepositoryDep) -> Response:
+    snapshot, fetched_at, age, status, stale, snap_id = await _latest(repository)
+    etag = _make_etag(snap_id)
+    if _matches_etag(request, snap_id):
+        return Response(status_code=304, headers={"ETag": etag})
+
+    cache_key = "state"
+    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == snap_id:
+        return Response(
+            content=_RESPONSE_CACHE[cache_key][1],
+            media_type="application/json",
+            headers={"ETag": etag},
+        )
+
     if hasattr(repository, "get_tick_freshness"):
         freshness = await repository.get_tick_freshness()
     else:
         freshness = {"ticks_per_second": 0.0, "snapshot_age_ticks": 0.0}
     tps = freshness.get("ticks_per_second", 0.0)
     warning = tps > 0.5
-    return {
+    data = {
         "snapshot": snapshot,
         "fetched_at": fetched_at.isoformat(),
         "data_age_seconds": age,
@@ -84,11 +121,14 @@ async def state(repository: RepositoryDep) -> dict[str, Any]:
         "policy_version": POLICY_VERSION,
         "simulated": True,
     }
+    raw_bytes = json.dumps(jsonable_encoder(data)).encode("utf-8")
+    _RESPONSE_CACHE[cache_key] = (snap_id, raw_bytes)
+    return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
 @router.get("/data-health")
 async def data_health(repository: RepositoryDep) -> dict[str, Any]:
-    _, fetched_at, age, status, stale = await _latest(repository)
+    _, fetched_at, age, status, stale, _ = await _latest(repository)
     return {
         "fetched_at": fetched_at.isoformat(),
         "data_age_seconds": age,
@@ -100,7 +140,7 @@ async def data_health(repository: RepositoryDep) -> dict[str, Any]:
 
 @router.get("/events")
 async def events(repository: RepositoryDep) -> dict[str, Any]:
-    snapshot, fetched_at, age, status, stale = await _latest(repository)
+    snapshot, fetched_at, age, status, stale, _ = await _latest(repository)
     incidents_list = await repository.get_incidents()
     return {
         "events": snapshot.get("events", []),
@@ -163,13 +203,25 @@ async def version_info() -> dict[str, Any]:
 
 
 @router.get("/depots/risk")
-async def depot_risk(repository: RepositoryDep) -> dict[str, Any]:
-    _, fetched_at, age, status, stale = await _latest(repository)
+async def depot_risk(request: Request, repository: RepositoryDep) -> Response:
+    _, fetched_at, age, status, stale, snap_id = await _latest(repository)
+    etag = _make_etag(snap_id)
+    if _matches_etag(request, snap_id):
+        return Response(status_code=304, headers={"ETag": etag})
+
+    cache_key = "depots_risk"
+    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == snap_id:
+        return Response(
+            content=_RESPONSE_CACHE[cache_key][1],
+            media_type="application/json",
+            headers={"ETag": etag},
+        )
+
     if hasattr(repository, "get_depot_risks"):
         risks_list = await repository.get_depot_risks()
     else:
         risks_list = []
-    return {
+    data = {
         "depot_risks": risks_list,
         "count": len(risks_list),
         "fetched_at": fetched_at.isoformat(),
@@ -178,11 +230,14 @@ async def depot_risk(repository: RepositoryDep) -> dict[str, Any]:
         "stale": stale,
         "simulated": True,
     }
+    raw_bytes = json.dumps(jsonable_encoder(data)).encode("utf-8")
+    _RESPONSE_CACHE[cache_key] = (snap_id, raw_bytes)
+    return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
 @router.get("/metrics-summary")
 async def metrics_summary(repository: RepositoryDep) -> dict[str, Any]:
-    snapshot, fetched_at, age, status, stale = await _latest(repository)
+    snapshot, fetched_at, age, status, stale, _ = await _latest(repository)
     return {
         "metrics": snapshot.get("metrics", {}),
         "fetched_at": fetched_at.isoformat(),
@@ -194,10 +249,22 @@ async def metrics_summary(repository: RepositoryDep) -> dict[str, Any]:
 
 
 @router.get("/risks")
-async def risks(repository: RepositoryDep) -> dict[str, Any]:
-    _, fetched_at, age, status, stale = await _latest(repository)
+async def risks(request: Request, repository: RepositoryDep) -> Response:
+    _, fetched_at, age, status, stale, snap_id = await _latest(repository)
+    etag = _make_etag(snap_id)
+    if _matches_etag(request, snap_id):
+        return Response(status_code=304, headers={"ETag": etag})
+
+    cache_key = "risks"
+    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == snap_id:
+        return Response(
+            content=_RESPONSE_CACHE[cache_key][1],
+            media_type="application/json",
+            headers={"ETag": etag},
+        )
+
     forecasts = await repository.get_latest_forecasts()
-    return {
+    data = {
         "forecasts": forecasts,
         "fetched_at": fetched_at.isoformat(),
         "data_age_seconds": age,
@@ -205,6 +272,9 @@ async def risks(repository: RepositoryDep) -> dict[str, Any]:
         "stale": stale,
         "simulated": True,
     }
+    raw_bytes = json.dumps(jsonable_encoder(data)).encode("utf-8")
+    _RESPONSE_CACHE[cache_key] = (snap_id, raw_bytes)
+    return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
 @router.get("/risks/{station_id}/{fuel_type}/trajectory")
@@ -215,7 +285,7 @@ async def risk_trajectory(
         normalized_fuel = FuelType(fuel_type.upper()).value
     except ValueError as exc:
         raise HTTPException(status_code=422, detail="Unknown fuel type") from exc
-    _, fetched_at, age, status, stale = await _latest(repository)
+    _, fetched_at, age, status, stale, _ = await _latest(repository)
     record = await repository.get_forecast_trajectory(station_id, normalized_fuel)
     if record is None:
         raise HTTPException(status_code=404, detail="No forecast exists for this station and fuel")
@@ -231,11 +301,16 @@ async def risk_trajectory(
 
 @router.post("/whatif")
 async def what_if_simulate(candidate: WhatIfCandidate, repository: RepositoryDep) -> dict[str, Any]:
-    snapshot_dict, _, _, _, _ = await _latest(repository)
-    try:
-        snapshot = Snapshot.model_validate(snapshot_dict)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail="Stored snapshot cannot be validated") from exc
+    snapshot: Snapshot | None = None
+    if hasattr(repository, "get_latest_snapshot_model"):
+        snapshot = await repository.get_latest_snapshot_model()
+    if snapshot is None:
+        snapshot_dict, _, _, _, _, _ = await _latest(repository)
+        try:
+            snapshot = Snapshot.model_validate(snapshot_dict)
+        except Exception as exc:
+            msg = "Stored snapshot cannot be validated"
+            raise HTTPException(status_code=500, detail=msg) from exc
 
     try:
         result = simulate_what_if(snapshot, candidate)
@@ -246,11 +321,23 @@ async def what_if_simulate(candidate: WhatIfCandidate, repository: RepositoryDep
 
 @router.get("/regional-demand")
 async def regional_demand(repository: RepositoryDep) -> dict[str, Any]:
-    snapshot_dict, _, age, status, stale = await _latest(repository)
-    try:
-        snapshot = Snapshot.model_validate(snapshot_dict)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail="Stored snapshot cannot be validated") from exc
+    snapshot: Snapshot | None = None
+    if hasattr(repository, "get_latest_snapshot_model"):
+        snapshot = await repository.get_latest_snapshot_model()
+    if snapshot is None:
+        snapshot_dict, _, age, status, stale, _ = await _latest(repository)
+        try:
+            snapshot = Snapshot.model_validate(snapshot_dict)
+        except Exception as exc:
+            msg = "Stored snapshot cannot be validated"
+            raise HTTPException(status_code=500, detail=msg) from exc
+    else:
+        record = await repository.get_latest_snapshot()
+        fetched_at = _as_datetime(record["fetched_at"]) if record else datetime.now(timezone.utc)
+        age = max(0.0, (datetime.now(timezone.utc) - fetched_at).total_seconds())
+        stale = bool(record["stale"]) if record else False
+        stored_st = str(record.get("data_status", "HEALTHY")) if record else "HEALTHY"
+        status = _data_status(age, stale, stored_st)
 
     # Map station to region
     station_region_map = {s.id: s.region_id for s in snapshot.stations}

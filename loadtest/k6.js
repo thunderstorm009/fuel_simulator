@@ -30,6 +30,10 @@ export const options = {
   },
 };
 
+export default function () {
+  combinedWorkload();
+}
+
 export function combinedWorkload() {
   // 1. Read state & risks
   for (const path of ['/api/risks', '/api/state', '/api/recommendations']) {
