@@ -58,17 +58,76 @@ export default function AlertCenterPage() {
         </div>
       </section>
 
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
-        {(["all", "open", "resolved"] as const).map((mode) => (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          {(["all", "open", "resolved"] as const).map((mode) => (
+            <button
+              key={mode}
+              className={`action-button ${filter === mode ? "" : "secondary"}`}
+              style={{ textTransform: "capitalize", padding: "0.35rem 0.9rem" }}
+              onClick={() => setFilter(mode)}
+            >
+              {mode} Incidents
+            </button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
           <button
-            key={mode}
-            className={`action-button ${filter === mode ? "" : "secondary"}`}
-            style={{ textTransform: "capitalize", padding: "0.35rem 0.9rem" }}
-            onClick={() => setFilter(mode)}
+            className="action-button secondary"
+            style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+            onClick={async () => {
+              await navigator.clipboard.writeText(JSON.stringify(incidents, null, 2));
+              alert("Incidents JSON copied to clipboard.");
+            }}
+            title="Copy incidents to clipboard"
           >
-            {mode} Incidents
+            Copy JSON
           </button>
-        ))}
+          <button
+            className="action-button secondary"
+            style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+            onClick={() => {
+              if (!incidents.length) return;
+              const headers = ["id", "type", "severity", "detected_at", "resolved_at", "detail"];
+              const rows = incidents.map((i) => [
+                i.id,
+                i.type,
+                i.severity,
+                i.detected_at,
+                i.resolved_at || "",
+                `"${JSON.stringify(i.detail || {}).replace(/"/g, '""')}"`,
+              ]);
+              const csvContent = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+              const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `incidents-${Date.now()}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            title="Export incidents as RFC 4180 CSV"
+          >
+            Export CSV
+          </button>
+          <button
+            className="action-button secondary"
+            style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem" }}
+            onClick={() => {
+              if (!incidents.length) return;
+              const blob = new Blob([JSON.stringify(incidents, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `incidents-${Date.now()}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            title="Export incidents as structured JSON"
+          >
+            Export JSON
+          </button>
+        </div>
       </div>
 
       {isLoading && <p className="muted">Loading incidents...</p>}

@@ -62,14 +62,27 @@ jobs:
         run: |
           pip install -r requirements-dev.txt pyyaml
           python3 scripts/scenario_runner.py --scenario baseline --policy heuristic --ticks 5
+      - name: Run Playwright E2E and Accessibility Suite
+        run: |
+          npm ci --prefix web
+          npx --prefix web playwright install --with-deps chromium
+          npm --prefix web run test:e2e
+        env:
+          OPERATOR_TOKEN: change-me
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+          PLAYWRIGHT_API_URL: http://localhost:8101
+          PLAYWRIGHT_SIM_URL: http://localhost:8000
       - name: Save Compose logs on failure
         if: failure()
         run: docker compose logs --no-color > compose-failure.log
       - uses: actions/upload-artifact@v4.6.2
-        if: failure()
+        if: always()
         with:
-          name: compose-failure-logs
-          path: compose-failure.log
+          name: e2e-and-compose-artifacts
+          path: |
+            compose-failure.log
+            web/test-results/
+            docs/results/playwright-results.json
       - name: Stop stack
         if: always()
         run: docker compose down -v

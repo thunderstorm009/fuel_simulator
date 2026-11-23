@@ -25,12 +25,13 @@ async function getJson<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-async function postJson<T>(path: string, token: string, body?: unknown): Promise<T> {
+async function postJson<T>(path: string, token: string, body?: unknown, operatorName?: string): Promise<T> {
   const response = await fetch(`${apiBase}${path}`, {
     method: "POST",
     headers: {
       Accept: "application/json",
       "X-Operator-Token": token,
+      ...(operatorName ? { "X-Operator-Name": operatorName } : {}),
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),
     },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
@@ -52,10 +53,15 @@ export const fetchRecommendations = async (): Promise<Recommendation[]> =>
   (await getJson<{ recommendations: Recommendation[] }>("/api/recommendations")).recommendations;
 export const fetchDecisions = async (): Promise<Decision[]> =>
   (await getJson<{ decisions: Decision[] }>("/api/decisions")).decisions;
-export const approveRecommendation = (id: string, token: string): Promise<{ status: string }> =>
-  postJson(`/api/recommendations/${encodeURIComponent(id)}/approve`, token);
-export const rejectRecommendation = (id: string, token: string, reason: string): Promise<{ status: string }> =>
-  postJson(`/api/recommendations/${encodeURIComponent(id)}/reject`, token, { reason });
+export const approveRecommendation = (id: string, token: string, operatorName?: string): Promise<{ status: string }> =>
+  postJson(`/api/recommendations/${encodeURIComponent(id)}/approve`, token, undefined, operatorName);
+export const rejectRecommendation = (
+  id: string,
+  token: string,
+  reason: string,
+  operatorName?: string,
+): Promise<{ status: string }> =>
+  postJson(`/api/recommendations/${encodeURIComponent(id)}/reject`, token, { reason }, operatorName);
 export const fetchDepotRisks = (): Promise<DepotRiskResponse> =>
   getJson<DepotRiskResponse>("/api/depots/risk");
 export const fetchWhatIf = async (candidate: WhatIfCandidate): Promise<WhatIfResponse> => {

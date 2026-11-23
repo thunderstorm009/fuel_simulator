@@ -36,6 +36,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-045 | Push invalidation over SSE with PostgreSQL LISTEN/NOTIFY and polling fallback | ACCEPTED | 12 |
 | ADR-046 | Alertmanager routing and local webhook receiver under compose profile 'alerts' | ACCEPTED | 12 |
 | ADR-047 | Runtime policy switch with automatic rollback and constraint validation | ACCEPTED | 12 |
+| ADR-048 | Browser end-to-end and accessibility testing via Playwright and axe-core | ACCEPTED | 13 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -404,3 +405,15 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
      - Invokes fallback `HeuristicPolicy` and validates fallback proposals before returning.
   6. Human approval remains mandatory for all generated proposals; switching policies alters proposal generation only, never auto-approves or auto-submits.
 - **Consequences:** Guarantees zero invalid recommendations can ever be persisted or presented to operators, ensures transparent auditing of all policy alterations, and maintains automated fail-safe recovery under algorithmic failure.
+
+### ADR-048: Browser End-to-End and Accessibility Testing via Playwright and Axe-Core (Sprint 13)
+- **Status:** ACCEPTED
+- **Context:** Sprint 13 requires rigorous proof of platform behavior in a real headless browser against the running multi-container stack, verifying end-to-end user workflows (dashboard, 8 operational views, guided tour, demand surges, what-if, approvals, rejections, faults, and alert export) and auditing WCAG 2.1 AA accessibility compliance without bloating production images.
+- **Decision:**
+  1. Add `@playwright/test` and `@axe-core/playwright` as development-only dependencies in `web/package.json`. Production container images (`frontend`, `api`, `worker`, `predictor`) do not bundle Playwright or browser binaries.
+  2. Implement `tests/e2e/helpers.ts` and `tests/e2e/platform.spec.ts` covering 12 end-to-end scenarios executing against the published Compose ports (frontend `5173`, API `8101`, simulator `8000`).
+  3. Ensure headless Chromium is installed via `npx playwright install chromium` in dev and CI environments.
+  4. Wire `test-e2e` into `Makefile` (`make test-e2e`).
+  5. Add `Run Playwright E2E and Accessibility Suite` step to CI (`.github/workflows/ci.yml`) under the `compose` job, reusing the already built and healthy stack with full artifact uploads (`playwright-results.json`, traces, logs) on failure.
+  6. Add automated axe-core accessibility auditing script (`scripts/audit_accessibility.js`), saving structured results to `docs/evidence/day-4/accessibility-audit.json` and `.md`.
+- **Consequences:** Provides automated, verifiable regression protection across all interactive browser workflows and confirms zero critical accessibility violations across all 8 operational views.

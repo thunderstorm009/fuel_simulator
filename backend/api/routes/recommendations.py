@@ -140,9 +140,11 @@ async def approve_recommendation(
     recommendation_id: UUID,
     repository: RepositoryDep,
     actor: Annotated[str, Depends(require_operator_token)],
+    operator_name: Annotated[str, Header(alias="X-Operator-Name")] = "",
 ) -> dict[str, Any]:
     check_rate_limit(actor)
-    return await _decide(recommendation_id, "approve", None, actor, repository)
+    resolved_actor = operator_name.strip()[:100] if operator_name.strip() else actor
+    return await _decide(recommendation_id, "approve", None, resolved_actor, repository)
 
 
 @router.post("/recommendations/{recommendation_id}/reject")
@@ -151,6 +153,8 @@ async def reject_recommendation(
     payload: RejectRequest,
     repository: RepositoryDep,
     actor: Annotated[str, Depends(require_operator_token)],
+    operator_name: Annotated[str, Header(alias="X-Operator-Name")] = "",
 ) -> dict[str, Any]:
     check_rate_limit(actor)
-    return await _decide(recommendation_id, "reject", payload.reason, actor, repository)
+    resolved_actor = operator_name.strip()[:100] if operator_name.strip() else actor
+    return await _decide(recommendation_id, "reject", payload.reason, resolved_actor, repository)

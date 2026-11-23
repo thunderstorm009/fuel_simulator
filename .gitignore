@@ -36,9 +36,12 @@ coverage/
 *.log
 
 # Frontend dependencies and build output.
+node_modules
 node_modules/
 dist/
 *.tsbuildinfo
+test-results/
+web/test-results/
 
 # Local database, editor and operating-system artifacts.
 backups/
