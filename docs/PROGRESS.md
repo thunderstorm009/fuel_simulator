@@ -47,10 +47,17 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
     - Enforced strict pip-audit in `.github/workflows/ci.yml`.
     - Updated `docs/security-and-guardrails.md`. Full suite and smoke passed.
 
+  - WP11.5 Tick-Length & Speed Compatibility complete:
+    - Codebase audit: zero hardcoded tick length assumptions in platform calculations; all temporal scaling dynamically derives from `instance.tick_minutes`.
+    - Parametrized tests: `tests/unit/test_tick_compatibility.py` (12 tests) verifying demand integration invariance (<0.001%), dynamic trajectory scaling, proportional stockout hours, and policy lookahead scaling.
+    - Empirical simulator runs: 6h simulated runs executed at both `TICK_MINUTES=8` (45 ticks) and `TICK_MINUTES=15` (24 ticks); both achieved 100.0% service level, 0 stockouts, 0 failures, 100% determinism.
+    - Generated `docs/results/tick-compatibility.md`. Simulator container restored to default `TICK_MINUTES=15`, PAUSED, faults cleared.
+    - Full suite passing: 215 Python tests, 11 Vitest tests.
+
 ## Current work package and exact next action
 
-Sprint 11 WP11.4 complete.
-Next action: WP11.5 Tick-length and speed compatibility (P0) — run stack and scenario subset with TICK_MINUTES=8 and 15, add parametrized tests over tick_minutes, verify no hard-coded 15 anywhere.
+Sprint 11 P0 and P1 work packages complete (WP11.0, WP11.1, WP11.2, WP11.3, WP11.4, WP11.5).
+Next action: Sprint 11 Gate, Reviews (R1, R7, R3), sprint report `docs/sprint-reports/sprint-11.md`, and tag `sprint-11`.
 
 
 ## Workspace constraints
