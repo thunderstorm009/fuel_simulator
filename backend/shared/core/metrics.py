@@ -64,6 +64,10 @@ forecast_error_liters = Gauge(
 )
 sse_events = Counter("worker_sse_events_total", "SSE hints received")
 sse_reconnects = Counter("worker_sse_reconnects_total", "SSE reconnect attempts")
+sse_clients_connected = Gauge("sse_clients_connected", "Number of currently connected SSE clients")
+sse_events_sent_total = Counter(
+    "sse_events_sent_total", "SSE events sent to connected clients", ["event_type"]
+)
 api_http_requests = Counter(
     "http_requests_total",
     "API requests by route and status class",

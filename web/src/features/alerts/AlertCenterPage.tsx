@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchIncidentsList, fetchIncidentSummary } from "../../services/api";
+import { useEventStream } from "../stream/useEventStream";
 
 export default function AlertCenterPage() {
   const [filter, setFilter] = useState<"all" | "open" | "resolved">("all");
+  const { status } = useEventStream();
+  const pollInterval = status === "live" ? false : 10000;
   const [summaries, setSummaries] = useState<
     Record<number, { text: string; source: string; label: string; loading?: boolean }>
   >({});
@@ -31,7 +34,7 @@ export default function AlertCenterPage() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["incidents-full", filter],
     queryFn: () => fetchIncidentsList(filter),
-    refetchInterval: 3000,
+    refetchInterval: pollInterval,
   });
 
   const incidents = data?.incidents || [];

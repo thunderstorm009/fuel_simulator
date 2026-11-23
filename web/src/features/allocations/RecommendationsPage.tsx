@@ -174,10 +174,14 @@ function RecommendationCard({
   );
 }
 
+import { useEventStream } from "../stream/useEventStream";
+
 export default function RecommendationsPage({ token, onTokenChange }: { token: string; onTokenChange: (value: string) => void }) {
   const [notice, setNotice] = useState("");
-  const recommendationsQuery = useQuery({ queryKey: ["recommendations"], queryFn: fetchRecommendations, refetchInterval: 3000 });
-  const decisionsQuery = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions, refetchInterval: 3000 });
+  const { status } = useEventStream();
+  const pollInterval = status === "live" ? false : 10000;
+  const recommendationsQuery = useQuery({ queryKey: ["recommendations"], queryFn: fetchRecommendations, refetchInterval: pollInterval });
+  const decisionsQuery = useQuery({ queryKey: ["decisions"], queryFn: fetchDecisions, refetchInterval: pollInterval });
   const recommendations = [...(recommendationsQuery.data ?? [])].sort((a, b) => hoursToStockout(a) - hoursToStockout(b));
 
   return <>

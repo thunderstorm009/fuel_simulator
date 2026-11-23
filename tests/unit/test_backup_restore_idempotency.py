@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from core.models import AllocationRequest, AllocationStatus, FuelType, RecommendationStatus
+from core.models import AllocationRequest, FuelType, RecommendationStatus
 
 
 class MockStore:
@@ -38,18 +38,14 @@ def test_backup_restore_preserves_idempotency_keys_and_prevents_duplicate_submis
     store_before = MockStore()
     rec_id = uuid.uuid4()
     key = f"rec-{rec_id}"
-    store_before.add_recommendation(
-        rec_id, RecommendationStatus.SUBMITTED, key, allocation_id=42
-    )
+    store_before.add_recommendation(rec_id, RecommendationStatus.SUBMITTED, key, allocation_id=42)
 
     assert key in store_before.submitted_keys
     assert store_before.recommendations[rec_id]["status"] == "SUBMITTED"
     assert store_before.recommendations[rec_id]["sim_allocation_id"] == 42
 
     # 2. Simulate dump/restore: serialize store state to dict and deserialize into a new store
-    restored_data = {
-        k: dict(v) for k, v in store_before.recommendations.items()
-    }
+    restored_data = {k: dict(v) for k, v in store_before.recommendations.items()}
     store_after = MockStore()
     for item in restored_data.values():
         status = RecommendationStatus(item["status"])

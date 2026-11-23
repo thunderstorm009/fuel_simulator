@@ -6,10 +6,20 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`.
 - Sprints 1–11: All gates passed and tagged.
-- Sprint 12: In progress. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), and WP12.3 (Soak test) COMPLETE.
-- Next: WP12.2 Push updates over SSE (P1).
+- Sprint 12: In progress. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), WP12.3 (Soak test), and WP12.2 (Push updates over SSE) COMPLETE.
+- Next: WP12.4 Alert routing end to end (P1).
 
 ## Verification in this work package
+
+- WP12.2 Push updates over SSE complete:
+  - Implemented `EventBroadcaster` with PostgreSQL `LISTEN/NOTIFY` on `platform_events`, bounded queue (maxsize=100, drops oldest on overflow), connection limit per process (`SSE_MAX_CLIENTS=50`), and automated exponential backoff reconnection.
+  - Added `GET /api/stream` endpoint with `: ping\n\n` keepalive heartbeats every 15s, `text/event-stream` headers, and HTTP 429 client limit protection.
+  - Added metrics: `sse_clients_connected` (Gauge) and `sse_events_sent_total{event_type}` (Counter).
+  - Wired worker persistence notifications on snapshot, forecasts, recommendations, and incidents, and API decision notification.
+  - Implemented `useEventStream` React hook in `web/src/features/stream/useEventStream.ts`, invalidating specific TanStack queries on events and disabling interval polling when stream is live. Added 10-second polling fallback when stream disconnects.
+  - Added stream status indicator (`● LIVE PUSH` / `○ POLLING FALLBACK`) to web header.
+  - Added unit tests in `tests/unit/test_sse_stream.py` (7 tests passed).
+  - Recorded empirical request-rate comparison matrix in `docs/loadtest.md` (95% reduction in API read volume during standard operation) and updated `docs/architecture.md`, `docs/api.md`, and `docs/decisions.md` (ADR-045).
 
 - WP12.3 Soak test complete:
   - Implemented `scripts/soak_test.sh` and `scripts/run_soak_test.py` with automated container stats, DB metrics, API probes, and graceful cleanup.

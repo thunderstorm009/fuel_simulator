@@ -12,6 +12,7 @@ import IncomingSupplyView from "../features/inventory/IncomingSupplyView";
 import AlertCenterPage from "../features/alerts/AlertCenterPage";
 import EvaluationPage from "../features/evaluation/EvaluationPage";
 import { fetchDepotRisks, fetchEvents, fetchHealth, fetchRisks, fetchState, fetchTrajectory } from "../services/api";
+import { useEventStream } from "../features/stream/useEventStream";
 import type { Fuel } from "../types/api";
 import { localTime } from "../lib/format";
 
@@ -19,16 +20,18 @@ export default function App() {
   const [page, setPage] = useState<Page>("overview");
   const [selected, setSelected] = useState<{ stationId: string; fuel: Fuel } | null>(null);
   const [operatorToken, setOperatorToken] = useState("");
-  const stateQuery = useQuery({ queryKey: ["state"], queryFn: fetchState, refetchInterval: 3000 });
-  const eventsQuery = useQuery({ queryKey: ["events"], queryFn: fetchEvents, refetchInterval: 3000 });
-  const risksQuery = useQuery({ queryKey: ["risks"], queryFn: fetchRisks, refetchInterval: 3000 });
-  const healthQuery = useQuery({ queryKey: ["health"], queryFn: fetchHealth, refetchInterval: 5000 });
-  const depotRisksQuery = useQuery({ queryKey: ["depotRisks"], queryFn: fetchDepotRisks, refetchInterval: 3000 });
+  const { status: streamStatus } = useEventStream();
+  const pollInterval = streamStatus === "live" ? false : 10000;
+  const stateQuery = useQuery({ queryKey: ["state"], queryFn: fetchState, refetchInterval: pollInterval });
+  const eventsQuery = useQuery({ queryKey: ["events"], queryFn: fetchEvents, refetchInterval: pollInterval });
+  const risksQuery = useQuery({ queryKey: ["risks"], queryFn: fetchRisks, refetchInterval: pollInterval });
+  const healthQuery = useQuery({ queryKey: ["health"], queryFn: fetchHealth, refetchInterval: pollInterval });
+  const depotRisksQuery = useQuery({ queryKey: ["depotRisks"], queryFn: fetchDepotRisks, refetchInterval: pollInterval });
   const trajectoryQuery = useQuery({
     queryKey: ["trajectory", selected?.stationId, selected?.fuel],
     queryFn: () => fetchTrajectory(selected!.stationId, selected!.fuel),
     enabled: selected !== null,
-    refetchInterval: 3000,
+    refetchInterval: pollInterval,
   });
 
   const state = stateQuery.data;
@@ -44,6 +47,7 @@ export default function App() {
         status={state?.data_status}
         ageSeconds={state?.data_age_seconds}
         alertCount={incidents.length}
+        streamStatus={streamStatus}
         onAlertClick={() => setPage("alerts")}
       />
       <PageNavigation page={page} onChange={setPage} />

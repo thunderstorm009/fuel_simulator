@@ -359,3 +359,16 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   5. Pure What-If Optimization: Cache the parsed `Snapshot` Pydantic model in repository memory to eliminate redundant 60+ KB model re-validation per candidate simulation.
   6. Rate Limiter Multi-Worker Scaling: Enforce `max(10, RATE_LIMIT_MAX_REQUESTS // API_WORKERS)` per worker process so aggregate operator decision limits remain bounded.
 - **Consequences:** Throughput tripled from 201 req/s to 615–626 req/s at 100–200 VUs. Read p50 dropped by 78% (393.2 ms to 88.2 ms at 100 VUs). Read p95 dropped by 72% (1,210.6 ms to 338.3 ms). WhatIf p95 dropped to 288.3 ms (<500 ms target). Postgres CPU under 400 VUs dropped from 309.8% down to 34.1%. Zero errors (0.0%) across all runs up to 400 VUs.
+
+### ADR-045: Push Invalidation Over SSE with PostgreSQL LISTEN/NOTIFY and Polling Fallback (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** Prior to Sprint 12, the web application polled six API endpoints every 3 seconds per tab, producing 2.0 req/s (120 req/min) per client. Under 100 concurrent operators, continuous polling produces 200 req/s (12,000 req/min) of repetitive database and HTTP traffic even when simulator state has not advanced.
+- **Decision:**
+  1. Add `GET /api/stream` (read-only SSE) backed by `EventBroadcaster`.
+  2. Implement PostgreSQL `LISTEN/NOTIFY` on the `platform_events` channel. The worker publishes lightweight notification hints via `SELECT pg_notify('platform_events', ...)` when snapshots, forecasts, recommendations, or incidents are persisted. The API also notifies when an operator decides a recommendation.
+  3. REST is truth (AGENTS.md Rule 1): SSE events contain only event type metadata (`{"type": "snapshot", "tick": 42}`). No state payloads are streamed. The web app uses events as invalidation signals to refetch affected TanStack queries via REST.
+  4. Heartbeat comments (`: ping\n\n`) are emitted every 15s to keep connections alive through proxies and firewalls.
+  5. Slow/stalled client protection: Bounded queue (`maxsize=100`) per subscriber drops the oldest item on overflow without blocking the broadcaster. Connection limits (`SSE_MAX_CLIENTS=50` per worker) return HTTP 429 when saturated.
+  6. Frontend resilience: `useEventStream` hook manages `EventSource`. When connected (`live`), polling intervals are disabled. On disconnection (`fallback`), queries fall back to 10-second polling. The header displays `● LIVE PUSH` or `○ POLLING FALLBACK`.
+  7. Metrics: Prometheus gauge `sse_clients_connected` and counter `sse_events_sent_total{event_type}` track stream health.
+- **Consequences:** Eliminates 95% of API read traffic during standard operation (drops from 2.0 req/s to 0.10 req/s per client tab), avoids database connection pool consumption for idle polling, and ensures immediate UI updates within milliseconds of worker persistence.

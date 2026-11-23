@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 import time
 from contextlib import asynccontextmanager
@@ -14,6 +15,8 @@ from api.routes.chaos import router as chaos_router
 from api.routes.health import router as health_router
 from api.routes.read import router as read_router
 from api.routes.recommendations import router as recommendations_router
+from api.routes.stream import router as stream_router
+from api.stream import EventBroadcaster
 from core.metrics import api_http_request_duration, api_http_requests, health_checks
 
 
@@ -21,14 +24,21 @@ from core.metrics import api_http_request_duration, api_http_requests, health_ch
 async def lifespan(app: FastAPI):
     database_url = os.getenv("DATABASE_URL")
     app.state.repository = None
+    app.state.broadcaster = EventBroadcaster(database_url)
+    broadcaster_task = None
     if database_url:
         repository = await PostgresReadRepository.connect(database_url)
         app.state.repository = repository
+        broadcaster_task = asyncio.create_task(app.state.broadcaster.run())
     else:
         repository = None
     try:
         yield
     finally:
+        if broadcaster_task is not None:
+            broadcaster_task.cancel()
+        if app.state.broadcaster is not None:
+            await app.state.broadcaster.close()
         if repository is not None:
             await repository.close()
 
@@ -54,6 +64,7 @@ app.include_router(read_router)
 app.include_router(health_router)
 app.include_router(recommendations_router)
 app.include_router(chaos_router)
+app.include_router(stream_router)
 
 
 @app.middleware("http")

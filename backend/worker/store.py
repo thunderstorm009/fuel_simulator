@@ -122,6 +122,16 @@ class PostgresStore:
                         snapshot.stale,
                         snapshot.data_status.value,
                     )
+                    await connection.execute(
+                        "SELECT pg_notify('platform_events', $1)",
+                        json.dumps(
+                            {
+                                "type": "snapshot",
+                                "tick": snapshot.instance.tick,
+                                "stale": snapshot.stale,
+                            }
+                        ),
+                    )
                     return False
                 await connection.execute(
                     """
@@ -134,6 +144,16 @@ class PostgresStore:
                     snapshot.fetched_at,
                     snapshot.stale,
                     snapshot.data_status.value,
+                )
+                await connection.execute(
+                    "SELECT pg_notify('platform_events', $1)",
+                    json.dumps(
+                        {
+                            "type": "snapshot",
+                            "tick": snapshot.instance.tick,
+                            "stale": snapshot.stale,
+                        }
+                    ),
                 )
         return True
 
@@ -223,6 +243,10 @@ class PostgresStore:
                         forecast.risk_level.value,
                     )
                 await self._refresh_active_alert_metrics(connection)
+                await connection.execute(
+                    "SELECT pg_notify('platform_events', $1)",
+                    json.dumps({"type": "forecasts", "tick": snapshot.instance.tick}),
+                )
 
     async def expire_stale_recommendations(self, tick: int) -> None:
         await self.pool.execute(
@@ -280,6 +304,11 @@ class PostgresStore:
                         row.get("model_version", "1.1.0"),
                         row.get("policy_version", "2.0.0"),
                     )
+                if rows:
+                    await connection.execute(
+                        "SELECT pg_notify('platform_events', $1)",
+                        json.dumps({"type": "recommendations"}),
+                    )
 
     async def get_recommendations_for_execution(self) -> list[dict[str, Any]]:
         rows = await self.pool.fetch(
@@ -334,6 +363,10 @@ class PostgresStore:
                     WHERE type = 'predictor_fallback' AND resolved_at IS NULL"""
                 )
             await self._refresh_active_alert_metrics(connection)
+            await connection.execute(
+                "SELECT pg_notify('platform_events', $1)",
+                json.dumps({"type": "incidents"}),
+            )
 
     async def persist_depot_risks(
         self, snapshot: Snapshot, risks: list[DepotRiskProjection]
@@ -457,6 +490,10 @@ class PostgresStore:
                             forecast_drift_total.labels(direction=direction).inc()
 
             await self._refresh_active_alert_metrics(connection)
+            await connection.execute(
+                "SELECT pg_notify('platform_events', $1)",
+                json.dumps({"type": "incidents"}),
+            )
 
     @staticmethod
     async def _refresh_active_alert_metrics(connection: asyncpg.Connection) -> None:

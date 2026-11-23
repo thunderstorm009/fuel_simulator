@@ -1,15 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchRegionalDemand } from "../../services/api";
+import { useEventStream } from "../stream/useEventStream";
 import type { Fuel } from "../../types/api";
 
 const liters = new Intl.NumberFormat("en-BD", { maximumFractionDigits: 0 });
 const fuels: Fuel[] = ["DIESEL", "PETROL", "OCTANE"];
 
 export default function RegionalDemandPanel() {
+  const { status } = useEventStream();
+  const pollInterval = status === "live" ? false : 10000;
   const { data, isLoading, isError } = useQuery({
     queryKey: ["regional-demand"],
     queryFn: fetchRegionalDemand,
-    refetchInterval: 3000,
+    refetchInterval: pollInterval,
   });
 
   if (isLoading) {

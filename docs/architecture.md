@@ -6,8 +6,11 @@ The platform is one repository with six independently running application and op
 flowchart LR
   SIM[Official simulator<br/>REST + SSE] -->|poll and refetch hints| W[Worker]
   W -->|validated snapshots, forecasts,<br/>recommendations and heartbeats| DB[(PostgreSQL)]
-  A[API] -->|database reads and<br/>operator decision writes| DB
-  WEB[React web app] -->|HTTP polling and decisions| A
+  W -. "pg_notify('platform_events')" .-> DB
+  DB -. "LISTEN/NOTIFY" .-> A[API]
+  A -->|database reads and<br/>operator decision writes| DB
+  A -->|SSE push invalidation hints<br/>GET /api/stream| WEB[React web app]
+  WEB -->|REST queries on event & fallback polling| A
   W -->|bounded request with local breaker| P[Predictor service<br/>shared pure risk logic]
   P -. "timeout, validation or service failure" .-> W
   W -->|profile-only fallback; confidence <= 0.4; review required| DB

@@ -21,6 +21,7 @@ Base URL: `http://localhost:8101`.
 | GET | `/api/evaluation/summary` | Offline benchmark and backtest results (MAPE, bias, interval coverage across 1h, 6h, 12h, 24h horizons) and scenario outcomes. |
 | POST | `/api/whatif` | Simulates candidate allocation impact on station trajectory, stockout runway, and depot cover without DB/simulator writes. |
 | GET | `/api/metrics-summary` | Simulator service-level and allocation metrics from the latest snapshot. |
+| GET | `/api/stream` | Read-only Server-Sent Events (SSE) stream delivering push invalidation hints (`snapshot`, `forecasts`, `recommendations`, `incidents`). Heartbeat `: ping\n\n` every 15s. |
 | GET | `/api/risks` | Latest forecast per station/fuel pair and freshness. |
 | GET | `/api/risks/{station_id}/{fuel_type}/trajectory` | Persisted inventory trajectory and risk details for one pair. |
 | GET | `/api/recommendations` | Persisted recommendations, explanations and execution status. |

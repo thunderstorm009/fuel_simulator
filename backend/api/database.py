@@ -334,6 +334,10 @@ class PostgresReadRepository:
                     action,
                     reason,
                 )
+                await connection.execute(
+                    "SELECT pg_notify('platform_events', $1)",
+                    json.dumps({"type": "recommendations"}),
+                )
                 return {
                     "recommendation": self._decode_recommendation(updated),
                     "decision_recorded": True,

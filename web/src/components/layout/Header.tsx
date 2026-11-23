@@ -5,11 +5,13 @@ export default function Header({
   status,
   ageSeconds,
   alertCount = 0,
+  streamStatus = "fallback",
   onAlertClick,
 }: {
   status?: DataStatus;
   ageSeconds?: number;
   alertCount?: number;
+  streamStatus?: "live" | "fallback";
   onAlertClick?: () => void;
 }) {
   return (
@@ -21,6 +23,17 @@ export default function Header({
       </div>
       <div className="topbar-meta">
         <span className="simulated">SIMULATED</span>
+        <span
+          className={`stream-badge ${streamStatus}`}
+          role="status"
+          title={
+            streamStatus === "live"
+              ? "Live push updates active via SSE"
+              : "Stream disconnected, falling back to 10s polling"
+          }
+        >
+          {streamStatus === "live" ? "● LIVE PUSH" : "○ POLLING FALLBACK"}
+        </span>
         {alertCount > 0 && (
           <button
             onClick={onAlertClick}

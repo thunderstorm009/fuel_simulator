@@ -117,3 +117,38 @@ Telemetry captured in `docs/results/docker-stats-latency.csv` and `docs/results/
 - **PostgreSQL container (`fuel_simulator-postgres-1`):** CPU peaked at 42.4%; memory remained flat at 62.7 MiB.
 - **Worker container (`fuel_simulator-worker-1`):** CPU stayed below 1.5%; memory remained flat at 51.4 MiB.
 - **Frontend container (`fuel_simulator-frontend-1`):** Negligible CPU (0.0%), memory 8.7 MiB.
+
+## Push updates over SSE vs Polling request-rate comparison (WP12.2)
+
+To eliminate unnecessary database and API load during quiescent periods, `GET /api/stream` delivers lightweight push invalidation events (`snapshot`, `forecasts`, `recommendations`, `incidents`) over Server-Sent Events (SSE). Clients disable interval-based polling while connected to the stream and only query the REST API when an event invalidates affected cache keys. If the SSE stream disconnects, clients automatically fall back to slower polling (10-second intervals).
+
+### Request-rate comparison matrix
+
+Baseline polling makes 6 requests every 3 seconds per client tab (`/api/state`, `/api/events`, `/api/risks`, `/api/health`, `/api/depot-risks`, `/api/recommendations`), generating 2.0 req/s per client.
+
+With SSE push updates, each client maintains 1 open HTTP connection receiving `: ping\n\n` comments every 15 seconds. In standard simulation (1 tick/minute = 0.0167 Hz), the API emits events only on tick boundaries, triggering 1 refetch burst per minute (6 requests / 60s = 0.10 req/s per client).
+
+| Concurrent clients | Polling (3s interval) | SSE push (60s tick) | SSE fallback (10s interval) | Bandwidth / Load reduction |
+|---|---:|---:|---:|---:|
+| **1 client** | 2.00 req/s (120 req/min) | 0.10 req/s (6 req/min) | 0.60 req/s (36 req/min) | **95.0% reduction** |
+| **10 clients** | 20.0 req/s (1,200 req/min) | 1.00 req/s (60 req/min) | 6.00 req/s (360 req/min) | **95.0% reduction** |
+| **50 clients** | 100.0 req/s (6,000 req/min) | 5.00 req/s (300 req/min) | 30.0 req/s (1,800 req/min) | **95.0% reduction** |
+| **100 clients** | 200.0 req/s (12,000 req/min) | 10.0 req/s (600 req/min) | 60.0 req/s (3,600 req/min) | **95.0% reduction** |
+| **400 clients** | 800.0 req/s (48,000 req/min) | 40.0 req/s (2,400 req/min) | 240.0 req/s (14,400 req/min) | **95.0% reduction** |
+
+### Architecture and safety guarantees
+1. **Pure notifications, REST is truth (AGENTS.md Rule 1):**
+   - SSE events carry minimal notification metadata: `{"type": "snapshot", "tick": 42}` or `{"type": "recommendations"}`.
+   - State payloads are never streamed across SSE; the frontend executes fresh authenticated REST GET requests upon receipt, ensuring full ETag 304 cache validation and zero stale state drift.
+2. **PostgreSQL LISTEN/NOTIFY decoupling:**
+   - The ingestion worker publishes lightweight JSON strings via `pg_notify('platform_events', ...)` upon persisting snapshots, forecasts, recommendations, or incidents.
+   - Dedicated API background tasks listen on the channel and forward events to in-memory broadcaster queues.
+   - Survives worker restarts without dropping client SSE streams; reconnects with exponential backoff if PostgreSQL temporarily restarts.
+3. **Bounded queue memory guarantee:**
+   - Each client queue has `maxsize=100`.
+   - Slow or stalled consumers drop the oldest unconsumed notification when full without blocking the broadcaster or other clients.
+4. **Client connection limit protection:**
+   - `SSE_MAX_CLIENTS` (default 50 per Uvicorn worker process) prevents connection exhaustion attacks; rejects excess connections with HTTP 429.
+5. **Observability metrics:**
+   - `sse_clients_connected` (Gauge): Tracks active SSE connections across API worker processes.
+   - `sse_events_sent_total{event_type}` (Counter): Tracks delivered events by type (`snapshot`, `forecasts`, `recommendations`, `incidents`).
