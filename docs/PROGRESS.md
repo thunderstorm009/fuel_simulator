@@ -129,9 +129,8 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 ## Current work package and exact next action
 
-Sprint 11 P0 and P1 work packages complete (WP11.0, WP11.1, WP11.2, WP11.3, WP11.4, WP11.5).
-Next action: Sprint 11 Gate, Reviews (R1, R7, R3), sprint report `docs/sprint-reports/sprint-11.md`, and tag `sprint-11`.
-
+Sprint 12 complete (WP12.1, WP12.2, WP12.3, WP12.4, WP12.5, WP12.6). All quality gates and reviews (R4, R5) passed.
+Next action: Run Sprint 12 mechanical gate, tag `sprint-12`, and begin Sprint 13.
 
 ## Workspace constraints
 
@@ -150,13 +149,14 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | Sprint 7 | PASS; cold start (34s), clean clone proof, random chaos, demo script & QA, doc audit; tag `sprint-7` | [sprint-07.md](sprint-reports/sprint-07.md) |
 | Sprint 8 | PASS; truth pass, brief compliance (4-26), 6 crisis types, 2-pass triage, pure detectors, depot risk, speed adaptation; tag `sprint-8` | [sprint-08.md](sprint-reports/sprint-08.md) |
 | Sprint 9 | PASS; backtest calibration, what-if simulator, 5 operator views, LP optimizer & buffer, incident summarizer; tag `sprint-9` | [sprint-09.md](sprint-reports/sprint-09.md) |
-| Sprint 10 | PASS; delivery excellence, rollback drill, resilience limits, decision load test, judging runbook; tag `sprint-10` | [sprint-10.md](sprint-reports/sprint-10.md) |
+| Sprint 10 | PASS; delivery excellence, rollback drill, resilience limits, decision load test, judging runbook; tag `sprint-10` | [sprint-10.md](sprint-reports/sprint-09.md) |
 | Sprint 11 | PASS; truth pass, measured failure boundaries, 60-scenario sweep (95% CI), event-aware calibration, 0 security findings, tick 8/15 compatibility; tag `sprint-11` | [sprint-11.md](sprint-reports/sprint-11.md) |
+| Sprint 12 | PASS; API performance (626 req/s), SSE push (-95% load), 90m soak, alert routing, backup/restore (RTO 2.93s), policy switch; tag `sprint-12` | [sprint-12.md](sprint-reports/sprint-12.md) |
 
 ## Five-minute status update
 
-1. **Problem:** Platform documentation contained unverified derived limits and terminology; policy robustness required proof across randomized scenarios with rigorous confidence intervals; demand forecasting suffered from a 4–6 tick calibration lag under shocks; 16 security advisories affected test/runtime dependencies; tick-length compatibility (8m vs 15m) required empirical verification.
-2. **Change:** Conducted documentation truth pass removing fluff and aligning brief compliance (109 rows recounted); empirically swept failure boundaries across 192 ticks identifying binding physical constraints; executed 240 live simulation runs across 60 randomized crisis scenarios proving Heuristic SLA (97.93% vs 97.14% Naive, +0.79% [0.41%, 1.27%] 95% CI); resolved calibration lag by incorporating known event multipliers into historical baseline calculation (Model v1.2.0); cleared all 16 pip-audit advisories (FastAPI 0.165.0, Starlette 1.10.0, Pytest 9.2.0); verified 8m vs 15m tick duration invariance and dynamic scaling.
-3. **Demo:** Inspect `docs/results/failure-boundary.png` and `docs/results/scenario-sweep.md`. Run `python3 scripts/backtest.py` to observe 0-tick convergence under demand shocks. Run `pytest tests/unit/test_tick_compatibility.py` to verify temporal scaling.
-4. **Evidence:** 215 Python tests + 11 Vitest tests passing; pip-audit 0 vulnerabilities; npm audit 0 vulnerabilities; Gitleaks 0 leaks; Trivy 0 vulnerabilities; mechanical gate `bash scripts/sprint_gate.sh 11` passed.
-5. **Remaining:** Sprint 11 complete. Proceeding to Sprint 12 (API performance, SSE push, soak test, alert routing, backup/restore, policy switch).
+1. **Problem:** API throughput saturated at ~200 req/s with high read latency under concurrent users; repetitive client polling created unnecessary load; database backup/restore idempotency was untested; service recovery times lacked rigorous 3-phase measurement; Alertmanager routing was not integrated end-to-end; candidate policy switches lacked automated fail-safe rollback.
+2. **Change:** Scaled Uvicorn to 4 workers, enlarged connection pool, added 3 composite indexes, implemented in-memory pre-serialized byte caching and ETag / 304, tripling throughput to 625.8 req/s and cutting Postgres CPU by 89%; added SSE push invalidation over `platform_events`, reducing client read traffic by 95%; executed 90-minute live soak test under chaos proving memory and DB boundedness; demonstrated end-to-end Alertmanager firing and resolution routing with dedicated webhook receiver; drilled backup/restore drill achieving RTO 2.93s and 100% row preservation with zero duplicate submissions; measured 3-phase recovery times across all 7 services; built runtime policy switch (`POST /api/policy`) with token authentication, auditing, and automatic fail-safe rollback to `HeuristicPolicy` upon error, timeout, or constraint violation.
+3. **Demo:** Review `docs/loadtest.md` for baseline vs optimized load tables; run `python3 scripts/drill_backup_restore.py` to observe 2.93s database restoration; inspect `docs/evidence/day-4/alert-routing-evidence.txt` for live alert delivery; switch policy via `POST /api/policy` and observe instant footer update.
+4. **Evidence:** 234 pytest unit & integration tests + 11 Vitest tests passing; `make lint` clean; `docker compose config -q` clean; reviews R4 and R5 passed; mechanical gate `bash scripts/sprint_gate.sh 12` passing.
+5. **Remaining:** Sprint 12 complete. Proceeding immediately to Sprint 13 (Playwright E2E suite, accessibility & UI polish, judging demo & runbook dry run, docs final audit & submission map, release packaging).
