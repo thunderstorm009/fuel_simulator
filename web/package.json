@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:e2e": "NODE_PATH=node_modules playwright test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.5",
@@ -17,6 +18,8 @@
     "tailwindcss": "^4.3.5"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.1",
     "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/react": "^16.3.3",
     "@types/react": "19.1.2",

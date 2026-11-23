@@ -79,7 +79,7 @@ def test_state_and_data_health_read_latest_snapshot(api_client: TestClient) -> N
     assert response.json()["simulated"] is True
     assert response.json()["data_status"] == "HEALTHY"
     assert response.json()["data_age_seconds"] < 15
-    assert response.json()["model_version"] == "1.1.0"
+    assert response.json()["model_version"] == "1.2.0"
     assert response.json()["policy_version"] == "2.1.0"
     assert health.json()["data_status"] == "HEALTHY"
 

@@ -23,8 +23,13 @@ from core.world import PROFILE_NOISE
 class HeuristicPolicy:
     name = "heuristic"
 
-    def __init__(self, enable_uncertainty_buffer: bool = True) -> None:
+    def __init__(
+        self,
+        enable_uncertainty_buffer: bool = False,
+        name: str = "heuristic",
+    ) -> None:
         self.enable_uncertainty_buffer = enable_uncertainty_buffer
+        self.name = name
         self.version = "2.1.0" if enable_uncertainty_buffer else "2.0.0"
 
     def recommend(

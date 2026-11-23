@@ -3,7 +3,7 @@ groups:
     rules:
       - alert: SimulatorCircuitBreakerOpen
         expr: sim_breaker_state == 1
-        for: 30s
+        for: 15s
         labels:
           severity: critical
         annotations:
@@ -13,12 +13,22 @@ groups:
 
       - alert: SnapshotDataStale
         expr: snapshot_age_seconds > 60
-        for: 1m
+        for: 15s
         labels:
           severity: warning
         annotations:
           summary: "Simulator snapshot data is stale (>60s)"
           description: "Fresh state has not been ingested within expected refresh window."
+          runbook_url: "docs/runbook.md#stale-data"
+
+      - alert: SimulatorStaleDataFlag
+        expr: snapshot_stale == 1
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Simulator returned stale data flag (X-Simulator-Stale)"
+          description: "Simulator marked responses stale; confidence lowered and allocations blocked."
           runbook_url: "docs/runbook.md#stale-data"
 
       - alert: CriticalStockoutRisk

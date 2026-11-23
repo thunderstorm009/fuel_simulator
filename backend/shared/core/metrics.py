@@ -41,6 +41,10 @@ recommendation_fallbacks = Counter(
     "recommendation_fallbacks_total", "Heuristic recommendation fallbacks"
 )
 policy_fallbacks = Counter("policy_fallback_total", "Fallback invocations by cause", ["reason"])
+active_policy = Gauge("active_policy", "Currently active allocation policy", ["policy"])
+policy_changes_total = Counter(
+    "policy_changes_total", "Runtime policy changes", ["policy", "actor"]
+)
 recommendations_by_status = Gauge(
     "recommendations_total", "Recommendation lifecycle events by status", ["status"]
 )
@@ -64,6 +68,10 @@ forecast_error_liters = Gauge(
 )
 sse_events = Counter("worker_sse_events_total", "SSE hints received")
 sse_reconnects = Counter("worker_sse_reconnects_total", "SSE reconnect attempts")
+sse_clients_connected = Gauge("sse_clients_connected", "Number of currently connected SSE clients")
+sse_events_sent_total = Counter(
+    "sse_events_sent_total", "SSE events sent to connected clients", ["event_type"]
+)
 api_http_requests = Counter(
     "http_requests_total",
     "API requests by route and status class",

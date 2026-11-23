@@ -48,23 +48,61 @@ When the simulator runs in continuous `RUNNING` mode (rather than paused and ste
 
 Evidence file: [docs/evidence/sprint-10-resilience-matrix.txt](evidence/sprint-10-resilience-matrix.txt).
 
-### Per-service kill -9 recovery times
+### Measured three-part service recovery times (Sprint 12 WP12.5)
 
-| Service | Action | Container Restart Policy | Measured Recovery Time (s) | Post-Recovery Status |
-|---|---|---|---|---|
-| `api` | `kill -9` | Compose `unless-stopped` | 0.11 s | HEALTHY |
-| `worker` | `kill -9` | Compose `unless-stopped` | 0.17 s | HEALTHY |
-| `predictor` | `kill -9` | Compose `unless-stopped` | 0.23 s | HEALTHY |
-| `frontend` | `kill -9` | Compose `unless-stopped` | 0.10 s | HEALTHY |
-| `prometheus` | `kill -9` | Compose `unless-stopped` | 0.11 s | HEALTHY |
-| `grafana` | `kill -9` | Compose `unless-stopped` | 0.11 s | HEALTHY |
+Recovery measured empirically using `scripts/measure_recovery_times.py` across all stack services and full stack restart. For every service, three distinct recovery phases were timed:
+1. **Container Running:** Time until Docker engine reports container state `running`.
+2. **Container Healthy:** Time until Compose healthcheck reports `healthy` (governed by health interval).
+3. **Data Visible in UI/API:** Time until actual operational HTTP endpoints return HTTP 200 with data.
+
+Evidence: `docs/results/recovery-times.json`
+
+| Service | Container Running | Healthy | Data Visible in UI/API | Endpoint Probe |
+|---|---:|---:|---:|---|
+| **postgres** | 0.38s | 5.53s | 0.38s | `GET /api/state` |
+| **api** | 0.70s | 6.03s | 2.26s | `GET /api/state` |
+| **worker** | 0.65s | 5.94s | 1.85s | `GET /health` |
+| **predictor** | 0.63s | 5.95s | 1.54s | `GET /health` |
+| **frontend** | 0.39s | 5.39s | 0.39s | `GET /` |
+| **prometheus** | 0.39s | 5.41s | 0.39s | `GET /-/healthy` |
+| **grafana** | 0.40s | 5.35s | 0.99s | `GET /api/health` |
+| **full_stack** | 1.02s | 6.87s | 3.06s | API + Frontend Combined |
+
+### Database backup, restore & idempotency drill (Sprint 12 WP12.5)
+
+Automated drill executed via `scripts/drill_backup_restore.py` using `scripts/backup_db.sh` and `scripts/restore_db.sh`.
+
+Evidence: `docs/results/backup-restore-drill.json`
+
+- **Measured RTO (Recovery Time Objective):** **2.93 seconds** (target < 15s MET). Complete database schema and row restoration from cold SQL dump.
+- **Measured RPO (Recovery Point Objective):** **< 5.0 seconds** (governed by continuous PostgreSQL transaction logging and worker tick ingestion interval).
+- **Integrity & Zero Resubmission Verification:**
+  - `snapshots`: 419 rows pre-backup == 419 rows post-restore (100% match).
+  - `forecasts`: 5,004 rows pre-backup == 5,004 rows post-restore (100% match).
+  - `recommendations`: 158 rows pre-backup == 158 rows post-restore (100% match).
+  - `decisions`: 1 row pre-backup == 1 row post-restore (100% match).
+  - `depot_risks`: 1,572 rows pre-backup == 1,572 rows post-restore (100% match).
+  - `incidents`: 387 rows pre-backup == 387 rows post-restore (100% match).
+  - **Idempotency Keys & State:** All UUID idempotency keys preserved identically. Zero `SUBMITTED` or `ARRIVED` recommendations degraded to `PROPOSED`. Zero duplicate allocations submitted by worker executor. Unit test in `tests/unit/test_backup_restore_idempotency.py` verifies executor rejection of restored submitted items.
 
 ### Database outage & traffic surge
 
-- **Database Stop:** When PostgreSQL is stopped, API gracefully returns degraded status / 503, UI displays OFFLINE banner, and the worker holds in-memory polling without crash. Upon `docker compose start postgres`, PostgreSQL recovered in 0.16s and the API immediately resumed healthy queries.
-- **Traffic Surge Burst (5x Load Peak):** 250 requests fired at 25 concurrent workers against `/api/state`: 100% success rate, latency p50 = 77.17 ms, p95 = 143.33 ms, p99 = 161.18 ms. Bounded asyncpg connection pool prevented socket exhaustion.
+- **Database Stop:** When PostgreSQL is stopped, API gracefully returns degraded status / 503, UI displays OFFLINE banner, and the worker holds in-memory polling without crash. Upon `docker compose start postgres`, container restart was 0.16s, database query readiness was ~1.2s, and the API immediately resumed healthy queries.
+- **Instantaneous Concurrency Burst:** 250 requests fired at 25 concurrent workers against `/api/state`: 100% success rate, latency p50 = 77.17 ms, p95 = 143.33 ms, p99 = 161.18 ms. Bounded asyncpg connection pool prevented socket exhaustion.
 
 ### Failure boundary analysis
 
-1. **Network Throughput Knee:** Normal network consumption averages <= 18,000 L/tick. When aggregate regional consumption exceeds 30,000 L/tick or route capacity drops below 5,000 L/truck, physical pipeline constraints make zero unmet demand impossible.
-2. **Graceful Degradation at Boundary:** Rather than crashing or oversubscribing depots, the heuristic policy enters Pass 1 emergency triage (allocating 12h survival fuel first) and tags partial allocations with `is_partial=True` and clear unserved reason codes. Operator UI surfaces bottleneck alerts (`bottleneck` detections) and degraded service warnings.
+Evidence and charts: [docs/results/failure-boundary.md](results/failure-boundary.md) and [failure boundary plot](results/failure-boundary.png).
+
+1. **Physical Failure Boundaries vs Dispatch Capacity:** Total network demand across all 4 stations (`station-mirpur`, `station-tongi`, `station-karnaphuli`, `station-coxsbazar`) is **91,400 L/day** across all fuels (`core/world.py`). At 15-minute ticks (96 ticks/day), average demand is **~952 L/tick** (and **~508 L/tick** at 8-minute ticks). Peak demand with maximum hour factors reaches ~1,500 L/tick, and even an extreme 1.8x global surge consumes <2,700 L/tick. The two supply depots have a combined dispatch capacity of **23,000 L/tick** (Gazipur 12,000 + Patiya 11,000 L/tick), which is >24x average demand. Therefore, depot dispatch capacity is **not** the binding constraint.
+2. **Empirically Measured Failure Boundaries (192 Ticks / 2 Days):**
+   Across comprehensive stress sweeps on the live simulator, the crossover thresholds were measured as:
+   - **99% SLA Threshold:** Heuristic sustains 99% service level up to **2.43x** demand surge (99.91% at 2.2x), whereas Naive degrades below 99% at **1.96x** (97.48% at 2.2x) and None fails immediately (**1.0x**).
+   - **95% Critical Threshold:** Heuristic holds 95% service level up to **2.80x** demand surge (98.30% at 2.6x), whereas Naive drops below 95% at **2.55x** (94.66% at 2.6x).
+   - **90% Collapse Boundary:** Heuristic maintains **>90%** service level across the entire test spectrum up to **>3.0x** (91.66% at 3.0x), whereas Naive breaches 90% at **2.95x** (89.28% at 3.0x).
+3. **Actual Binding Constraints Identified from Measurements:**
+   - **Route Max Shipment Limits:** Each route has a strict shipment cap of 5,000 to 7,000 L per allocation batch. Under demand surges >2.2x, route shipment capacity becomes the primary binding constraint.
+   - **Depot Inventory & Resupply:** Initial combined depot stock is 252,000 L (Gazipur 131,000 L + Patiya 121,000 L), providing approximately 2.76 days of baseline cover without resupply. When supply shortfall factor drops to <=0.4 (<=40% planned resupply), depot stock depletion becomes binding.
+   - **Corridor Transit Delay & Isolation:** Deliveries require 1 to 4 transit ticks; an allocation cannot arrive instantly to avert an immediate stockout. Disruption of >=3 routes isolates stations, dropping service level to ~79% regardless of policy.
+   - **Station Tank Headroom (Ullage):** Allocations exceeding current station tank ullage are strictly prohibited by physical validation rules.
+4. **Graceful Degradation at Boundary:** Rather than crashing or oversubscribing depots, the heuristic policy enters Pass 1 emergency triage (allocating 12h survival fuel first) and tags partial allocations with `is_partial=True` and clear unserved reason codes. Operator UI surfaces bottleneck alerts (`bottleneck` detections) and degraded service warnings.

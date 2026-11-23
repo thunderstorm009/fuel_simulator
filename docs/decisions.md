@@ -4,14 +4,14 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 
 | ID | Decision | Status | Sprint |
 |---|---|---|---|
-| ADR-001 | REST is truth; SSE is only a hint to refetch | PROPOSED | 1 |
-| ADR-002 | Worker owns simulator I/O; API reads the database only | PROPOSED | 1 |
-| ADR-003 | Heuristic allocation first; optimizer only if time remains | PROPOSED | 1 |
-| ADR-004 | Monte Carlo for stockout uncertainty | PROPOSED | 3 |
+| ADR-001 | REST is truth; SSE is only a hint to refetch | ACCEPTED | 1 |
+| ADR-002 | Worker owns simulator I/O; API reads the database only | ACCEPTED | 1 |
+| ADR-003 | Heuristic allocation first; optimizer only if time remains | ACCEPTED | 1 |
+| ADR-004 | Monte Carlo for stockout uncertainty | ACCEPTED | 3 |
 | ADR-005 | Outbox-style executor: approve records intent, executor re-validates and submits | ACCEPTED | 4 |
 | ADR-006 | Idempotency key rec-<uuid>, stored, reused only for the identical body | ACCEPTED | 4 |
-| ADR-007 | Predictor as its own container with baseline fallback | PROPOSED | 5 |
-| ADR-008 | No Kubernetes or RL; Docker Compose only | PROPOSED | 1 |
+| ADR-007 | Predictor as its own container with baseline fallback | ACCEPTED | 5 |
+| ADR-008 | No Kubernetes or RL; Docker Compose only | ACCEPTED | 1 |
 | ADR-009 | Operator token from env protects approve, reject and chaos endpoints | ACCEPTED | 4 |
 | ADR-010 | Co-host API and worker in one application container while preserving the DB-only API / worker-I/O boundary | SUPERSEDED | 1 |
 | ADR-011 | Defer predictor and Prometheus/Grafana containers until their sprint; retain predictor separation for the outage demo | SUPERSEDED | 1 |
@@ -28,8 +28,31 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-022 | Keep personal AI workspace local and publish application/engineering artifacts only | ACCEPTED | Publication |
 | ADR-023 | Use feature-based React modules with shared transport, types and UI components | ACCEPTED | Publication |
 | ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
+| ADR-025 | Keep recommendation identity and request body visible through operator review | ACCEPTED | 4 |
+| ADR-026 | Separate service availability from decision-pipeline freshness | ACCEPTED | 4 |
+| ADR-027 | Replace same-tick snapshot payload when refreshing its metadata | ACCEPTED | 4 |
+| ADR-028 | Keep overnight operator notes local | ACCEPTED | 4 |
+| ADR-029 | Validate resolved Compose service credentials without exposing values | ACCEPTED | 4 |
+| ADR-030 | Alert on the age of the last successful ingestion | ACCEPTED | 5 |
+| ADR-031 | Install k6 locally via brew for Sprint 6 load evidence | ACCEPTED | 6 |
+| ADR-032 | Scenario runner uses pure policy functions on frozen DB snapshot | ACCEPTED | 6 |
+| ADR-033 | Scenario runner definition and determinism verification | ACCEPTED | 6 |
+| ADR-034 | Three-condition k6 load benchmark with container resource sampling | ACCEPTED | 6 |
+| ADR-035 | Sprint 7 freeze, cold-start verification, and predictor dual-port routing | ACCEPTED | 7 |
 | ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
 | ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
+| ADR-038 | Pure detection engine, depot supply risk projection, and adaptive simulator freshness | ACCEPTED | 8 |
+| ADR-039 | Uncertainty-Aware Safety Buffer and Linear Flow Optimization Policy | ACCEPTED | 9 |
+| ADR-040 | Generative Incident Explanations and LLM Operational Boundaries | ACCEPTED | 9 |
+| ADR-041 | Token Rate Limiting, Version Metadata API, and Automated Deployment Rollback | ACCEPTED | 10 |
+| ADR-042 | Sprint 11 truth pass, physical boundary arithmetic, and compliance recount | ACCEPTED | 11 |
+| ADR-043 | Matplotlib plotting library as dev dependency for boundary and backtest visualization | ACCEPTED | 11 |
+| ADR-044 | Multi-worker Uvicorn, connection pool enlargement, composite indexing, and byte-level caching | ACCEPTED | 12 |
+| ADR-045 | Push invalidation over SSE with PostgreSQL LISTEN/NOTIFY and polling fallback | ACCEPTED | 12 |
+| ADR-046 | Alertmanager routing and local webhook receiver under compose profile 'alerts' | ACCEPTED | 12 |
+| ADR-047 | Runtime policy switch with automatic rollback and constraint validation | ACCEPTED | 12 |
+| ADR-048 | Browser end-to-end and accessibility testing via Playwright and axe-core | ACCEPTED | 13 |
+| ADR-049 | Cross-directory Playwright module resolution and fail-fast discovery guard | ACCEPTED | Day 4/5 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -263,7 +286,7 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 ### ADR-037 — Two-pass emergency triage policy and full event coverage
 
 - **Status:** ACCEPTED
-- **Context:** During constrained supply conditions (such as refinery shortfalls, shipment delays, or depot throughput throttling), naive single-pass greedy allocation risks exhausting bulk depot reserves on the first station that reaches 70% capacity, leaving neighboring stations to starve. Furthermore, the platform must handle all six crisis event types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`).
+- **Context:** During constrained supply conditions (such as bulk resupply shortfalls, shipment delays, or depot throughput throttling), naive single-pass greedy allocation risks exhausting bulk depot reserves on the first station that reaches 70% capacity, leaving neighboring stations to starve. Furthermore, the platform must handle all six crisis event types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`).
 - **Decision:**
   1. Implement a deterministic two-pass triage heuristic in `core/policies/heuristic.py`:
      - **Pass 1:** Computes the exact 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk station, allocating emergency fuel to the most urgent stations first.
@@ -326,3 +349,97 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   3. Release Automation & Rollback: Add `.github/workflows/release.yml` building and publishing versioned container images to GHCR on `v*` and `sprint-*` tags. Implement `scripts/deploy.sh <tag>` and `scripts/rollback.sh <tag>` providing one-command automated rollback upon smoke test failure.
   4. Security Hardening: Add Gitleaks secret scanning and dependency audits (`npm audit` with 0 high/critical vulnerabilities) to CI.
 - **Trade-off:** Sliding-window in-memory limiter avoids external Redis dependency while protecting decision APIs from flood attacks. Automated rollback ensures zero downtime during judging or operational deploys.
+
+### ADR-042: Sprint 11 Truth Audit, Failure Boundary Arithmetic, and Brief Compliance Recount (Sprint 11)
+- **Status:** ACCEPTED
+- **Context:** An adversarial audit of Day 3 documentation revealed derived unproven claims regarding physical network boundaries ("23,000 L/tick dispatch ceiling" and "30,000 L/tick demand saturation knee"), informal terminology ("refinery", "pipeline capacity", "corridor throughput"), inaccurate regional naming ("Chittagong", "regional highways" as a region), an unsupported security mitigation claim ("mitigated behind reverse proxy"), What-If latency without distinguishing unloaded vs loaded state, and a self-graded compliance count (52 items) that omitted the full brief structure.
+- **Decision:**
+  1. Calculate true baseline network demand from simulator demand profiles (`core/world.py`): 91,400 L/day across all 4 stations (~952 L/tick at 15-min ticks, ~508 L/tick at 8-min ticks). Document that depot dispatch capacity (23,000 L/tick) is >24x average demand and is not binding. The true physical boundaries are depot inventory plus resupply arrivals (~2.76 days initial cover), route shipment caps (5,000–7,000 L), station tank ullage, and transit ticks (1–4 ticks).
+  2. Standardize all terminology to match simulator concepts: "Chattogram" (not "Chittagong"); two regions (`region-dhaka`, `region-chattogram`); "highway" is a demand profile; scheduled bulk depot supply arrivals (not "refinery"); and road transport corridors.
+  3. Accurately report What-If latency: <50ms unloaded, and ~834ms p95 under 100 VU concurrent load.
+  4. Clarify container process restart times (0.10s–0.23s) versus full query availability (~1.2s).
+  5. Re-enumerate the Hackathon Brief Compliance Matrix directly from the brief text (109 requirements: 107 MET, 1 OPTIONAL-SKIPPED, 1 PARTIAL).
+  6. Transparently record all corrections in Section 16 of `docs/DAY-3-UPDATE.md`.
+- **Trade-off:** Eliminates all non-factual or derived marketing claims in favor of empirical measurements and exact arithmetic.
+
+### ADR-043: Matplotlib Plotting Library as Dev-Only Dependency (Sprint 11)
+- **Status:** ACCEPTED
+- **Context:** Sprint 11 WP11.1 requires generating visual charts of measured failure boundaries (service level vs demand spike multiplier, supply shortfall factor, and route disruption count) into `docs/results/failure-boundary.png`. The platform policy forbids runtime bloat and requires third-party libraries beyond the core stack to be dev-only.
+- **Decision:** Add `matplotlib==3.11.2` strictly as a development dependency in `requirements-dev.txt`. Application production containers (`api`, `worker`, `predictor`) do not install or import matplotlib. Matplotlib is used exclusively in offline measurement scripts (`scripts/measure_failure_boundaries.py`).
+- **Trade-off:** Production images remain lean while allowing high-resolution empirical chart generation for reports and documentation.
+
+### ADR-044: API Performance Scaling via Multi-Worker Uvicorn, Connection Pool Enlargement, Composite Indexing, and Byte-Level Caching (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** Under the baseline load test sweep (10 to 400 VUs), API throughput saturated at ~200 req/s, while read p95 latency rose to 1,210.6 ms at 100 VUs and 4,991.1 ms at 400 VUs. Profiling with EXPLAIN ANALYZE identified full table scans on `forecasts` and `depot_risks` executing `DISTINCT ON` with quicksorts taking 15.342 ms and 3.815 ms per query, asyncpg connection pool contention capped at `max_size=5`, single-core CPU saturation in single-process Uvicorn (~140% CPU), redundant `json.dumps()` serialization on repeated reads, and repeated Pydantic model validation on `POST /api/whatif`.
+- **Decision:**
+  1. Multi-Worker Uvicorn: Run Uvicorn with `--workers ${API_WORKERS:-4}` behind the published port 8101.
+  2. Connection Pool Sizing: Increase asyncpg pool bounds to `min_size=2, max_size=20` (configurable via `DB_POOL_MAX_SIZE`), staying safely within Postgres's default 100 connection limit across 4 workers (80 max).
+  3. Composite Indexing: Add `snapshots_fetched_id_idx ON snapshots (fetched_at DESC, id DESC)`, `forecasts_pair_snapshot_idx ON forecasts (station_id, fuel_type, snapshot_id DESC)`, and `depot_risks_depot_snapshot_idx ON depot_risks (depot_id, fuel_type, snapshot_id DESC)`. Constrain read queries to the latest snapshot ID via subqueries, dropping query time from 15.342 ms to 0.103 ms (149x speedup).
+  4. Byte-Level In-Memory Caching & ETag: Cache pre-serialized UTF-8 JSON bytes keyed by `(endpoint, snapshot_id)` in memory. Return HTTP 304 Not Modified when `If-None-Match` matches `W/"snap-{id}"`. Invalidate cache immediately on new snapshot arrival.
+  5. Pure What-If Optimization: Cache the parsed `Snapshot` Pydantic model in repository memory to eliminate redundant 60+ KB model re-validation per candidate simulation.
+  6. Rate Limiter Multi-Worker Scaling: Enforce `max(10, RATE_LIMIT_MAX_REQUESTS // API_WORKERS)` per worker process so aggregate operator decision limits remain bounded.
+- **Consequences:** Throughput tripled from 201 req/s to 615–626 req/s at 100–200 VUs. Read p50 dropped by 78% (393.2 ms to 88.2 ms at 100 VUs). Read p95 dropped by 72% (1,210.6 ms to 338.3 ms). WhatIf p95 dropped to 288.3 ms (<500 ms target). Postgres CPU under 400 VUs dropped from 309.8% down to 34.1%. Zero errors (0.0%) across all runs up to 400 VUs.
+
+### ADR-045: Push Invalidation Over SSE with PostgreSQL LISTEN/NOTIFY and Polling Fallback (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** Prior to Sprint 12, the web application polled six API endpoints every 3 seconds per tab, producing 2.0 req/s (120 req/min) per client. Under 100 concurrent operators, continuous polling produces 200 req/s (12,000 req/min) of repetitive database and HTTP traffic even when simulator state has not advanced.
+- **Decision:**
+  1. Add `GET /api/stream` (read-only SSE) backed by `EventBroadcaster`.
+  2. Implement PostgreSQL `LISTEN/NOTIFY` on the `platform_events` channel. The worker publishes lightweight notification hints via `SELECT pg_notify('platform_events', ...)` when snapshots, forecasts, recommendations, or incidents are persisted. The API also notifies when an operator decides a recommendation.
+  3. REST is truth (AGENTS.md Rule 1): SSE events contain only event type metadata (`{"type": "snapshot", "tick": 42}`). No state payloads are streamed. The web app uses events as invalidation signals to refetch affected TanStack queries via REST.
+  4. Heartbeat comments (`: ping\n\n`) are emitted every 15s to keep connections alive through proxies and firewalls.
+  5. Slow/stalled client protection: Bounded queue (`maxsize=100`) per subscriber drops the oldest item on overflow without blocking the broadcaster. Connection limits (`SSE_MAX_CLIENTS=50` per worker) return HTTP 429 when saturated.
+  6. Frontend resilience: `useEventStream` hook manages `EventSource`. When connected (`live`), polling intervals are disabled. On disconnection (`fallback`), queries fall back to 10-second polling. The header displays `● LIVE PUSH` or `○ POLLING FALLBACK`.
+  7. Metrics: Prometheus gauge `sse_clients_connected` and counter `sse_events_sent_total{event_type}` track stream health.
+- **Consequences:** Eliminates 95% of API read traffic during standard operation (drops from 2.0 req/s to 0.10 req/s per client tab), avoids database connection pool consumption for idle polling, and ensures immediate UI updates within milliseconds of worker persistence.
+
+### ADR-046: Alertmanager Routing and Local Webhook Receiver under Compose Profile 'alerts' (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** Prometheus alert rules existed in `observability/prometheus/alert_rules.yml`, but had no downstream dispatch mechanism or end-to-end receipt verification. Running Alertmanager and notification dispatchers continuously in default development stacks adds unnecessary memory and port allocations when external webhooks are not configured.
+- **Decision:**
+  1. Add `alertmanager` (`prom/alertmanager:v0.28.0`) and a dedicated lightweight `webhook-receiver` container under the Docker Compose profile `alerts`. Default `docker compose up` continues starting only the standard 8 services.
+  2. Implement `observability/webhook_receiver/receiver.py` using standard library `HTTPServer` (zero third-party dependencies, listening on port 5001). It logs firing and resolved alerts to stdout, appends JSONL records to `/logs/alerts.jsonl`, and provides queryable `/alerts` and `/health` endpoints.
+  3. Wire Alertmanager in `observability/prometheus/prometheus.yml` to target `alertmanager:9093`. Configure Alertmanager routes with `group_wait: 2s, group_interval: 5s` and `send_resolved: true`.
+  4. Add `promtool check rules` step to CI workflow (`.github/workflows/ci.yml`) ensuring syntax and query validity of all Prometheus rules.
+  5. Implement `scripts/demonstrate_alert_routing.py` as an automated verifiable drill: starts `alerts` profile, restarts Prometheus to discover Alertmanager, injects `unavailable` fault, observes webhook receipt of firing `SimulatorCircuitBreakerOpen` alert with severity `critical` and runbook link `docs/runbook.md#circuit-breaker`, clears fault, and observes receipt of resolved notification (measured resolution duration: 15.0s).
+  6. Document silencing (`amtool` CLI and web UI at port 9093) and runbook procedures in `docs/runbook.md`.
+- **Consequences:** Complete alert delivery pipeline is proven end-to-end with real timestamped evidence (`docs/evidence/day-4/alert-routing-evidence.json` and `.txt`) while preserving zero-overhead default developer environments.
+
+### ADR-047: Runtime Policy Switch with Automatic Rollback and Constraint Validation (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** In crisis situations or distinct operational modes, operators need the ability to switch between candidate allocation strategies (`heuristic`, `heuristic_buffer`, or `optimizer`) at runtime. However, autonomous policy execution risks invalid proposals if a complex optimizer experiences matrix singularities, execution timeouts, or generates candidate allocations violating physical network constraints. Furthermore, policy switching must never become an auto-approval path (human approval remains mandatory).
+- **Decision:**
+  1. Add `POST /api/policy` and `GET /api/policy`. `POST /api/policy` requires `X-Operator-Token`, rate limiting (`check_policy_rate_limit`), and an audited non-blank reason.
+  2. Persist policy switches in the `policy_changes` audit table with actor, reason, timestamp, and previous policy.
+  3. Expose active policy via Prometheus gauge `active_policy{policy=...}`, counter `policy_changes_total{policy=...,actor=...}`, `GET /api/version`, and the web application footer (`Policy v2.1.0 (<policy>)`).
+  4. In `PolicyRunner` (`backend/worker/recommend_job.py`), validate every candidate proposal using `core.validator.validate(plan.request, snapshot, step_reservations)`.
+  5. If the active policy raises an unhandled exception, exceeds its timeout window (0.5s), or emits any candidate violating validator constraints, `PolicyRunner` automatically rolls back to `HeuristicPolicy`:
+     - Discards invalid candidate plans immediately.
+     - Logs warning and raises an incident (`type="policy_rollback"`, `severity="warning"`).
+     - Persists rollback in `policy_changes` with actor `system:rollback`.
+     - Emits `platform_events` push notification.
+     - Invokes fallback `HeuristicPolicy` and validates fallback proposals before returning.
+  6. Human approval remains mandatory for all generated proposals; switching policies alters proposal generation only, never auto-approves or auto-submits.
+- **Consequences:** Guarantees zero invalid recommendations can ever be persisted or presented to operators, ensures transparent auditing of all policy alterations, and maintains automated fail-safe recovery under algorithmic failure.
+
+### ADR-048: Browser End-to-End and Accessibility Testing via Playwright and Axe-Core (Sprint 13)
+- **Status:** ACCEPTED
+- **Context:** Sprint 13 requires rigorous proof of platform behavior in a real headless browser against the running multi-container stack, verifying end-to-end user workflows (dashboard, 8 operational views, guided tour, demand surges, what-if, approvals, rejections, faults, and alert export) and auditing WCAG 2.1 AA accessibility compliance without bloating production images.
+- **Decision:**
+  1. Add `@playwright/test` and `@axe-core/playwright` as development-only dependencies in `web/package.json`. Production container images (`frontend`, `api`, `worker`, `predictor`) do not bundle Playwright or browser binaries.
+  2. Implement `tests/e2e/helpers.ts` and `tests/e2e/platform.spec.ts` covering 12 end-to-end scenarios executing against the published Compose ports (frontend `5173`, API `8101`, simulator `8000`).
+  3. Ensure headless Chromium is installed via `npx playwright install chromium` in dev and CI environments.
+  4. Wire `test-e2e` into `Makefile` (`make test-e2e`).
+  5. Add `Run Playwright E2E and Accessibility Suite` step to CI (`.github/workflows/ci.yml`) under the `compose` job, reusing the already built and healthy stack with full artifact uploads (`playwright-results.json`, traces, logs) on failure.
+  6. Add automated axe-core accessibility auditing script (`scripts/audit_accessibility.js`), saving structured results to `docs/evidence/day-4/accessibility-audit.json` and `.md`.
+- **Consequences:** Provides automated, verifiable regression protection across all interactive browser workflows and confirms zero critical accessibility violations across all 8 operational views.
+
+### ADR-049: Cross-Directory Playwright Module Resolution and Fail-Fast Discovery Guard (Day 4/5)
+- **Status:** ACCEPTED
+- **Context:** In GitHub Actions CI (run 45139851657), the `compose` job failed with `Error: No tests found` when running `npm --prefix web run test:e2e`. The e2e test specifications reside in `<repo_root>/tests/e2e/`, while npm packages (`@playwright/test`, `@axe-core/playwright`) are installed in `<repo_root>/web/node_modules/`. In local development environments, an untracked root symlink `node_modules -> web/node_modules` masked the issue. In a clean checkout without the root symlink, Node's default module resolution traversing upward from `<repo_root>/tests/e2e/` failed to find `@playwright/test`, throwing an unhandled exception before test registration that Playwright swallowed into "No tests found".
+- **Decision:**
+  1. Explicitly export `NODE_PATH=node_modules` in `web/package.json`'s `test:e2e` script and pass `NODE_PATH: web/node_modules` in CI.
+  2. Implement an in-process fallback in `web/playwright.config.ts` using `moduleAlias._initPaths()` to ensure Node resolves modules from `web/node_modules` regardless of invocation directory.
+  3. Introduce a fail-fast test discovery guard (`npm --prefix web run test:e2e -- --list`) in CI prior to running the test suite, immediately surfacing module resolution or test discovery regressions in <2 seconds.
+  4. Integrate clean-clone Playwright discovery verification into `scripts/verify_clean_clone.sh` and add automated configuration regression tests in `tests/unit/test_playwright_discovery.py`.
+- **Consequences:** Eliminates dependency on local root symlinks, guarantees deterministic module resolution across sibling directories in fresh clones and CI, and provides instant diagnosis if test discovery fails.

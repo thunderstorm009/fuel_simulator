@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import hmac
+import json
 import os
 import time
 from collections import defaultdict
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field, field_validator
 
 from api.database import ReadRepository
@@ -21,7 +23,13 @@ router = APIRouter(prefix="/api")
 # Sliding-window rate limiter for operator decision actions
 _DECISION_CALLS: defaultdict[str, list[float]] = defaultdict(list)
 _RATE_LIMIT_WINDOW_SECONDS: float = 60.0
-_RATE_LIMIT_MAX_REQUESTS: int = 60
+_RECS_CACHE: tuple[int, bytes] | None = None
+
+
+def get_rate_limit_max_requests() -> int:
+    api_workers = max(1, int(os.getenv("API_WORKERS", "1")))
+    configured = int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "60"))
+    return max(10, configured // api_workers)
 
 
 def check_rate_limit(key: str = "operator") -> None:
@@ -29,11 +37,12 @@ def check_rate_limit(key: str = "operator") -> None:
     window_start = now - _RATE_LIMIT_WINDOW_SECONDS
     calls = [t for t in _DECISION_CALLS[key] if t > window_start]
     _DECISION_CALLS[key] = calls
-    if len(calls) >= _RATE_LIMIT_MAX_REQUESTS:
-        raise HTTPException(
-            status_code=429,
-            detail="Too Many Requests: Operator decision rate limit exceeded. Max 60 per minute.",
+    max_reqs = get_rate_limit_max_requests()
+    if len(calls) >= max_reqs:
+        detail_msg = (
+            f"Too Many Requests: Operator decision rate limit exceeded. Max {max_reqs} per minute."
         )
+        raise HTTPException(status_code=429, detail=detail_msg)
     _DECISION_CALLS[key].append(now)
 
 
@@ -61,8 +70,36 @@ def require_operator_token(
 
 
 @router.get("/recommendations")
-async def recommendations(repository: RepositoryDep) -> dict[str, Any]:
-    return {"recommendations": await repository.get_recommendations(), "simulated": True}
+async def recommendations(request: Request, repository: RepositoryDep) -> Response:
+    snap_id = 0
+    if hasattr(repository, "get_latest_snapshot_meta"):
+        meta = await repository.get_latest_snapshot_meta()
+        if meta:
+            snap_id = int(meta.get("id", 0))
+    elif hasattr(repository, "get_latest_snapshot"):
+        rec = await repository.get_latest_snapshot()
+        if rec:
+            snap_id = int(rec.get("id", 0))
+
+    etag = f'W/"snap-{snap_id}"'
+    header = request.headers.get("if-none-match", "").strip()
+    if snap_id > 0 and header in (etag, f'"snap-{snap_id}"', f"snap-{snap_id}"):
+        return Response(status_code=304, headers={"ETag": etag})
+
+    global _RECS_CACHE
+    if _RECS_CACHE is not None and _RECS_CACHE[0] == snap_id and snap_id > 0:
+        return Response(
+            content=_RECS_CACHE[1],
+            media_type="application/json",
+            headers={"ETag": etag},
+        )
+
+    recs = await repository.get_recommendations()
+    payload = {"recommendations": jsonable_encoder(recs), "simulated": True}
+    raw_bytes = json.dumps(payload).encode("utf-8")
+    if snap_id > 0:
+        _RECS_CACHE = (snap_id, raw_bytes)
+    return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
 @router.get("/decisions")
@@ -103,9 +140,11 @@ async def approve_recommendation(
     recommendation_id: UUID,
     repository: RepositoryDep,
     actor: Annotated[str, Depends(require_operator_token)],
+    operator_name: Annotated[str, Header(alias="X-Operator-Name")] = "",
 ) -> dict[str, Any]:
     check_rate_limit(actor)
-    return await _decide(recommendation_id, "approve", None, actor, repository)
+    resolved_actor = operator_name.strip()[:100] if operator_name.strip() else actor
+    return await _decide(recommendation_id, "approve", None, resolved_actor, repository)
 
 
 @router.post("/recommendations/{recommendation_id}/reject")
@@ -114,6 +153,8 @@ async def reject_recommendation(
     payload: RejectRequest,
     repository: RepositoryDep,
     actor: Annotated[str, Depends(require_operator_token)],
+    operator_name: Annotated[str, Header(alias="X-Operator-Name")] = "",
 ) -> dict[str, Any]:
     check_rate_limit(actor)
-    return await _decide(recommendation_id, "reject", payload.reason, actor, repository)
+    resolved_actor = operator_name.strip()[:100] if operator_name.strip() else actor
+    return await _decide(recommendation_id, "reject", payload.reason, resolved_actor, repository)

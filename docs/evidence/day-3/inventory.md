@@ -56,7 +56,7 @@ Legend:
 | `web/src/features/allocations/RecommendationsPage.tsx` | `MODIFIED` | Recommendation management view | Integrated What-If sandbox drawer launcher; review checkbox for needs_review | VERIFIED-TODAY |
 | `web/src/features/allocations/WhatIfSimulator.tsx` | `NEW` | Candidate what-if simulation drawer | Interactive slider/input evaluating post-allocation inventory before approval | VERIFIED-TODAY |
 | `web/src/features/dashboard/DashboardPage.tsx` | `MODIFIED` | Executive operations overview | Integrated regional demand breakdown, depot risk summary, and supply ETA | VERIFIED-TODAY |
-| `web/src/features/demand/RegionalDemandPanel.tsx` | `NEW` | Regional fuel consumption breakdown | Visualizes fuel demand by region (Dhaka, Chittagong, etc.) and fuel product | VERIFIED-TODAY |
+| `web/src/features/demand/RegionalDemandPanel.tsx` | `NEW` | Regional fuel consumption breakdown | Visualizes fuel demand by region (Dhaka, Chattogram) and fuel product | VERIFIED-TODAY |
 | `web/src/features/evaluation/EvaluationPage.tsx` | `NEW` | System accuracy and policy evaluation | Displays backtest MAPE by horizon and policy vs do-nothing comparison | VERIFIED-TODAY |
 | `web/src/features/inventory/DepotRiskPanel.tsx` | `NEW` | Depot supply & stockout cover view | Shows cover days per depot and delayed/shortfall arrival impacts | VERIFIED-TODAY |
 | `web/src/features/inventory/IncomingSupplyView.tsx` | `NEW` | Scheduled supply pipeline view | Shows pipeline of scheduled and in-transit supply arrivals with ETA ticks | VERIFIED-TODAY |

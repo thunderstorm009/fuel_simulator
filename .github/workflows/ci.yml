@@ -44,6 +44,8 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - name: Validate Compose model
         run: docker compose config -q
+      - name: Validate Prometheus Alert Rules
+        run: docker run --rm --entrypoint promtool -v ${{ github.workspace }}/observability/prometheus:/etc/prometheus prom/prometheus:v3.3.0 check rules /etc/prometheus/alert_rules.yml
       - name: Build and start stack
         run: |
           docker compose up --build -d
@@ -60,14 +62,35 @@ jobs:
         run: |
           pip install -r requirements-dev.txt pyyaml
           python3 scripts/scenario_runner.py --scenario baseline --policy heuristic --ticks 5
+      - name: Install Frontend and Playwright Dependencies
+        run: |
+          npm ci --prefix web
+          npx --prefix web playwright install --with-deps chromium
+      - name: Verify Playwright Test Discovery
+        run: |
+          npm --prefix web run test:e2e -- --list
+        env:
+          NODE_PATH: web/node_modules
+      - name: Run Playwright E2E and Accessibility Suite
+        run: |
+          npm --prefix web run test:e2e
+        env:
+          NODE_PATH: web/node_modules
+          OPERATOR_TOKEN: change-me
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+          PLAYWRIGHT_API_URL: http://localhost:8101
+          PLAYWRIGHT_SIM_URL: http://localhost:8000
       - name: Save Compose logs on failure
         if: failure()
         run: docker compose logs --no-color > compose-failure.log
       - uses: actions/upload-artifact@v4.6.2
-        if: failure()
+        if: always()
         with:
-          name: compose-failure-logs
-          path: compose-failure.log
+          name: e2e-and-compose-artifacts
+          path: |
+            compose-failure.log
+            web/test-results/
+            docs/results/playwright-results.json
       - name: Stop stack
         if: always()
         run: docker compose down -v
@@ -88,7 +111,7 @@ jobs:
       - name: Python Dependency Audit
         run: |
           pip install pip-audit
-          pip-audit -r requirements.txt -r requirements-dev.txt || true
+          pip-audit -r requirements.txt -r requirements-dev.txt
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: "22"

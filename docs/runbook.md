@@ -9,6 +9,110 @@ curl -fsS http://localhost:8101/api/data-health
 docker compose logs --tail=100 api worker predictor
 ```
 
+## Alertmanager routing and silencing
+
+Alertmanager runs under the optional Docker Compose profile `alerts` (not started in default stack):
+```sh
+# Start Alertmanager and the local Webhook Receiver
+docker compose --profile alerts up -d alertmanager webhook-receiver
+
+# Check Alertmanager health and UI
+curl -fsS http://localhost:9093/-/healthy
+# Web UI is available at http://localhost:9093
+
+# Check Webhook Receiver logs
+docker compose logs -f webhook-receiver
+curl -fsS http://localhost:5001/alerts
+```
+
+### Silencing alerts
+
+During scheduled maintenance, chaos drills, or simulator resets, alerts can be silenced via Alertmanager API or web UI:
+1. **Via Alertmanager Web UI (`http://localhost:9093/#/silences`):**
+   - Click "New Silence".
+   - Specify matcher (e.g., `alertname = SimulatorCircuitBreakerOpen` or `severity = warning`).
+   - Set duration (e.g. 1h) and comment with operator identity and reason.
+2. **Via Alertmanager REST API (`curl`):**
+   ```sh
+   curl -X POST http://localhost:9093/api/v2/silences \
+     -H "Content-Type: application/json" \
+     -d '{
+       "matchers": [{"name": "alertname", "value": "SnapshotDataStale", "isRegex": false, "isEqual": true}],
+       "startsAt": "'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'",
+       "endsAt": "'"$(date -u -v+1H +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u -d '+1 hour' +%Y-%m-%dT%H:%M:%SZ)"'",
+       "createdBy": "operator",
+       "comment": "Scheduled maintenance drill"
+     }'
+   ```
+3. **Via `amtool` (inside container):**
+   ```sh
+   docker compose exec alertmanager amtool silence add alertname="SimulatorCircuitBreakerOpen" --duration=30m --comment="drill"
+   ```
+
+---
+
+## Alert procedures & runbook anchors
+
+<a id="circuit-breaker"></a>
+### Circuit Breaker (`#circuit-breaker`)
+- **Alert:** `SimulatorCircuitBreakerOpen` (Severity: `critical`)
+- **Condition:** `sim_breaker_state == 1` for 15s.
+- **Cause:** Ingestion worker experienced 5 consecutive failures contacting simulator REST endpoints (HTTP 503, timeouts, or connection resets).
+- **Impact:** State ingestion is paused; snapshots are not advancing.
+- **Immediate action:**
+  1. Inspect simulator health: `curl -I http://localhost:8000/v1/health`.
+  2. Inspect active faults: `curl http://localhost:8000/admin/faults`.
+  3. If an injected fault is present, clear it: `curl -X POST http://localhost:8000/admin/faults/clear`.
+  4. Once simulator recovers, worker circuit breaker resets automatically after reset cooldown (`SIM_BREAKER_RESET_S=10s`). Verify `sim_breaker_state` drops to 0.
+
+<a id="stale-data"></a>
+### Stale Data (`#stale-data`)
+- **Alerts:** `SnapshotDataStale` (Severity: `warning`), `SimulatorStaleDataFlag` (Severity: `warning`)
+- **Condition:** `snapshot_age_seconds > 60` or `snapshot_stale == 1` for 15s.
+- **Cause:** Simulator returned `X-Simulator-Stale: true` header or stopped advancing simulation ticks, or worker ingestion stalled.
+- **Impact:** System status degrades to `DEGRADED`; confidence drops; operator recommendations are blocked from submission (AGENTS.md rule 6 & 10).
+- **Immediate action:**
+  1. Check data age: `curl http://localhost:8101/api/data-health`.
+  2. Inspect simulator tick status: `curl http://localhost:8000/v1/instance`.
+  3. Clear simulator faults: `curl -X POST http://localhost:8000/admin/faults/clear`.
+  4. If simulator was paused, resume or step: `curl -X POST http://localhost:8000/admin/run`.
+
+<a id="stockout-risk"></a>
+### Stockout Risk (`#stockout-risk`)
+- **Alert:** `CriticalStockoutRisk` (Severity: `critical`)
+- **Condition:** `min(hours_to_stockout) < 4` for 1m.
+- **Cause:** Projected demand exceeds remaining tank inventory plus in-transit fuel within 4 hours.
+- **Impact:** Immediate risk of unserved fuel demand and station outage.
+- **Immediate action:**
+  1. Review recommendations in web UI (`http://localhost:5173`) or `GET /api/recommendations`.
+  2. Review candidate allocations and verify depot source inventory cover (`/api/depots/risk`).
+  3. Enter `OPERATOR_TOKEN` and approve recommendation via `POST /api/recommendations/{id}/approve`.
+  4. Worker submits allocation to simulator; verify status transitions to `SUBMITTED` -> `IN_TRANSIT`.
+
+<a id="predictor-fallback"></a>
+### Predictor Fallback (`#predictor-fallback`)
+- **Alert:** `PredictorFallbackActive` (Severity: `warning`)
+- **Condition:** `sum(rate(policy_fallback_total[5m])) > 0` for 1m.
+- **Cause:** Worker failed to reach predictor service (`http://predictor:8103`) due to crash, timeout, or circuit breaker trip.
+- **Impact:** Worker uses pure heuristic profile fallback. Forecasts have capped confidence (0.4) and are flagged `needs_review=True`.
+- **Immediate action:**
+  1. Check predictor service: `docker compose ps predictor` and `curl http://localhost:8103/health`.
+  2. Review predictor logs: `docker compose logs --tail=50 predictor`.
+  3. If predictor was stopped or faulted via demo endpoint, restart or reset: `docker compose restart predictor`.
+
+<a id="calibration-drift"></a>
+### Calibration Drift (`#calibration-drift`)
+- **Alert:** `CalibrationDriftDetected` (Severity: `warning`)
+- **Condition:** `increase(forecast_drift_total[5m]) > 0` for 1m.
+- **Cause:** Rolling 24-hour demand ratio (actual / predicted) drifted outside tolerance envelope `[0.80, 1.25]`.
+- **Impact:** Forecasts consistently under-predicting or over-predicting demand, degrading allocation safety buffers.
+- **Immediate action:**
+  1. Check open drift incidents: `curl "http://localhost:8101/api/incidents?status=open"`.
+  2. Inspect regional demand: `curl http://localhost:8101/api/regional-demand`.
+  3. Verify whether an unannounced simulator demand spike event is active (`GET /v1/events`).
+
+---
+
 ## Recovery by symptom
 
 | Symptom | Check | Recovery |

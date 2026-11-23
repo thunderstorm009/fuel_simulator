@@ -1,0 +1,50 @@
+[
+  {
+    "service": "postgres",
+    "running_seconds": 0.38,
+    "healthy_seconds": 5.53,
+    "data_visible_seconds": 0.38
+  },
+  {
+    "service": "api",
+    "running_seconds": 0.7,
+    "healthy_seconds": 6.03,
+    "data_visible_seconds": 2.26
+  },
+  {
+    "service": "worker",
+    "running_seconds": 0.65,
+    "healthy_seconds": 5.94,
+    "data_visible_seconds": 1.85
+  },
+  {
+    "service": "predictor",
+    "running_seconds": 0.63,
+    "healthy_seconds": 5.95,
+    "data_visible_seconds": 1.54
+  },
+  {
+    "service": "frontend",
+    "running_seconds": 0.39,
+    "healthy_seconds": 5.39,
+    "data_visible_seconds": 0.39
+  },
+  {
+    "service": "prometheus",
+    "running_seconds": 0.39,
+    "healthy_seconds": 5.41,
+    "data_visible_seconds": 0.39
+  },
+  {
+    "service": "grafana",
+    "running_seconds": 0.4,
+    "healthy_seconds": 5.35,
+    "data_visible_seconds": 0.99
+  },
+  {
+    "service": "full_stack",
+    "running_seconds": 1.02,
+    "healthy_seconds": 6.87,
+    "data_visible_seconds": 3.06
+  }
+]

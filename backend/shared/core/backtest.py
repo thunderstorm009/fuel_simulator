@@ -36,15 +36,6 @@ class SeriesBacktest:
 
 
 @dataclass(frozen=True)
-class BacktestSummary:
-    model_version: str
-    policy_version: str
-    evaluated_at: str
-    series: list[SeriesBacktest]
-    aggregate: dict[str, HorizonMetrics]
-
-
-@dataclass(frozen=True)
 class CalibrationBucket:
     bucket_label: str
     min_prob: float
@@ -52,6 +43,148 @@ class CalibrationBucket:
     count: int
     predicted_avg: float
     observed_rate: float
+
+
+@dataclass(frozen=True)
+class BacktestSummary:
+    model_version: str
+    policy_version: str
+    evaluated_at: str
+    series: list[SeriesBacktest]
+    aggregate: dict[str, HorizonMetrics]
+    aggregate_inside_events: dict[str, HorizonMetrics] | None = None
+    aggregate_outside_events: dict[str, HorizonMetrics] | None = None
+    brier_score: float = 0.0
+    reliability_buckets: list[CalibrationBucket] | None = None
+
+
+def compute_brier_score(
+    predictions: Sequence[float],
+    actuals: Sequence[int | bool | float],
+) -> float:
+    """Compute Brier score (mean squared error of probabilistic forecasts)."""
+    if len(predictions) != len(actuals):
+        raise ValueError("predictions and actuals must have the same length")
+    if not predictions:
+        return 0.0
+
+    total_sq_err = sum((float(p) - (1.0 if a else 0.0)) ** 2 for p, a in zip(predictions, actuals))
+    return round(total_sq_err / len(predictions), 4)
+
+
+def evaluate_probability_reliability(
+    predictions_and_outcomes: Sequence[tuple[float, bool]],
+    num_buckets: int = 5,
+) -> list[CalibrationBucket]:
+    """Bucket predicted P(stockout 24h) and compare with realized outcomes."""
+    if num_buckets <= 0:
+        raise ValueError("num_buckets must be positive")
+
+    step = 1.0 / num_buckets
+    buckets_def = [
+        (f"{i * step:.1f} - {(i + 1) * step:.1f}", i * step, (i + 1) * step)
+        for i in range(num_buckets)
+    ]
+
+    results: list[CalibrationBucket] = []
+    for label, min_p, max_p in buckets_def:
+        items = [
+            (prob, outcome)
+            for prob, outcome in predictions_and_outcomes
+            if min_p <= prob < max_p or (max_p >= 1.0 and prob >= 1.0)
+        ]
+        count = len(items)
+        if count > 0:
+            pred_avg = sum(p for p, _ in items) / count
+            obs_rate = sum(1 for _, out in items if out) / count
+        else:
+            pred_avg = (min_p + max_p) / 2.0
+            obs_rate = 0.0
+
+        results.append(
+            CalibrationBucket(
+                bucket_label=label,
+                min_prob=round(min_p, 2),
+                max_prob=round(max_p, 2),
+                count=count,
+                predicted_avg=round(pred_avg, 3),
+                observed_rate=round(obs_rate, 3),
+            )
+        )
+    return results
+
+
+def measure_spike_convergence_ticks(
+    observations: Sequence[dict[str, Any]],
+    spike_tick: int,
+    spike_multiplier: float,
+    profile: str,
+    fuel: Any,
+    model_version: str = "1.2.0",
+    tick_minutes: int = 15,
+    tolerance: float = 0.05,
+) -> int:
+    """Measure ticks required for forecast to converge within tolerance after demand spike."""
+    fuel_str = getattr(fuel, "value", str(fuel))
+    obs_by_tick = {int(o["tick"]): o for o in observations}
+    max_tick = max(obs_by_tick.keys())
+
+    is_event_aware = model_version >= "1.2.0"
+
+    for t in range(spike_tick, max_tick + 1):
+        past_ticks = list(range(max(0, t - 12), t))
+        if not past_ticks:
+            continue
+        past_obs = [obs_by_tick[i] for i in past_ticks]
+        observed_past = [float(p["demand_liters"]) for p in past_obs]
+
+        if is_event_aware:
+            expected_past = [
+                expected_demand(
+                    profile,
+                    fuel_str,
+                    p["sim_time"],
+                    multiplier=float(p.get("multiplier", 1.0)),
+                    tick_minutes=tick_minutes,
+                )
+                for p in past_obs
+            ]
+            ratio = calibrate_ratio(observed_past, expected_past)
+            current_mult = float(obs_by_tick[t].get("multiplier", spike_multiplier))
+            predicted = expected_demand(
+                profile,
+                fuel_str,
+                obs_by_tick[t]["sim_time"],
+                multiplier=current_mult * ratio,
+                tick_minutes=tick_minutes,
+            )
+        else:
+            expected_past = [
+                expected_demand(
+                    profile,
+                    fuel_str,
+                    p["sim_time"],
+                    multiplier=1.0,
+                    tick_minutes=tick_minutes,
+                )
+                for p in past_obs
+            ]
+            ratio = calibrate_ratio(observed_past, expected_past)
+            predicted = expected_demand(
+                profile,
+                fuel_str,
+                obs_by_tick[t]["sim_time"],
+                multiplier=ratio,
+                tick_minutes=tick_minutes,
+            )
+
+        actual = float(obs_by_tick[t]["demand_liters"])
+        if actual > 0:
+            rel_err = abs(predicted - actual) / actual
+            if rel_err <= tolerance:
+                return t - spike_tick
+
+    return max_tick - spike_tick
 
 
 def run_backtest(
@@ -72,6 +205,8 @@ def run_backtest(
             "24h": 96,
         }
 
+    is_event_aware = model_version >= "1.2.0"
+
     # Group records by (station_id, fuel_type)
     series_map: dict[tuple[str, str], list[dict[str, Any]]] = {}
     for r in records:
@@ -86,24 +221,28 @@ def run_backtest(
             else:
                 sim_time = sim_time_val
             demand_liters = float(r["demand_liters"])
+            multiplier = float(r.get("multiplier", 1.0))
         else:
             station_id = r.station_id
             fuel_str = r.fuel_type.value
             tick = r.tick
             sim_time = r.sim_time
             demand_liters = r.demand_liters
+            multiplier = getattr(r, "multiplier", 1.0)
 
         series_map.setdefault((station_id, fuel_str), []).append(
             {
                 "tick": tick,
                 "sim_time": sim_time,
                 "demand_liters": demand_liters,
+                "multiplier": multiplier,
             }
         )
 
     series_results: list[SeriesBacktest] = []
-    # Collect all errors across horizons for global aggregate
     agg_errors: dict[str, list[tuple[float, float, bool]]] = {h: [] for h in horizons}
+    agg_errors_inside: dict[str, list[tuple[float, float, bool]]] = {h: [] for h in horizons}
+    agg_errors_outside: dict[str, list[tuple[float, float, bool]]] = {h: [] for h in horizons}
 
     for (station_id, fuel_str), obs_list in sorted(series_map.items()):
         obs_sorted = sorted(obs_list, key=lambda x: x["tick"])
@@ -117,37 +256,60 @@ def run_backtest(
             biases: list[float] = []
             covered_list: list[bool] = []
 
-            # Sliding window evaluation: evaluate at every step where we have at least 4 past ticks
-            # and enough future ticks to cover the horizon
             min_history = 4
             for i in range(min_history, len(obs_sorted) - h_ticks + 1):
                 past = obs_sorted[max(0, i - 12) : i]
                 future = obs_sorted[i : i + h_ticks]
 
                 observed_past = [p["demand_liters"] for p in past]
-                expected_past = [
-                    expected_demand(
-                        profile,
-                        fuel_str,
-                        p["sim_time"],
-                        multiplier=1.0,
-                        tick_minutes=tick_minutes,
-                    )
-                    for p in past
-                ]
+                if is_event_aware:
+                    expected_past = [
+                        expected_demand(
+                            profile,
+                            fuel_str,
+                            p["sim_time"],
+                            multiplier=p.get("multiplier", 1.0),
+                            tick_minutes=tick_minutes,
+                        )
+                        for p in past
+                    ]
+                else:
+                    expected_past = [
+                        expected_demand(
+                            profile,
+                            fuel_str,
+                            p["sim_time"],
+                            multiplier=1.0,
+                            tick_minutes=tick_minutes,
+                        )
+                        for p in past
+                    ]
+
                 ratio = calibrate_ratio(observed_past, expected_past)
 
-                # Future predictions
-                expected_future_sum = sum(
-                    expected_demand(
-                        profile,
-                        fuel_str,
-                        f["sim_time"],
-                        multiplier=ratio,
-                        tick_minutes=tick_minutes,
+                if is_event_aware:
+                    expected_future_sum = sum(
+                        expected_demand(
+                            profile,
+                            fuel_str,
+                            f["sim_time"],
+                            multiplier=f.get("multiplier", 1.0) * ratio,
+                            tick_minutes=tick_minutes,
+                        )
+                        for f in future
                     )
-                    for f in future
-                )
+                else:
+                    expected_future_sum = sum(
+                        expected_demand(
+                            profile,
+                            fuel_str,
+                            f["sim_time"],
+                            multiplier=ratio,
+                            tick_minutes=tick_minutes,
+                        )
+                        for f in future
+                    )
+
                 actual_future_sum = sum(f["demand_liters"] for f in future)
 
                 if actual_future_sum > 0:
@@ -157,7 +319,6 @@ def run_backtest(
                     ape = 0.0
                     bias = 0.0
 
-                # 80% confidence interval [P10, P90] using normal approximation with profile noise
                 sigma_future = expected_future_sum * (noise / math.sqrt(max(1, h_ticks)))
                 p10 = max(0.0, expected_future_sum - 1.282 * sigma_future)
                 p90 = expected_future_sum + 1.282 * sigma_future
@@ -167,6 +328,13 @@ def run_backtest(
                 biases.append(bias)
                 covered_list.append(is_covered)
                 agg_errors[h_name].append((ape, bias, is_covered))
+
+                # Segment into inside-event vs outside-event
+                is_inside_event = any(abs(f.get("multiplier", 1.0) - 1.0) > 1e-4 for f in future)
+                if is_inside_event:
+                    agg_errors_inside[h_name].append((ape, bias, is_covered))
+                else:
+                    agg_errors_outside[h_name].append((ape, bias, is_covered))
 
             if apes:
                 mean_mape = sum(apes) / len(apes)
@@ -198,22 +366,64 @@ def run_backtest(
 
     # Compute global aggregates
     aggregate_metrics: dict[str, HorizonMetrics] = {}
-    for h_name, h_ticks in horizons.items():
-        errs = agg_errors[h_name]
+    aggregate_inside: dict[str, HorizonMetrics] = {}
+    aggregate_outside: dict[str, HorizonMetrics] = {}
+
+    for h_name, errors in agg_errors.items():
+        h_ticks = horizons[h_name]
         h_hours = (h_ticks * tick_minutes) / 60.0
-        if errs:
-            mape = sum(e[0] for e in errs) / len(errs)
-            bias = sum(e[1] for e in errs) / len(errs)
-            cov = sum(1 for e in errs if e[2]) / len(errs)
+        if errors:
+            m_mape = sum(e[0] for e in errors) / len(errors)
+            m_bias = sum(e[1] for e in errors) / len(errors)
+            cov = sum(1 for e in errors if e[2]) / len(errors)
         else:
-            mape, bias, cov = 0.0, 0.0, 1.0
+            m_mape, m_bias, cov = 0.0, 0.0, 1.0
+
         aggregate_metrics[h_name] = HorizonMetrics(
             horizon_name=h_name,
             horizon_ticks=h_ticks,
             horizon_hours=h_hours,
-            sample_count=len(errs),
-            mape=round(mape, 4),
-            bias=round(bias, 4),
+            sample_count=len(errors),
+            mape=round(m_mape, 4),
+            bias=round(m_bias, 4),
+            interval_coverage=round(cov, 4),
+        )
+
+    for h_name, errors in agg_errors_inside.items():
+        h_ticks = horizons[h_name]
+        h_hours = (h_ticks * tick_minutes) / 60.0
+        if errors:
+            m_mape = sum(e[0] for e in errors) / len(errors)
+            m_bias = sum(e[1] for e in errors) / len(errors)
+            cov = sum(1 for e in errors if e[2]) / len(errors)
+        else:
+            m_mape, m_bias, cov = 0.0, 0.0, 1.0
+        aggregate_inside[h_name] = HorizonMetrics(
+            horizon_name=h_name,
+            horizon_ticks=h_ticks,
+            horizon_hours=h_hours,
+            sample_count=len(errors),
+            mape=round(m_mape, 4),
+            bias=round(m_bias, 4),
+            interval_coverage=round(cov, 4),
+        )
+
+    for h_name, errors in agg_errors_outside.items():
+        h_ticks = horizons[h_name]
+        h_hours = (h_ticks * tick_minutes) / 60.0
+        if errors:
+            m_mape = sum(e[0] for e in errors) / len(errors)
+            m_bias = sum(e[1] for e in errors) / len(errors)
+            cov = sum(1 for e in errors if e[2]) / len(errors)
+        else:
+            m_mape, m_bias, cov = 0.0, 0.0, 1.0
+        aggregate_outside[h_name] = HorizonMetrics(
+            horizon_name=h_name,
+            horizon_ticks=h_ticks,
+            horizon_hours=h_hours,
+            sample_count=len(errors),
+            mape=round(m_mape, 4),
+            bias=round(m_bias, 4),
             interval_coverage=round(cov, 4),
         )
 
@@ -223,6 +433,8 @@ def run_backtest(
         evaluated_at=evaluated_at or datetime.now(timezone.utc).isoformat(),
         series=series_results,
         aggregate=aggregate_metrics,
+        aggregate_inside_events=aggregate_inside,
+        aggregate_outside_events=aggregate_outside,
     )
 
 
@@ -230,40 +442,7 @@ def evaluate_stockout_calibration(
     predictions_and_outcomes: Sequence[tuple[float, bool]],
 ) -> list[CalibrationBucket]:
     """Bucket predicted P(stockout 24h) and compare with realized stockout frequency."""
-    buckets_def = [
-        ("0.0 - 0.2", 0.0, 0.2),
-        ("0.2 - 0.4", 0.2, 0.4),
-        ("0.4 - 0.6", 0.4, 0.6),
-        ("0.6 - 0.8", 0.6, 0.8),
-        ("0.8 - 1.0", 0.8, 1.0),
-    ]
-
-    results: list[CalibrationBucket] = []
-    for label, min_p, max_p in buckets_def:
-        items = [
-            (prob, outcome)
-            for prob, outcome in predictions_and_outcomes
-            if min_p <= prob < max_p or (max_p == 1.0 and prob == 1.0)
-        ]
-        count = len(items)
-        if count > 0:
-            pred_avg = sum(p for p, _ in items) / count
-            obs_rate = sum(1 for _, out in items if out) / count
-        else:
-            pred_avg = (min_p + max_p) / 2.0
-            obs_rate = 0.0
-
-        results.append(
-            CalibrationBucket(
-                bucket_label=label,
-                min_prob=min_p,
-                max_prob=max_p,
-                count=count,
-                predicted_avg=round(pred_avg, 3),
-                observed_rate=round(obs_rate, 3),
-            )
-        )
-    return results
+    return evaluate_probability_reliability(predictions_and_outcomes, num_buckets=5)
 
 
 def append_experiment_log(

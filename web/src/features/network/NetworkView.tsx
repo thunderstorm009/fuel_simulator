@@ -17,7 +17,7 @@ export default function NetworkView({ snapshot }: { snapshot: Snapshot }) {
           <p className="eyebrow">TOPOLOGY SCHEMATIC</p>
           <h2>Fuel Network Topology & Transport Corridors</h2>
           <p className="muted">
-            Live visualization of refinery supply depots, transport corridors, stations, and in-transit volume.
+            Live visualization of fuel supply depots, transport corridors, stations, and in-transit volume.
           </p>
         </div>
         <span className="status-pill status-simulated">SIMULATED</span>

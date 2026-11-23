@@ -1,0 +1,15 @@
+=== END-TO-END ALERT ROUTING EVIDENCE ===
+Timestamp: 2026-11-23T07:29:02.884939+00:00
+Fault injected: unavailable at 2026-11-23T07:28:18.625424+00:00
+FIRING alert received at: 2026-11-23T07:28:46.347703+00:00
+  - Alertname: SimulatorCircuitBreakerOpen
+  - Severity: critical
+  - Summary: Simulator circuit breaker is OPEN
+  - Description: Consecutive simulator failures exceeded threshold. Ingestion halted.
+  - Runbook URL: docs/runbook.md#circuit-breaker
+Fault cleared at: 2026-11-23T07:28:46.788358+00:00
+RESOLVED alert received at: 2026-11-23T07:29:01.351315+00:00
+  - Alertname: SimulatorCircuitBreakerOpen
+  - Ends At: 2026-11-23T07:28:59.249Z
+Resolution duration: 15.0s
+Status: PASS — End-to-end routing verified from Prometheus -> Alertmanager -> Webhook.

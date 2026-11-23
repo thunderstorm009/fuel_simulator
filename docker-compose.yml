@@ -37,12 +37,16 @@ services:
     build:
       context: .
       dockerfile: backend/api/Dockerfile
-    command: [uvicorn, api.main:app, --host, 0.0.0.0, --port, "8101"]
+    command: [uvicorn, api.main:app, --host, 0.0.0.0, --port, "8101", --workers, "${API_WORKERS:-4}"]
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://fuel:fuel-local@postgres:5432/fuel}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       OPERATOR_TOKEN: ${OPERATOR_TOKEN:-}
       PREDICTOR_URL: ${PREDICTOR_URL:-http://predictor:8103}
+      API_WORKERS: ${API_WORKERS:-4}
+      DB_POOL_MIN_SIZE: ${DB_POOL_MIN_SIZE:-2}
+      DB_POOL_MAX_SIZE: ${DB_POOL_MAX_SIZE:-20}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-60}
     ports:
       - "8101:8101"
     depends_on:
@@ -161,6 +165,34 @@ services:
       interval: 5s
       timeout: 3s
       retries: 15
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    profiles: ["alerts"]
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:9093/-/healthy]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  webhook-receiver:
+    build:
+      context: ./observability/webhook_receiver
+    profiles: ["alerts"]
+    ports:
+      - "5001:5001"
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   postgres_data:

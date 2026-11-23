@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS snapshots (
 );
 CREATE INDEX IF NOT EXISTS snapshots_fetched_at_idx ON snapshots (fetched_at DESC);
 CREATE INDEX IF NOT EXISTS snapshots_tick_fetched_idx ON snapshots (tick, fetched_at DESC);
+CREATE INDEX IF NOT EXISTS snapshots_fetched_id_idx ON snapshots (fetched_at DESC, id DESC);
 
 CREATE TABLE IF NOT EXISTS forecasts (
     id BIGSERIAL PRIMARY KEY,
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS forecasts (
     model_version TEXT NOT NULL DEFAULT '1.1.0'
 );
 CREATE INDEX IF NOT EXISTS forecasts_pair_tick_idx ON forecasts (station_id, fuel_type, tick DESC);
+CREATE INDEX IF NOT EXISTS forecasts_pair_snapshot_idx ON forecasts (station_id, fuel_type, snapshot_id DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS forecasts_snapshot_pair_idx
     ON forecasts (snapshot_id, station_id, fuel_type);
 
@@ -94,6 +96,7 @@ CREATE TABLE IF NOT EXISTS depot_risks (
     evidence JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 CREATE INDEX IF NOT EXISTS depot_risks_depot_tick_idx ON depot_risks (depot_id, fuel_type, tick DESC);
+CREATE INDEX IF NOT EXISTS depot_risks_depot_snapshot_idx ON depot_risks (depot_id, fuel_type, snapshot_id DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS depot_risks_snapshot_pair_idx
     ON depot_risks (snapshot_id, depot_id, fuel_type);
 
@@ -111,3 +114,13 @@ CREATE TABLE IF NOT EXISTS heartbeats (
     last_seen TIMESTAMPTZ NOT NULL,
     detail JSONB NOT NULL DEFAULT '{}'::jsonb
 );
+
+CREATE TABLE IF NOT EXISTS policy_changes (
+    id BIGSERIAL PRIMARY KEY,
+    policy TEXT NOT NULL,
+    previous_policy TEXT NOT NULL,
+    actor TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    changed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS policy_changes_changed_at_idx ON policy_changes (changed_at DESC);

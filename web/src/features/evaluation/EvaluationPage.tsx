@@ -25,7 +25,7 @@ export default function EvaluationPage() {
         </div>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <span className="status-pill status-simulated">SIMULATED</span>
-          <span className="status-pill status-healthy">MODEL v{data?.model_version || "1.1.0"}</span>
+          <span className="status-pill status-healthy">MODEL v{data?.model_version || "1.2.0"}</span>
           <span className="status-pill status-healthy">POLICY v{data?.policy_version || "2.0.0"}</span>
         </div>
       </section>

@@ -1,0 +1,68 @@
+{
+  "timestamp": "2026-11-23T07:29:02.884939+00:00",
+  "fault_injected": "unavailable",
+  "fault_injected_at": "2026-11-23T07:28:18.625424+00:00",
+  "fault_cleared_at": "2026-11-23T07:28:46.788358+00:00",
+  "firing_alert": {
+    "received_at": "2026-11-23T07:28:46.347703+00:00",
+    "status": "firing",
+    "alertname": "SimulatorCircuitBreakerOpen",
+    "severity": "critical",
+    "summary": "Simulator circuit breaker is OPEN",
+    "description": "Consecutive simulator failures exceeded threshold. Ingestion halted.",
+    "runbook_url": "docs/runbook.md#circuit-breaker",
+    "starts_at": "2026-11-23T07:27:19.249Z",
+    "ends_at": "0001-01-01T00:00:00Z",
+    "raw": {
+      "status": "firing",
+      "labels": {
+        "alertname": "SimulatorCircuitBreakerOpen",
+        "instance": "worker:8102",
+        "job": "worker",
+        "severity": "critical",
+        "state": "closed"
+      },
+      "annotations": {
+        "description": "Consecutive simulator failures exceeded threshold. Ingestion halted.",
+        "runbook_url": "docs/runbook.md#circuit-breaker",
+        "summary": "Simulator circuit breaker is OPEN"
+      },
+      "startsAt": "2026-11-23T07:27:19.249Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://9f60d361b71b:9090/graph?g0.expr=sim_breaker_state+%3D%3D+1&g0.tab=1",
+      "fingerprint": "39746a35a4de20d3"
+    }
+  },
+  "resolved_alert": {
+    "received_at": "2026-11-23T07:29:01.351315+00:00",
+    "status": "resolved",
+    "alertname": "SimulatorCircuitBreakerOpen",
+    "severity": "critical",
+    "summary": "Simulator circuit breaker is OPEN",
+    "description": "Consecutive simulator failures exceeded threshold. Ingestion halted.",
+    "runbook_url": "docs/runbook.md#circuit-breaker",
+    "starts_at": "2026-11-23T07:28:44.249Z",
+    "ends_at": "2026-11-23T07:28:59.249Z",
+    "raw": {
+      "status": "resolved",
+      "labels": {
+        "alertname": "SimulatorCircuitBreakerOpen",
+        "instance": "worker:8102",
+        "job": "worker",
+        "severity": "critical",
+        "state": "open"
+      },
+      "annotations": {
+        "description": "Consecutive simulator failures exceeded threshold. Ingestion halted.",
+        "runbook_url": "docs/runbook.md#circuit-breaker",
+        "summary": "Simulator circuit breaker is OPEN"
+      },
+      "startsAt": "2026-11-23T07:28:44.249Z",
+      "endsAt": "2026-11-23T07:28:59.249Z",
+      "generatorURL": "http://9f60d361b71b:9090/graph?g0.expr=sim_breaker_state+%3D%3D+1&g0.tab=1",
+      "fingerprint": "5c7e005abebd71ff"
+    }
+  },
+  "round_trip_seconds": 15.003612,
+  "verified": true
+}

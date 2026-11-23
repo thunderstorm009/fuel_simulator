@@ -34,6 +34,9 @@ python3 scripts/check_compose_env.py --env-file .env.example 2>&1 | tee -a "$OUT
 echo "=== 4. Installing frontend dependencies in clean clone ===" | tee -a "$OUTPUT_FILE"
 npm --prefix web ci 2>&1 | tee -a "$OUTPUT_FILE"
 
+echo "=== 4b. Verifying Playwright test discovery in clean clone ===" | tee -a "$OUTPUT_FILE"
+npm --prefix web run test:e2e -- --list 2>&1 | tee -a "$OUTPUT_FILE"
+
 echo "=== 5. Running public mechanical gate ===" | tee -a "$OUTPUT_FILE"
 VENV_BIN="${VIRTUAL_ENV:-$ROOT_DIR/.venv}/bin"
 PATH="$VENV_BIN:/tmp/fuel-sprint1-venv/bin:$PATH" bash scripts/sprint_gate_public.sh 6 2>&1 | tee -a "$OUTPUT_FILE"

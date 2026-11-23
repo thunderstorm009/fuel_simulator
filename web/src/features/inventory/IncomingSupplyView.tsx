@@ -19,7 +19,7 @@ export default function IncomingSupplyView({ snapshot }: { snapshot: Snapshot })
           <p className="eyebrow">SUPPLY CHAIN PIPELINE</p>
           <h2>Incoming Supply & In-Transit Shipments</h2>
           <p className="muted">
-            Authoritative timeline of refinery-to-depot supply arrivals and depot-to-station allocations.
+            Authoritative timeline of scheduled depot supply arrivals and depot-to-station allocations.
           </p>
         </div>
         <span className="status-pill status-simulated">SIMULATED</span>
@@ -30,7 +30,7 @@ export default function IncomingSupplyView({ snapshot }: { snapshot: Snapshot })
         <section className="panel section-panel">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">REFINERY TO DEPOT</p>
+              <p className="eyebrow">DEPOT RESUPPLY</p>
               <h3>Scheduled Depot Supply Arrivals</h3>
             </div>
             <span className="count-badge">{arrivals.length}</span>

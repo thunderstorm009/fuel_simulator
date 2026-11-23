@@ -1,0 +1,23 @@
+global:
+  resolve_timeout: 1m
+
+route:
+  group_by: ['alertname', 'severity']
+  group_wait: 2s
+  group_interval: 5s
+  repeat_interval: 1h
+  receiver: 'webhook-notifications'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'webhook-notifications'
+      continue: true
+    - match:
+        severity: warning
+      receiver: 'webhook-notifications'
+
+receivers:
+  - name: 'webhook-notifications'
+    webhook_configs:
+      - url: 'http://webhook-receiver:5001/webhook'
+        send_resolved: true
