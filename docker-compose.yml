@@ -166,6 +166,34 @@ services:
       timeout: 3s
       retries: 15
 
+  alertmanager:
+    image: prom/alertmanager:v0.28.0
+    profiles: ["alerts"]
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    volumes:
+      - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:9093/-/healthy]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  webhook-receiver:
+    build:
+      context: ./observability/webhook_receiver
+    profiles: ["alerts"]
+    ports:
+      - "5001:5001"
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5001/health', timeout=2)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
 volumes:
   postgres_data:
   grafana_data:

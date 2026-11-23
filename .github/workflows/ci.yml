@@ -44,6 +44,8 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - name: Validate Compose model
         run: docker compose config -q
+      - name: Validate Prometheus Alert Rules
+        run: docker run --rm --entrypoint promtool -v ${{ github.workspace }}/observability/prometheus:/etc/prometheus prom/prometheus:v3.3.0 check rules /etc/prometheus/alert_rules.yml
       - name: Build and start stack
         run: |
           docker compose up --build -d

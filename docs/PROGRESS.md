@@ -6,10 +6,22 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`.
 - Sprints 1–11: All gates passed and tagged.
-- Sprint 12: In progress. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), WP12.3 (Soak test), and WP12.2 (Push updates over SSE) COMPLETE.
-- Next: WP12.4 Alert routing end to end (P1).
+- Sprint 12: In progress. WP12.1 (API Performance), WP12.5 (Backup, Restore & Measured Recovery), WP12.3 (Soak test), WP12.2 (Push updates over SSE), and WP12.4 (Alert routing end to end) COMPLETE.
+- Next: WP12.6 Runtime policy switch with automatic rollback (P2).
 
 ## Verification in this work package
+
+- WP12.4 Alert routing end to end complete:
+  - Added `alertmanager` (`prom/alertmanager:v0.28.0`) and `webhook-receiver` (`observability/webhook_receiver/receiver.py`) under Docker Compose profile `alerts`. Default `docker compose up` starts only the standard 8 services.
+  - Added unit test `tests/integration/test_compose_config.py` confirming profile isolation.
+  - Added `promtool check rules` step to CI (`.github/workflows/ci.yml`), passing rule validation with 6 rules.
+  - Created automated drill `scripts/demonstrate_alert_routing.py`:
+    - Injected simulator fault `unavailable` at `2026-11-23T07:28:18.625Z`.
+    - Firing alert `SimulatorCircuitBreakerOpen` (severity: `critical`, runbook: `docs/runbook.md#circuit-breaker`) received by webhook at `2026-11-23T07:28:46.347Z`.
+    - Cleared fault at `2026-11-23T07:28:46.788Z`.
+    - Resolved alert `SimulatorCircuitBreakerOpen` received by webhook at `2026-11-23T07:29:01.351Z` (resolution duration: 15.0s).
+    - Saved structured evidence in `docs/evidence/day-4/alert-routing-evidence.json` and `.txt`.
+  - Updated `docs/runbook.md` with silencing instructions (`amtool` and UI) and anchor tags (`#circuit-breaker`, `#stale-data`, `#stockout-risk`, `#predictor-fallback`, `#calibration-drift`), and `docs/operations.md` and `docs/decisions.md` (ADR-046).
 
 - WP12.2 Push updates over SSE complete:
   - Implemented `EventBroadcaster` with PostgreSQL `LISTEN/NOTIFY` on `platform_events`, bounded queue (maxsize=100, drops oldest on overflow), connection limit per process (`SSE_MAX_CLIENTS=50`), and automated exponential backoff reconnection.

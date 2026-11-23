@@ -372,3 +372,15 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   6. Frontend resilience: `useEventStream` hook manages `EventSource`. When connected (`live`), polling intervals are disabled. On disconnection (`fallback`), queries fall back to 10-second polling. The header displays `● LIVE PUSH` or `○ POLLING FALLBACK`.
   7. Metrics: Prometheus gauge `sse_clients_connected` and counter `sse_events_sent_total{event_type}` track stream health.
 - **Consequences:** Eliminates 95% of API read traffic during standard operation (drops from 2.0 req/s to 0.10 req/s per client tab), avoids database connection pool consumption for idle polling, and ensures immediate UI updates within milliseconds of worker persistence.
+
+### ADR-046: Alertmanager Routing and Local Webhook Receiver under Compose Profile 'alerts' (Sprint 12)
+- **Status:** ACCEPTED
+- **Context:** Prometheus alert rules existed in `observability/prometheus/alert_rules.yml`, but had no downstream dispatch mechanism or end-to-end receipt verification. Running Alertmanager and notification dispatchers continuously in default development stacks adds unnecessary memory and port allocations when external webhooks are not configured.
+- **Decision:**
+  1. Add `alertmanager` (`prom/alertmanager:v0.28.0`) and a dedicated lightweight `webhook-receiver` container under the Docker Compose profile `alerts`. Default `docker compose up` continues starting only the standard 8 services.
+  2. Implement `observability/webhook_receiver/receiver.py` using standard library `HTTPServer` (zero third-party dependencies, listening on port 5001). It logs firing and resolved alerts to stdout, appends JSONL records to `/logs/alerts.jsonl`, and provides queryable `/alerts` and `/health` endpoints.
+  3. Wire Alertmanager in `observability/prometheus/prometheus.yml` to target `alertmanager:9093`. Configure Alertmanager routes with `group_wait: 2s, group_interval: 5s` and `send_resolved: true`.
+  4. Add `promtool check rules` step to CI workflow (`.github/workflows/ci.yml`) ensuring syntax and query validity of all Prometheus rules.
+  5. Implement `scripts/demonstrate_alert_routing.py` as an automated verifiable drill: starts `alerts` profile, restarts Prometheus to discover Alertmanager, injects `unavailable` fault, observes webhook receipt of firing `SimulatorCircuitBreakerOpen` alert with severity `critical` and runbook link `docs/runbook.md#circuit-breaker`, clears fault, and observes receipt of resolved notification (measured resolution duration: 15.0s).
+  6. Document silencing (`amtool` CLI and web UI at port 9093) and runbook procedures in `docs/runbook.md`.
+- **Consequences:** Complete alert delivery pipeline is proven end-to-end with real timestamped evidence (`docs/evidence/day-4/alert-routing-evidence.json` and `.txt`) while preserving zero-overhead default developer environments.

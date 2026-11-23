@@ -103,6 +103,17 @@ python3 scripts/measure_recovery_times.py
 2. **Forecasts & Depot Risks:** Linked via foreign key cascade (`ON DELETE CASCADE`) to snapshots. Pruning older snapshot IDs automatically reclaims forecast and risk storage.
 3. **Decisions & Audit Trail:** Recommendations, human operator approval/rejection decisions, and incident logs are **permanent** and never pruned to preserve full audit traceability.
 
+## Alertmanager and alert routing (Compose profile `alerts`)
+
+Alert routing is isolated under the optional Compose profile `alerts` to keep the standard stack minimal and fast:
+- **Alertmanager (`prom/alertmanager:v0.28.0`):** Listens on port 9093. Routes alerts to receivers based on severity (`critical` and `warning`) and debounces with `group_wait: 2s, group_interval: 5s`.
+- **Webhook Receiver (`webhook-receiver`):** Lightweight Python HTTP receiver on port 5001. Logs firing and resolved alerts to stdout and records structured JSONL in `/logs/alerts.jsonl`.
+- **Rule Validation:** Alert rules in `observability/prometheus/alert_rules.yml` are validated via `promtool` in CI and can be verified locally:
+  ```sh
+  docker run --rm --entrypoint promtool -v "$(pwd)/observability/prometheus":/etc/prometheus prom/prometheus:v3.3.0 check rules /etc/prometheus/alert_rules.yml
+  ```
+- **Automated Routing Demonstration:** `python3 scripts/demonstrate_alert_routing.py` starts the `alerts` profile, restarts Prometheus to discover Alertmanager, injects simulator `unavailable` fault, verifies webhook receipt of firing alert with severity and runbook link, clears the fault, verifies webhook receipt of resolution notification (15.0s resolution duration), and stops the `alerts` profile containers. Evidence recorded in `docs/evidence/day-4/alert-routing-evidence.json` and `.txt`.
+
 ## Recovery notes
 
 - **Simulator unavailable:** inspect worker logs, simulator health, and `/api/data-health`; worker keeps the last accepted snapshot and marks it degraded.
