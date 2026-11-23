@@ -52,6 +52,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-046 | Alertmanager routing and local webhook receiver under compose profile 'alerts' | ACCEPTED | 12 |
 | ADR-047 | Runtime policy switch with automatic rollback and constraint validation | ACCEPTED | 12 |
 | ADR-048 | Browser end-to-end and accessibility testing via Playwright and axe-core | ACCEPTED | 13 |
+| ADR-049 | Cross-directory Playwright module resolution and fail-fast discovery guard | ACCEPTED | Day 4/5 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -432,3 +433,13 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   5. Add `Run Playwright E2E and Accessibility Suite` step to CI (`.github/workflows/ci.yml`) under the `compose` job, reusing the already built and healthy stack with full artifact uploads (`playwright-results.json`, traces, logs) on failure.
   6. Add automated axe-core accessibility auditing script (`scripts/audit_accessibility.js`), saving structured results to `docs/evidence/day-4/accessibility-audit.json` and `.md`.
 - **Consequences:** Provides automated, verifiable regression protection across all interactive browser workflows and confirms zero critical accessibility violations across all 8 operational views.
+
+### ADR-049: Cross-Directory Playwright Module Resolution and Fail-Fast Discovery Guard (Day 4/5)
+- **Status:** ACCEPTED
+- **Context:** In GitHub Actions CI (run 45139851657), the `compose` job failed with `Error: No tests found` when running `npm --prefix web run test:e2e`. The e2e test specifications reside in `<repo_root>/tests/e2e/`, while npm packages (`@playwright/test`, `@axe-core/playwright`) are installed in `<repo_root>/web/node_modules/`. In local development environments, an untracked root symlink `node_modules -> web/node_modules` masked the issue. In a clean checkout without the root symlink, Node's default module resolution traversing upward from `<repo_root>/tests/e2e/` failed to find `@playwright/test`, throwing an unhandled exception before test registration that Playwright swallowed into "No tests found".
+- **Decision:**
+  1. Explicitly export `NODE_PATH=node_modules` in `web/package.json`'s `test:e2e` script and pass `NODE_PATH: web/node_modules` in CI.
+  2. Implement an in-process fallback in `web/playwright.config.ts` using `moduleAlias._initPaths()` to ensure Node resolves modules from `web/node_modules` regardless of invocation directory.
+  3. Introduce a fail-fast test discovery guard (`npm --prefix web run test:e2e -- --list`) in CI prior to running the test suite, immediately surfacing module resolution or test discovery regressions in <2 seconds.
+  4. Integrate clean-clone Playwright discovery verification into `scripts/verify_clean_clone.sh` and add automated configuration regression tests in `tests/unit/test_playwright_discovery.py`.
+- **Consequences:** Eliminates dependency on local root symlinks, guarantees deterministic module resolution across sibling directories in fresh clones and CI, and provides instant diagnosis if test discovery fails.

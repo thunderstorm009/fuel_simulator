@@ -7,7 +7,7 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "NODE_PATH=node_modules playwright test"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.5",

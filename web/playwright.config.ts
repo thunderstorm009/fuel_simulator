@@ -2,8 +2,23 @@ import { defineConfig, devices } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import moduleAlias from "module";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Ensure node_modules inside web/ can be resolved by tests located in ../tests/e2e
+const webNodeModules = path.resolve(__dirname, "node_modules");
+if (process.env.NODE_PATH) {
+  process.env.NODE_PATH = `${webNodeModules}:${process.env.NODE_PATH}`;
+} else {
+  process.env.NODE_PATH = webNodeModules;
+}
+// @ts-expect-error Node internal method to re-initialize module search paths
+if (typeof moduleAlias._initPaths === "function") {
+  // @ts-expect-error Node internal method to re-initialize module search paths
+  moduleAlias._initPaths();
+}
+
 const envPath = path.resolve(__dirname, "../.env");
 if (fs.existsSync(envPath)) {
   const content = fs.readFileSync(envPath, "utf-8");

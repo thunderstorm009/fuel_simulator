@@ -62,12 +62,20 @@ jobs:
         run: |
           pip install -r requirements-dev.txt pyyaml
           python3 scripts/scenario_runner.py --scenario baseline --policy heuristic --ticks 5
-      - name: Run Playwright E2E and Accessibility Suite
+      - name: Install Frontend and Playwright Dependencies
         run: |
           npm ci --prefix web
           npx --prefix web playwright install --with-deps chromium
+      - name: Verify Playwright Test Discovery
+        run: |
+          npm --prefix web run test:e2e -- --list
+        env:
+          NODE_PATH: web/node_modules
+      - name: Run Playwright E2E and Accessibility Suite
+        run: |
           npm --prefix web run test:e2e
         env:
+          NODE_PATH: web/node_modules
           OPERATOR_TOKEN: change-me
           PLAYWRIGHT_BASE_URL: http://localhost:5173
           PLAYWRIGHT_API_URL: http://localhost:8101
