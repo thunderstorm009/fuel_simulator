@@ -1,5 +1,5 @@
 === 1. Cloning repository into temporary folder ===
-Cloning into '/tmp/fuel_sim_clean_verify_1795250024'...
+Cloning into '/tmp/fuel_sim_clean_verify_1795422672'...
 done.
 === 2. Verifying ignored development files are absent ===
 CONFIRMED ABSENT: .env
@@ -14,7 +14,7 @@ CONFIRMED ABSENT: prompts
 PASS: database credentials and predictor URL match Compose services
 === 4. Installing frontend dependencies in clean clone ===
 
-added 186 packages, and audited 193 packages in 3s
+added 191 packages, and audited 198 packages in 2s
 
 29 packages are looking for funding
   run `npm fund` for details
@@ -27,7 +27,7 @@ SKIP: local-only file absent (.agents/skills)
 ruff check .
 All checks passed!
 ruff format --check .
-88 files already formatted
+110 files already formatted
 npm --prefix web run typecheck
 
 > fuel-supply-platform-frontend@0.1.0 typecheck
@@ -40,87 +40,105 @@ npm --prefix web run build
 
 vite v6.4.6 building for production...
 transforming...
-✓ 508 modules transformed.
+✓ 510 modules transformed.
 rendering chunks...
 computing gzip size...
-dist/index.html                             0.46 kB │ gzip:   0.30 kB
-dist/assets/index-DjcqX4BQ.css             19.18 kB │ gzip:   5.17 kB
-dist/assets/index-MPoTGyQm.js             285.66 kB │ gzip:  85.18 kB
-dist/assets/TrajectoryDrawer-ZAffjsHu.js  426.04 kB │ gzip: 122.33 kB
-✓ built in 2.21s
+dist/index.html                               0.46 kB │ gzip:   0.30 kB
+dist/assets/index-IEIy8H1R.css               19.60 kB │ gzip:   5.25 kB
+dist/assets/IncomingSupplyView-BqX7Rek9.js    3.84 kB │ gzip:   1.20 kB
+dist/assets/EvaluationPage-BM8bc1IP.js        4.93 kB │ gzip:   1.66 kB
+dist/assets/NetworkView-sZAulc1j.js           5.36 kB │ gzip:   1.71 kB
+dist/assets/AlertCenterPage-DFFO79Kl.js       6.64 kB │ gzip:   2.42 kB
+dist/assets/index-DOoTOArn.js               278.23 kB │ gzip:  84.73 kB
+dist/assets/TrajectoryDrawer-CinM8TjD.js    426.04 kB │ gzip: 122.33 kB
+✓ built in 1.66s
 pytest
 ============================= test session starts ==============================
-platform darwin -- Python 3.12.16, pytest-8.3.5, pluggy-1.7.0
-rootdir: /private/tmp/fuel_sim_clean_verify_1795250024
+platform darwin -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0
+rootdir: /private/tmp/fuel_sim_clean_verify_1795422672
 configfile: pyproject.toml
 testpaths: tests
-plugins: respx-0.22.0, asyncio-0.26.0, anyio-4.16.0
-asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
-collected 182 items
+plugins: respx-0.22.0, platformdirs-4.14.8, anyio-4.16.0, asyncio-1.5.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collected 234 items
 
 tests/integration/test_chaos_api.py .                                    [  0%]
-tests/integration/test_compose_config.py .                               [  1%]
+tests/integration/test_compose_config.py ..                              [  1%]
 tests/integration/test_depots_risk_api.py .                              [  1%]
-tests/integration/test_health_api.py .....                               [  4%]
+tests/integration/test_health_api.py .....                               [  3%]
 tests/integration/test_incidents_api.py .                                [  4%]
-tests/integration/test_ingest.py ........                                [  9%]
-tests/integration/test_predictor.py ...                                  [ 10%]
-tests/integration/test_read_api.py ........                              [ 15%]
-tests/integration/test_recommendation_api.py ...                         [ 17%]
-tests/integration/test_resilience.py .....                               [ 19%]
-tests/integration/test_risk_api.py ...                                   [ 21%]
-tests/integration/test_services.py .                                     [ 21%]
-tests/integration/test_sim_client.py ............                        [ 28%]
-tests/integration/test_sse.py ...                                        [ 30%]
-tests/integration/test_whatif_api.py ...                                 [ 31%]
-tests/scenarios/test_explorer.py .                                       [ 32%]
-tests/scenarios/test_sample_contract.py .............                    [ 39%]
-tests/unit/test_api_recommendation_mapping.py ...                        [ 41%]
-tests/unit/test_backtest.py ...                                          [ 42%]
-tests/unit/test_compose_env_check.py ...                                 [ 44%]
-tests/unit/test_depot_risk.py ....                                       [ 46%]
-tests/unit/test_detect.py .......                                        [ 50%]
-tests/unit/test_drift_detector.py ....                                   [ 52%]
-tests/unit/test_executor.py .....                                        [ 55%]
-tests/unit/test_explain.py .                                             [ 56%]
-tests/unit/test_forecast.py ...........                                  [ 62%]
-tests/unit/test_forecast_job.py ...                                      [ 63%]
-tests/unit/test_loadtest_report.py .                                     [ 64%]
-tests/unit/test_models.py ..........                                     [ 69%]
-tests/unit/test_optimizer_and_buffer.py ..                               [ 70%]
-tests/unit/test_policy.py ........                                       [ 75%]
-tests/unit/test_recommend_job.py ......                                  [ 78%]
-tests/unit/test_risk.py .....                                            [ 81%]
-tests/unit/test_scenario_runner.py .....                                 [ 84%]
-tests/unit/test_store_snapshot.py ..                                     [ 85%]
-tests/unit/test_summarizer.py ...                                        [ 86%]
-tests/unit/test_token_and_rate_limit.py ....                             [ 89%]
-tests/unit/test_triage_policy.py ....                                    [ 91%]
-tests/unit/test_validator.py ..............                              [ 98%]
+tests/integration/test_ingest.py ........                                [  7%]
+tests/integration/test_predictor.py ...                                  [  8%]
+tests/integration/test_read_api.py ........                              [ 12%]
+tests/integration/test_recommendation_api.py ...                         [ 13%]
+tests/integration/test_resilience.py .....                               [ 15%]
+tests/integration/test_risk_api.py ...                                   [ 17%]
+tests/integration/test_services.py .                                     [ 17%]
+tests/integration/test_sim_client.py ............                        [ 22%]
+tests/integration/test_sse.py ...                                        [ 23%]
+tests/integration/test_whatif_api.py ...                                 [ 25%]
+tests/scenarios/test_explorer.py .                                       [ 25%]
+tests/scenarios/test_sample_contract.py .............                    [ 31%]
+tests/unit/test_api_caching_and_rate_limit.py ...                        [ 32%]
+tests/unit/test_api_recommendation_mapping.py ...                        [ 33%]
+tests/unit/test_backtest.py ...                                          [ 35%]
+tests/unit/test_backup_restore_idempotency.py ..                         [ 35%]
+tests/unit/test_compose_env_check.py ...                                 [ 37%]
+tests/unit/test_depot_risk.py ....                                       [ 38%]
+tests/unit/test_detect.py .......                                        [ 41%]
+tests/unit/test_drift_detector.py ....                                   [ 43%]
+tests/unit/test_executor.py .....                                        [ 45%]
+tests/unit/test_explain.py .                                             [ 46%]
+tests/unit/test_failure_boundary.py ...........                          [ 50%]
+tests/unit/test_forecast.py ...........                                  [ 55%]
+tests/unit/test_forecast_event_aware.py ....                             [ 57%]
+tests/unit/test_forecast_job.py ...                                      [ 58%]
+tests/unit/test_loadtest_report.py .                                     [ 58%]
+tests/unit/test_models.py ..........                                     [ 63%]
+tests/unit/test_optimizer_and_buffer.py ..                               [ 64%]
+tests/unit/test_policy.py ........                                       [ 67%]
+tests/unit/test_policy_switch_and_rollback.py ......                     [ 70%]
+tests/unit/test_recommend_job.py ......                                  [ 72%]
+tests/unit/test_risk.py .....                                            [ 74%]
+tests/unit/test_scenario_runner.py .....                                 [ 76%]
+tests/unit/test_scenario_sweep.py ......                                 [ 79%]
+tests/unit/test_sse_stream.py .......                                    [ 82%]
+tests/unit/test_store_snapshot.py ..                                     [ 83%]
+tests/unit/test_summarizer.py ...                                        [ 84%]
+tests/unit/test_tick_compatibility.py ............                       [ 89%]
+tests/unit/test_token_and_rate_limit.py ....                             [ 91%]
+tests/unit/test_triage_policy.py ....                                    [ 93%]
+tests/unit/test_validator.py ..............                              [ 99%]
 tests/unit/test_what_if.py ..                                            [100%]
 
 =============================== warnings summary ===============================
-../../../Users/abrar/project/fuel_simulator/.venv/lib/python3.12/site-packages/starlette/testclient.py:37
-  /Users/abrar/project/fuel_simulator/.venv/lib/python3.12/site-packages/starlette/testclient.py:37: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
-    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+../../../Users/abrar/project/fuel_simulator/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/abrar/project/fuel_simulator/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+tests/unit/test_sse_stream.py::test_broadcaster_survives_transient_db_disconnection
+  /opt/homebrew/Cellar/python@3.12/3.12.16/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine 'Queue.get' was never awaited
+    def __init__(self, name, parent):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================== 182 passed, 1 warning in 1.83s ========================
+======================= 234 passed, 2 warnings in 3.41s ========================
 npm --prefix web run test
 
 > fuel-supply-platform-frontend@0.1.0 test
 > vitest run
 
 
- RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795250024/web
+ RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795422672/web
 
- ✓ tests/NewViews.test.tsx (5 tests) 148ms
- ✓ tests/App.test.tsx (6 tests) 332ms
+ ✓ tests/NewViews.test.tsx (5 tests) 101ms
+ ✓ tests/App.test.tsx (6 tests) 273ms
 
  Test Files  2 passed (2)
       Tests  11 passed (11)
-   Start at  14:33:59
-   Duration  1.46s (environment 43%, transform 21%, tests 21%, import 9%, setup 7%)
+   Start at  14:31:26
+   Duration  1.01s (environment 41%, tests 24%, transform 20%, import 8%, setup 7%)
 
 MECHANICAL GATE: PASS (Sprint 6)
 === Clean clone verification PASSED ===
