@@ -1,0 +1,241 @@
+scenario_id,scenario_name,is_holdout,policy,service_level,unmet_demand_liters,served_demand_liters,allocation_liters,allocation_failures,stockouts,elapsed_seconds
+scenario_01,Tuning scenario_01: demand_spike,False,none,0.337028,168975.236,85900.0,0.0,0,1406,6.9
+scenario_01,Tuning scenario_01: demand_spike,False,naive,1.0,0.0,254875.236,228437.193,0,0,11.7
+scenario_01,Tuning scenario_01: demand_spike,False,heuristic,1.0,0.0,254875.236,252895.864,0,0,24.64
+scenario_01,Tuning scenario_01: demand_spike,False,heuristic_buffer,1.0,0.0,254875.236,252885.353,0,0,24.63
+scenario_02,Tuning scenario_02: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.78
+scenario_02,Tuning scenario_02: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.28
+scenario_02,Tuning scenario_02: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.81
+scenario_02,Tuning scenario_02: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.7
+scenario_03,Tuning scenario_03: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.86
+scenario_03,Tuning scenario_03: route_disruption,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.52
+scenario_03,Tuning scenario_03: route_disruption,False,heuristic,1.0,0.0,186352.115,185744.512,0,0,24.48
+scenario_03,Tuning scenario_03: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,185734.001,0,0,24.4
+scenario_04,Tuning scenario_04: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,1005,6.94
+scenario_04,Tuning scenario_04: station_outage,False,naive,0.940528,11082.679,175269.436,158204.513,0,0,11.34
+scenario_04,Tuning scenario_04: station_outage,False,heuristic,0.940528,11082.679,175269.436,175061.175,0,0,23.81
+scenario_04,Tuning scenario_04: station_outage,False,heuristic_buffer,0.940528,11082.679,175269.436,175050.664,0,0,23.88
+scenario_05,Tuning scenario_05: compound,False,none,0.394351,131925.979,85900.0,0.0,0,1386,6.86
+scenario_05,Tuning scenario_05: compound,False,naive,0.993638,1385.868,216440.111,193152.495,0,6,11.48
+scenario_05,Tuning scenario_05: compound,False,heuristic,1.0,0.0,217825.979,217351.458,0,0,24.66
+scenario_05,Tuning scenario_05: compound,False,heuristic_buffer,1.0,0.0,217825.979,217351.458,0,0,24.64
+scenario_06,Tuning scenario_06: demand_spike,False,none,0.375534,142840.86,85900.0,0.0,0,1447,6.9
+scenario_06,Tuning scenario_06: demand_spike,False,naive,1.0,0.0,228740.86,214091.63,0,0,11.55
+scenario_06,Tuning scenario_06: demand_spike,False,heuristic,1.0,0.0,228740.86,228283.089,0,0,24.13
+scenario_06,Tuning scenario_06: demand_spike,False,heuristic_buffer,1.0,0.0,228740.86,228244.93,0,0,24.15
+scenario_07,Tuning scenario_07: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.86
+scenario_07,Tuning scenario_07: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.34
+scenario_07,Tuning scenario_07: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.72
+scenario_07,Tuning scenario_07: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.91
+scenario_08,Tuning scenario_08: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.86
+scenario_08,Tuning scenario_08: route_disruption,False,naive,0.960561,7349.539,179002.576,161040.13,0,67,11.32
+scenario_08,Tuning scenario_08: route_disruption,False,heuristic,0.984799,2832.665,183519.45,183236.434,0,13,22.65
+scenario_08,Tuning scenario_08: route_disruption,False,heuristic_buffer,0.984799,2832.665,183519.45,183236.434,0,13,22.56
+scenario_09,Tuning scenario_09: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,906,6.85
+scenario_09,Tuning scenario_09: station_outage,False,naive,0.871333,23977.39,162374.725,146369.342,0,0,11.3
+scenario_09,Tuning scenario_09: station_outage,False,heuristic,0.871333,23977.39,162374.725,162327.729,0,0,23.37
+scenario_09,Tuning scenario_09: station_outage,False,heuristic_buffer,0.871333,23977.39,162374.725,162317.218,0,0,23.3
+scenario_10,Tuning scenario_10: compound,False,none,0.418962,119130.7,85900.0,0.0,0,1321,6.87
+scenario_10,Tuning scenario_10: compound,False,naive,1.0,0.0,205030.7,185422.479,0,0,11.55
+scenario_10,Tuning scenario_10: compound,False,heuristic,1.0,0.0,205030.7,205019.395,0,0,24.48
+scenario_10,Tuning scenario_10: compound,False,heuristic_buffer,1.0,0.0,205030.7,205008.884,0,0,24.38
+scenario_11,Tuning scenario_11: demand_spike,False,none,0.287348,213041.043,85900.0,0.0,0,1503,6.82
+scenario_11,Tuning scenario_11: demand_spike,False,naive,1.0,0.0,298941.043,281811.303,0,0,11.66
+scenario_11,Tuning scenario_11: demand_spike,False,heuristic,1.0,0.0,298941.043,299307.101,0,0,24.78
+scenario_11,Tuning scenario_11: demand_spike,False,heuristic_buffer,1.0,0.0,298941.043,299307.101,0,0,24.61
+scenario_12,Tuning scenario_12: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.85
+scenario_12,Tuning scenario_12: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.48
+scenario_12,Tuning scenario_12: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.74
+scenario_12,Tuning scenario_12: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.76
+scenario_13,Tuning scenario_13: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.97
+scenario_13,Tuning scenario_13: route_disruption,False,naive,1.0,0.0,186352.115,171722.773,0,0,11.42
+scenario_13,Tuning scenario_13: route_disruption,False,heuristic,1.0,0.0,186352.115,186305.119,0,0,24.39
+scenario_13,Tuning scenario_13: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,186294.608,0,0,24.44
+scenario_14,Tuning scenario_14: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,1025,6.82
+scenario_14,Tuning scenario_14: station_outage,False,naive,0.938167,11522.649,174829.466,161915.287,0,0,11.35
+scenario_14,Tuning scenario_14: station_outage,False,heuristic,0.938167,11522.649,174829.466,174324.365,0,0,23.92
+scenario_14,Tuning scenario_14: station_outage,False,heuristic_buffer,0.938167,11522.649,174829.466,174313.854,0,0,24.07
+scenario_15,Tuning scenario_15: compound,False,none,0.412498,122343.544,85900.0,0.0,0,1328,6.88
+scenario_15,Tuning scenario_15: compound,False,naive,1.0,0.0,208243.544,187688.362,0,0,11.48
+scenario_15,Tuning scenario_15: compound,False,heuristic,1.0,0.0,208243.544,208048.622,0,0,24.36
+scenario_15,Tuning scenario_15: compound,False,heuristic_buffer,1.0,0.0,208243.544,208048.622,0,0,24.38
+scenario_16,Tuning scenario_16: demand_spike,False,none,0.348131,160846.415,85900.0,0.0,0,1386,6.9
+scenario_16,Tuning scenario_16: demand_spike,False,naive,1.0,0.0,246746.415,224799.629,0,0,11.6
+scenario_16,Tuning scenario_16: demand_spike,False,heuristic,1.0,0.0,246746.415,244624.492,0,0,24.4
+scenario_16,Tuning scenario_16: demand_spike,False,heuristic_buffer,1.0,0.0,246746.415,244710.616,0,0,24.54
+scenario_17,Tuning scenario_17: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.87
+scenario_17,Tuning scenario_17: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.4
+scenario_17,Tuning scenario_17: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.83
+scenario_17,Tuning scenario_17: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.79
+scenario_18,Tuning scenario_18: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.88
+scenario_18,Tuning scenario_18: route_disruption,False,naive,1.0,0.0,186352.115,172876.929,0,0,11.37
+scenario_18,Tuning scenario_18: route_disruption,False,heuristic,1.0,0.0,186352.115,186241.999,0,0,24.0
+scenario_18,Tuning scenario_18: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,186231.488,0,0,24.02
+scenario_19,Tuning scenario_19: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,1005,6.91
+scenario_19,Tuning scenario_19: station_outage,False,naive,0.924345,14098.502,172253.613,161651.935,0,0,11.3
+scenario_19,Tuning scenario_19: station_outage,False,heuristic,0.924345,14098.502,172253.613,172206.617,0,0,23.99
+scenario_19,Tuning scenario_19: station_outage,False,heuristic_buffer,0.924345,14098.502,172253.613,172196.106,0,0,23.76
+scenario_20,Tuning scenario_20: compound,False,none,0.390533,134055.803,85900.0,0.0,0,1330,6.86
+scenario_20,Tuning scenario_20: compound,False,naive,0.954433,10022.762,209933.041,193737.174,0,62,11.53
+scenario_20,Tuning scenario_20: compound,False,heuristic,0.975971,5285.341,214670.462,214657.198,0,30,23.79
+scenario_20,Tuning scenario_20: compound,False,heuristic_buffer,0.975971,5285.341,214670.462,214622.366,0,30,23.93
+scenario_21,Tuning scenario_21: demand_spike,False,none,0.413815,121680.689,85900.0,0.0,0,1291,6.8
+scenario_21,Tuning scenario_21: demand_spike,False,naive,1.0,0.0,207580.689,189207.051,0,0,11.54
+scenario_21,Tuning scenario_21: demand_spike,False,heuristic,1.0,0.0,207580.689,207054.668,0,0,24.84
+scenario_21,Tuning scenario_21: demand_spike,False,heuristic_buffer,1.0,0.0,207580.689,207064.39,0,0,24.81
+scenario_22,Tuning scenario_22: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.95
+scenario_22,Tuning scenario_22: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.42
+scenario_22,Tuning scenario_22: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.8
+scenario_22,Tuning scenario_22: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.86
+scenario_23,Tuning scenario_23: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.91
+scenario_23,Tuning scenario_23: route_disruption,False,naive,0.959042,7632.627,178719.488,161151.248,0,69,11.32
+scenario_23,Tuning scenario_23: route_disruption,False,heuristic,0.987139,2396.749,183955.366,183763.231,0,11,22.64
+scenario_23,Tuning scenario_23: route_disruption,False,heuristic_buffer,0.987139,2396.749,183955.366,183763.231,0,11,22.74
+scenario_24,Tuning scenario_24: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,977,6.84
+scenario_24,Tuning scenario_24: station_outage,False,naive,0.937779,11595.05,174757.065,154820.152,0,0,11.34
+scenario_24,Tuning scenario_24: station_outage,False,heuristic,0.937779,11595.05,174757.065,174555.747,0,0,24.12
+scenario_24,Tuning scenario_24: station_outage,False,heuristic_buffer,0.937779,11595.05,174757.065,174545.236,0,0,24.31
+scenario_25,Tuning scenario_25: compound,False,none,0.403439,127019.545,85900.0,0.0,0,1387,6.85
+scenario_25,Tuning scenario_25: compound,False,naive,1.0,0.0,212919.545,192991.575,0,0,11.55
+scenario_25,Tuning scenario_25: compound,False,heuristic,1.0,0.0,212919.545,212414.444,0,0,24.67
+scenario_25,Tuning scenario_25: compound,False,heuristic_buffer,1.0,0.0,212919.545,212403.933,0,0,24.96
+scenario_26,Tuning scenario_26: demand_spike,False,none,0.3827,138557.967,85900.0,0.0,0,1417,6.8
+scenario_26,Tuning scenario_26: demand_spike,False,naive,1.0,0.0,224457.967,211362.555,0,0,11.51
+scenario_26,Tuning scenario_26: demand_spike,False,heuristic,1.0,0.0,224457.967,223883.827,0,0,24.49
+scenario_26,Tuning scenario_26: demand_spike,False,heuristic_buffer,1.0,0.0,224457.967,223904.06,0,0,24.33
+scenario_27,Tuning scenario_27: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.83
+scenario_27,Tuning scenario_27: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.37
+scenario_27,Tuning scenario_27: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.9
+scenario_27,Tuning scenario_27: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.74
+scenario_28,Tuning scenario_28: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.84
+scenario_28,Tuning scenario_28: route_disruption,False,naive,0.926203,13752.299,172599.816,160369.042,0,113,11.44
+scenario_28,Tuning scenario_28: route_disruption,False,heuristic,0.950824,9164.051,177188.064,176724.395,0,58,22.38
+scenario_28,Tuning scenario_28: route_disruption,False,heuristic_buffer,0.950824,9164.051,177188.064,176724.395,0,58,22.24
+scenario_29,Tuning scenario_29: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,1082,6.87
+scenario_29,Tuning scenario_29: station_outage,False,naive,0.971282,5351.747,181000.368,158426.958,0,0,11.39
+scenario_29,Tuning scenario_29: station_outage,False,heuristic,0.971282,5351.747,181000.368,180453.625,0,0,24.5
+scenario_29,Tuning scenario_29: station_outage,False,heuristic_buffer,0.971282,5351.747,181000.368,180453.625,0,0,24.43
+scenario_30,Tuning scenario_30: compound,False,none,0.422814,117262.781,85900.0,0.0,0,1338,6.84
+scenario_30,Tuning scenario_30: compound,False,naive,1.0,0.0,203162.781,189972.942,0,0,11.56
+scenario_30,Tuning scenario_30: compound,False,heuristic,1.0,0.0,203162.781,202667.46,0,0,24.34
+scenario_30,Tuning scenario_30: compound,False,heuristic_buffer,1.0,0.0,203162.781,202629.301,0,0,24.24
+scenario_31,Tuning scenario_31: demand_spike,False,none,0.445491,106920.895,85900.0,0.0,0,1244,6.95
+scenario_31,Tuning scenario_31: demand_spike,False,naive,1.0,0.0,192820.895,172403.006,0,0,11.47
+scenario_31,Tuning scenario_31: demand_spike,False,heuristic,1.0,0.0,192820.895,192567.42,0,0,24.78
+scenario_31,Tuning scenario_31: demand_spike,False,heuristic_buffer,1.0,0.0,192820.895,192556.909,0,0,24.77
+scenario_32,Tuning scenario_32: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.87
+scenario_32,Tuning scenario_32: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.4
+scenario_32,Tuning scenario_32: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.78
+scenario_32,Tuning scenario_32: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.87
+scenario_33,Tuning scenario_33: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.85
+scenario_33,Tuning scenario_33: route_disruption,False,naive,0.997103,539.888,185812.227,168439.034,0,9,11.38
+scenario_33,Tuning scenario_33: route_disruption,False,heuristic,1.0,0.0,186352.115,186608.902,0,0,24.27
+scenario_33,Tuning scenario_33: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,186598.391,0,0,24.38
+scenario_34,Tuning scenario_34: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,953,6.88
+scenario_34,Tuning scenario_34: station_outage,False,naive,0.892073,20112.407,166239.708,146375.839,0,0,11.32
+scenario_34,Tuning scenario_34: station_outage,False,heuristic,0.892073,20112.407,166239.708,166192.712,0,0,23.6
+scenario_34,Tuning scenario_34: station_outage,False,heuristic_buffer,0.892073,20112.407,166239.708,166182.201,0,0,23.74
+scenario_35,Tuning scenario_35: compound,False,none,0.384099,137740.347,85900.0,0.0,0,1349,6.94
+scenario_35,Tuning scenario_35: compound,False,naive,1.0,0.0,223640.347,205756.973,0,0,11.57
+scenario_35,Tuning scenario_35: compound,False,heuristic,1.0,0.0,223640.347,221848.612,0,0,24.55
+scenario_35,Tuning scenario_35: compound,False,heuristic_buffer,1.0,0.0,223640.347,221735.861,0,0,24.54
+scenario_36,Tuning scenario_36: demand_spike,False,none,0.45055,104755.808,85900.0,0.0,0,1193,6.9
+scenario_36,Tuning scenario_36: demand_spike,False,naive,1.0,0.0,190655.808,167381.084,0,0,11.38
+scenario_36,Tuning scenario_36: demand_spike,False,heuristic,1.0,0.0,190655.808,190160.429,0,0,24.67
+scenario_36,Tuning scenario_36: demand_spike,False,heuristic_buffer,1.0,0.0,190655.808,190160.429,0,0,24.59
+scenario_37,Tuning scenario_37: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.84
+scenario_37,Tuning scenario_37: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.38
+scenario_37,Tuning scenario_37: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.89
+scenario_37,Tuning scenario_37: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.84
+scenario_38,Tuning scenario_38: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.84
+scenario_38,Tuning scenario_38: route_disruption,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.45
+scenario_38,Tuning scenario_38: route_disruption,False,heuristic,1.0,0.0,186352.115,185805.372,0,0,24.58
+scenario_38,Tuning scenario_38: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,185794.861,0,0,24.55
+scenario_39,Tuning scenario_39: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,893,6.96
+scenario_39,Tuning scenario_39: station_outage,False,naive,0.862726,25581.256,160770.859,146337.32,0,0,11.32
+scenario_39,Tuning scenario_39: station_outage,False,heuristic,0.862726,25581.256,160770.859,160723.863,0,0,23.18
+scenario_39,Tuning scenario_39: station_outage,False,heuristic_buffer,0.862726,25581.256,160770.859,160713.352,0,0,23.38
+scenario_40,Tuning scenario_40: compound,False,none,0.410597,123307.322,85900.0,0.0,0,1306,6.99
+scenario_40,Tuning scenario_40: compound,False,naive,1.0,0.0,209207.322,191602.255,0,0,11.5
+scenario_40,Tuning scenario_40: compound,False,heuristic,1.0,0.0,209207.322,208803.62,0,0,24.4
+scenario_40,Tuning scenario_40: compound,False,heuristic_buffer,1.0,0.0,209207.322,208803.62,0,0,24.57
+scenario_41,Tuning scenario_41: demand_spike,False,none,0.362035,151370.114,85900.0,0.0,0,1357,6.95
+scenario_41,Tuning scenario_41: demand_spike,False,naive,1.0,0.0,237270.114,221754.814,0,0,11.58
+scenario_41,Tuning scenario_41: demand_spike,False,heuristic,1.0,0.0,237270.114,235766.674,0,0,24.64
+scenario_41,Tuning scenario_41: demand_spike,False,heuristic_buffer,1.0,0.0,237270.114,235756.163,0,0,24.59
+scenario_42,Tuning scenario_42: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.82
+scenario_42,Tuning scenario_42: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.39
+scenario_42,Tuning scenario_42: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.77
+scenario_42,Tuning scenario_42: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.98
+scenario_43,Tuning scenario_43: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.92
+scenario_43,Tuning scenario_43: route_disruption,False,naive,1.0,0.0,186352.115,175002.981,0,0,11.37
+scenario_43,Tuning scenario_43: route_disruption,False,heuristic,1.0,0.0,186352.115,186027.667,0,0,24.16
+scenario_43,Tuning scenario_43: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,186017.156,0,0,24.05
+scenario_44,Tuning scenario_44: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,1008,6.89
+scenario_44,Tuning scenario_44: station_outage,False,naive,0.925377,13906.185,172445.93,161667.107,0,0,11.32
+scenario_44,Tuning scenario_44: station_outage,False,heuristic,0.925377,13906.185,172445.93,171940.829,0,0,23.88
+scenario_44,Tuning scenario_44: station_outage,False,heuristic_buffer,0.925377,13906.185,172445.93,171930.318,0,0,23.9
+scenario_45,Tuning scenario_45: compound,False,none,0.417993,119605.795,85900.0,0.0,0,1301,6.87
+scenario_45,Tuning scenario_45: compound,False,naive,1.0,0.0,205505.795,187589.711,0,0,11.48
+scenario_45,Tuning scenario_45: compound,False,heuristic,1.0,0.0,205505.795,205265.614,0,0,24.46
+scenario_45,Tuning scenario_45: compound,False,heuristic_buffer,1.0,0.0,205505.795,205163.664,0,0,24.42
+scenario_46,Tuning scenario_46: demand_spike,False,none,0.421521,117885.985,85900.0,0.0,0,1226,6.88
+scenario_46,Tuning scenario_46: demand_spike,False,naive,1.0,0.0,203785.985,189300.078,0,0,11.41
+scenario_46,Tuning scenario_46: demand_spike,False,heuristic,1.0,0.0,203785.985,204036.198,0,0,24.59
+scenario_46,Tuning scenario_46: demand_spike,False,heuristic_buffer,1.0,0.0,203785.985,204036.198,0,0,24.65
+scenario_47,Tuning scenario_47: supply_shortfall,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.82
+scenario_47,Tuning scenario_47: supply_shortfall,False,naive,1.0,0.0,186352.115,167383.215,0,0,11.51
+scenario_47,Tuning scenario_47: supply_shortfall,False,heuristic,1.0,0.0,186352.115,185847.014,0,0,24.76
+scenario_47,Tuning scenario_47: supply_shortfall,False,heuristic_buffer,1.0,0.0,186352.115,185836.503,0,0,24.84
+scenario_48,Tuning scenario_48: route_disruption,False,none,0.460955,100452.115,85900.0,0.0,0,1154,6.91
+scenario_48,Tuning scenario_48: route_disruption,False,naive,1.0,0.0,186352.115,171608.617,0,0,11.43
+scenario_48,Tuning scenario_48: route_disruption,False,heuristic,1.0,0.0,186352.115,186150.797,0,0,24.1
+scenario_48,Tuning scenario_48: route_disruption,False,heuristic_buffer,1.0,0.0,186352.115,186140.286,0,0,24.19
+scenario_49,Tuning scenario_49: station_outage,False,none,0.460955,100452.115,85900.0,0.0,0,1081,6.9
+scenario_49,Tuning scenario_49: station_outage,False,naive,0.971039,5397.019,180955.096,158433.209,0,0,11.49
+scenario_49,Tuning scenario_49: station_outage,False,heuristic,0.971039,5397.019,180955.096,180551.922,0,0,24.45
+scenario_49,Tuning scenario_49: station_outage,False,heuristic_buffer,0.971039,5397.019,180955.096,180530.944,0,0,24.62
+scenario_50,Tuning scenario_50: compound,False,none,0.36394,150127.771,85900.0,0.0,0,1372,6.87
+scenario_50,Tuning scenario_50: compound,False,naive,1.0,0.0,236027.771,221206.838,0,0,11.61
+scenario_50,Tuning scenario_50: compound,False,heuristic,1.0,0.0,236027.771,234574.028,0,0,24.65
+scenario_50,Tuning scenario_50: compound,False,heuristic_buffer,1.0,0.0,236027.771,234563.517,0,0,24.76
+holdout_01,Holdout holdout_01,True,none,0.227637,291455.474,85900.0,0.0,0,1734,6.89
+holdout_01,Holdout holdout_01,True,naive,0.888879,41932.183,335423.291,290382.515,0,287,11.97
+holdout_01,Holdout holdout_01,True,heuristic,0.977764,8390.896,368964.578,340101.353,0,57,22.32
+holdout_01,Holdout holdout_01,True,heuristic_buffer,0.977764,8390.896,368964.578,340101.353,0,57,22.39
+holdout_02,Holdout holdout_02,True,none,0.300623,199839.692,85900.0,0.0,0,1627,6.89
+holdout_02,Holdout holdout_02,True,naive,0.935619,18396.085,267343.607,247924.905,0,134,11.71
+holdout_02,Holdout holdout_02,True,heuristic,0.95218,13664.045,272075.647,268524.57,0,87,23.32
+holdout_02,Holdout holdout_02,True,heuristic_buffer,0.95218,13664.045,272075.647,268524.57,0,87,23.21
+holdout_03,Holdout holdout_03,True,none,0.231495,285166.715,85900.0,0.0,0,1769,6.81
+holdout_03,Holdout holdout_03,True,naive,0.867672,49102.463,321964.252,278986.249,0,305,11.86
+holdout_03,Holdout holdout_03,True,heuristic,0.916693,30912.636,340154.079,303474.476,0,183,21.84
+holdout_03,Holdout holdout_03,True,heuristic_buffer,0.916693,30912.636,340154.079,303474.476,0,183,21.8
+holdout_04,Holdout holdout_04,True,none,0.250403,257147.096,85900.0,0.0,0,1678,6.89
+holdout_04,Holdout holdout_04,True,naive,0.902009,33615.383,309431.713,279822.036,0,239,11.79
+holdout_04,Holdout holdout_04,True,heuristic,0.946906,18213.688,324833.408,317613.108,0,113,23.01
+holdout_04,Holdout holdout_04,True,heuristic_buffer,0.946906,18213.688,324833.408,317613.108,0,113,22.84
+holdout_05,Holdout holdout_05,True,none,0.289309,211014.464,85900.0,0.0,0,1565,6.84
+holdout_05,Holdout holdout_05,True,naive,0.95199,14254.971,282659.493,255866.843,0,158,11.73
+holdout_05,Holdout holdout_05,True,heuristic,0.966481,9952.359,286962.105,283896.089,0,69,23.32
+holdout_05,Holdout holdout_05,True,heuristic_buffer,0.966481,9952.359,286962.105,283839.411,0,69,23.17
+holdout_06,Holdout holdout_06,True,none,0.250003,257696.32,85900.0,0.0,0,1641,6.88
+holdout_06,Holdout holdout_06,True,naive,0.91398,29556.124,314040.196,292900.022,0,204,11.8
+holdout_06,Holdout holdout_06,True,heuristic,0.94309,19553.969,324042.351,320412.266,0,152,23.51
+holdout_06,Holdout holdout_06,True,heuristic_buffer,0.94309,19553.969,324042.351,320518.78,0,152,23.38
+holdout_07,Holdout holdout_07,True,none,0.255181,250724.209,85900.0,0.0,0,1699,6.9
+holdout_07,Holdout holdout_07,True,naive,0.960173,13406.591,323217.618,269320.217,0,145,12.04
+holdout_07,Holdout holdout_07,True,heuristic,0.990524,3189.804,333434.405,303820.027,0,31,22.89
+holdout_07,Holdout holdout_07,True,heuristic_buffer,0.990524,3189.804,333434.405,303793.661,0,31,22.83
+holdout_08,Holdout holdout_08,True,none,0.245154,264492.19,85900.0,0.0,0,1689,6.83
+holdout_08,Holdout holdout_08,True,naive,0.999452,191.99,350200.2,305709.181,0,13,12.11
+holdout_08,Holdout holdout_08,True,heuristic,0.998618,484.153,349908.037,321608.601,0,7,23.04
+holdout_08,Holdout holdout_08,True,heuristic_buffer,0.998618,484.153,349908.037,321608.601,0,7,23.05
+holdout_09,Holdout holdout_09,True,none,0.290355,209944.489,85900.0,0.0,0,1607,6.97
+holdout_09,Holdout holdout_09,True,naive,0.929038,20993.693,274850.796,260546.523,0,170,11.75
+holdout_09,Holdout holdout_09,True,heuristic,0.953266,13825.866,282018.623,280078.618,0,125,23.48
+holdout_09,Holdout holdout_09,True,heuristic_buffer,0.953266,13825.866,282018.623,280078.618,0,125,23.51
+holdout_10,Holdout holdout_10,True,none,0.228532,289978.03,85900.0,0.0,0,1710,6.85
+holdout_10,Holdout holdout_10,True,naive,0.907762,34670.285,341207.745,298600.528,0,226,12.0
+holdout_10,Holdout holdout_10,True,heuristic,0.980267,7417.301,368460.729,355159.954,0,40,22.88
+holdout_10,Holdout holdout_10,True,heuristic_buffer,0.980267,7417.301,368460.729,355159.954,0,40,22.84

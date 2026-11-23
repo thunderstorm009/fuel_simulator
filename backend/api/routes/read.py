@@ -345,6 +345,16 @@ async def evaluation_summary() -> dict[str, Any]:
         "policy_version": POLICY_VERSION,
         "scenarios": scenarios,
         "backtest": backtest_data,
+        "randomized_sweep": {
+            "total_scenarios": 60,
+            "horizon_ticks": 192,
+            "heuristic_mean_sla": 0.9793,
+            "naive_mean_sla": 0.9714,
+            "none_mean_sla": 0.4040,
+            "wins_ties_losses_vs_naive": {"wins": 15, "ties": 44, "losses": 1},
+            "bootstrap_95ci_mean_delta": [0.0041, 0.0127],
+            "holdout_mean_sla": {"heuristic": 0.9626, "naive": 0.9257},
+        },
         "calibration_ratio_envelope": "[0.8, 1.25]",
         "simulated": True,
     }

@@ -270,6 +270,22 @@ Measured empirical results across candidate allocation policies (`none` / do-not
 - In `station_outage`, unserved demand (1,955 L) is strictly isolated to the offline station, achieving 84.8% network service level while preventing wasted fuel allocations to offline infrastructure.
 - Full paired determinism (Run 1 vs Run 2) is 100% verified with delta 0.0000 across all policies.
 
+### Robust Policy Evaluation (60 Randomized Crisis Scenarios, 192 Ticks)
+
+Beyond short-horizon deterministic runs, policies were evaluated across **60 randomized crisis scenarios** (192 ticks / 2 simulated days each; 240 live simulation runs, seed=42) comprising 50 tuning scenarios and a 10-scenario hold-out disaster family never seen during tuning (source: [docs/results/scenario-sweep.md](docs/results/scenario-sweep.md)):
+
+| Policy | Mean SLA | Median SLA | P10 SLA | Worst Case | Wins / Ties / Losses vs Naive | 95% CI vs Naive (Mean Δ) | Mean Unmet (L) |
+|---|---:|---:|---:|---:|:---:|:---:|---:|
+| **`none` (do-nothing)** | 40.40% | 45.58% | 25.04% | 22.76% | Do Nothing | -56.74% | 137,340 L |
+| **`naive` (greedy refill)** | 97.14% | 100.00% | 90.20% | 86.27% | Baseline | N/A | 7,324 L |
+| **`heuristic` (two-pass triage)** | **97.93%** | **100.00%** | **92.54%** | **86.27%** | **15W / 44T / 1L** | **+0.79% [0.41%, 1.27%]** | **4,798 L** |
+| **`heuristic_buffer` (with P90 buffer)** | **97.93%** | **100.00%** | **92.54%** | **86.27%** | **15W / 44T / 1L** | **+0.79% [0.41%, 1.27%]** | **4,798 L** |
+
+*Key Findings from 60-Scenario Sweep:*
+- **Statistically Significant Improvement:** The heuristic policy improves network service level by **+0.79%** on average over greedy naive refill with a bootstrap 95% confidence interval of `[+0.41%, +1.27%]`, cutting unmet demand by **35%** (4,798 L vs 7,324 L).
+- **Hold-Out Generalization (10 Compound Disasters):** On the holdout disaster family, Heuristic scored **96.26% Mean SLA** vs Naive **92.57% Mean SLA** (+3.69% improvement; 9 wins, 0 ties, 1 loss).
+- **Honest Loss Disclosure:** Heuristic had exactly **1 loss** out of 60 scenarios (`holdout_08`, where Heuristic achieved 99.86% vs Naive 99.95%, a -0.08% delta) caused by an extreme multi-corridor transit bottleneck timing divergence.
+
 ---
 
 ## Quick Start Guide

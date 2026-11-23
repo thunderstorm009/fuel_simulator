@@ -6,27 +6,31 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
 - Sprints 1–10: All gates passed and tagged.
-- Sprint 11: In progress. WP11.0 (Truth pass) and WP11.1 (Measured failure boundary) COMPLETE.
-- Next: WP11.2 Robust policy evaluation (P0).
+- Sprint 11: In progress. WP11.0 (Truth pass), WP11.1 (Measured failure boundary), and WP11.2 (Robust policy evaluation) COMPLETE.
+- Next: WP11.3 Forecast quality: event-aware calibration & honest accuracy (P1).
 
 ## Verification in this work package
 
-- WP11.1 Measured failure boundary:
-  - Swept 192 ticks across 4 policies (`none`, `naive`, `heuristic`, `heuristic_buffer`) and stress dimensions (demand spike 1.0 to 3.0, shortfall 1.0 to 0.2, route disruption 0 to 4, station outage 0 to 2, combos).
-  - Measured 99%, 95%, and 90% service level crossover boundaries:
-    - 99% SLA threshold: Heuristic 2.43x vs Naive 1.96x vs None 1.0x
-    - 95% Critical threshold: Heuristic 2.80x vs Naive 2.55x vs None 1.0x
-    - 90% Collapse threshold: Heuristic >3.0x (91.66% at 3.0x) vs Naive 2.95x vs None 1.0x
-  - Identified binding constraints from measurements: route max shipment (5-7k L) under surges >2.2x, depot stock exhaustion under shortfall <0.4, corridor isolation under >=3 route disruptions.
-  - Pure module `core.failure_boundary`: unit tests in `tests/unit/test_failure_boundary.py` (11 passed in 0.03s).
-  - Full suite: 193 Python tests passed, 11 Vitest tests passed, `make lint` clean, `git diff --check` clean.
-  - Output files generated: `docs/results/failure-boundary-summary.csv`, `docs/results/failure-boundary.png`, `docs/results/failure-boundary.md`.
-  - Updated `docs/resilience.md`, `docs/qa.md`, `docs/JUDGING-DAY.md`. Simulator restored to PAUSED, faults cleared.
+- WP11.2 Robust policy evaluation:
+  - Generated 60 randomized crisis scenarios from fixed RNG seed (seed=42) partitioned into 50 tuning scenarios and 10 hold-out scenarios never used for tuning.
+  - Executed 240 simulation runs (192 ticks / 2 days each = 46,080 ticks) on live simulator across 4 policies: `none`, `naive`, `heuristic`, `heuristic_buffer`.
+  - Headline Results:
+    - Heuristic Mean SLA: **97.93%** (Median: 100.0%, P10: 92.54%, Worst: 86.27%, Mean unmet: 4,798 L).
+    - Naive Mean SLA: **97.14%** (Median: 100.0%, P10: 90.20%, Worst: 86.27%, Mean unmet: 7,324 L).
+    - Do Nothing Mean SLA: **40.40%** (Median: 45.58%, Worst: 22.76%, Mean unmet: 137,340 L).
+    - Head-to-head vs Naive: **15 Wins / 44 Ties / 1 Loss**.
+    - Bootstrap 95% Confidence Interval for Improvement vs Naive: **+0.79% [0.41%, 1.27%]** SLA.
+    - Hold-Out Family Performance (10 compound disasters): Heuristic **96.26% SLA** vs Naive **92.57% SLA** (9 Wins / 0 Ties / 1 Loss).
+    - Honest Loss Disclosure: Exactly 1 loss out of 60 scenarios (`holdout_08` at 99.86% vs 99.95%, a -0.08% delta due to compound multi-corridor transit bottleneck timing).
+  - Pure module `core.scenario_sweep`: unit tests in `tests/unit/test_scenario_sweep.py` (6 passed in 0.02s).
+  - Full suite: 199 Python tests passed, 11 Vitest tests passed, `make lint` clean, `git diff --check` clean.
+  - Generated: `docs/results/scenario-sweep.csv`, `docs/results/scenario-sweep.md`, appended to `docs/results/experiments.csv`.
+  - Updated `README.md` and `GET /api/evaluation/summary`. Simulator left PAUSED, faults cleared.
 
 ## Current work package and exact next action
 
-Sprint 11 WP11.1 complete.
-Next action: WP11.2 Robust policy evaluation (P0) — generate 60 randomized crisis scenarios from fixed RNG seed, 192 ticks each, compare policies with bootstrap 95% confidence intervals and document losses.
+Sprint 11 WP11.2 complete.
+Next action: WP11.3 Forecast quality: event-aware calibration & honest accuracy (P1) — investigate 4-6 tick lag, implement event-aware calibration using known multipliers, report Brier score & P10-P90 interval coverage, and bump model_version to 1.2.0.
 
 
 ## Workspace constraints
