@@ -62,6 +62,47 @@ When running at elevated speeds:
 3. The platform strictly enforces safety rule 6: recommendations must be `APPROVED` and re-validated against fresh non-stale snapshot data immediately before calling `POST /v1/allocations`. Expired or stale recommendations are blocked before submission.
 
 
+## Backup and disaster recovery (Sprint 12 WP12.5)
+
+The database backup and restore scripts target this project's PostgreSQL container (`fuel_simulator-postgres-1`) exclusively without affecting any external volumes.
+
+### Operational commands
+
+```sh
+# 1. Take database backup
+./scripts/backup_db.sh [optional_output_path.sql]
+
+# 2. Restore database from backup
+./scripts/restore_db.sh <backup_path.sql>
+
+# 3. Execute automated backup and restore drill
+python3 scripts/drill_backup_restore.py
+
+# 4. Measure service and full-stack recovery times
+python3 scripts/measure_recovery_times.py
+```
+
+### Recovery objectives & empirical metrics
+
+- **RPO (Recovery Point Objective):** **< 5 seconds**. PostgreSQL write-ahead logging commits every tick transaction before worker ingestion finishes. Ingest interval is 5 seconds.
+- **RTO (Recovery Time Objective):** **2.93 seconds** (measured cold SQL dump restoration of complete 77.6 MB schema and data).
+- **Service Recovery Times (Running / Healthy / Data Visible):**
+  - `postgres`: 0.38s / 5.53s / 0.38s
+  - `api`: 0.70s / 6.03s / 2.26s
+  - `worker`: 0.65s / 5.94s / 1.85s
+  - `predictor`: 0.63s / 5.95s / 1.54s
+  - `frontend`: 0.39s / 5.39s / 0.39s
+  - `prometheus`: 0.39s / 5.41s / 0.39s
+  - `grafana`: 0.40s / 5.35s / 0.99s
+  - **Full stack restart:** 1.02s running, 6.87s healthy, 3.06s data visible.
+- **Idempotency Guarantees:** Recommendation UUIDs and `idempotency_key` tokens survive backup and restore identically. The worker executor checks database recommendation statuses and simulator allocation IDs, preventing duplicate allocation submissions after recovery.
+
+## Data retention and pruning policy
+
+1. **Snapshots:** The worker retains recent tick snapshots for demand trend aggregation (last 24–48 hours). Older raw snapshots are pruned periodically to keep database size bounded within 250 MB.
+2. **Forecasts & Depot Risks:** Linked via foreign key cascade (`ON DELETE CASCADE`) to snapshots. Pruning older snapshot IDs automatically reclaims forecast and risk storage.
+3. **Decisions & Audit Trail:** Recommendations, human operator approval/rejection decisions, and incident logs are **permanent** and never pruned to preserve full audit traceability.
+
 ## Recovery notes
 
 - **Simulator unavailable:** inspect worker logs, simulator health, and `/api/data-health`; worker keeps the last accepted snapshot and marks it degraded.

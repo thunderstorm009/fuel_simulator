@@ -6,10 +6,29 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 - Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`.
 - Sprints 1–11: All gates passed and tagged.
-- Sprint 12: In progress. WP12.1 (API Performance) COMPLETE.
-- Next: WP12.5 Backup, restore and measured recovery (P0).
+- Sprint 12: In progress. WP12.1 (API Performance) and WP12.5 (Backup, Restore & Measured Recovery) COMPLETE.
+- Next: WP12.3 Soak test (P0).
 
 ## Verification in this work package
+
+- WP12.5 Backup, restore and measured recovery complete:
+  - Created `scripts/backup_db.sh` and `scripts/restore_db.sh` targeting this project's PostgreSQL container.
+  - Wrote TDD unit test `tests/unit/test_backup_restore_idempotency.py` (2 passed) verifying idempotency key immutability and executor non-resubmission rules.
+  - Automated drill `scripts/drill_backup_restore.py` verified:
+    - RTO: **2.93s** (target < 15s MET). Complete 77.6 MB schema and data restoration.
+    - RPO: **< 5.0s** (continuous PostgreSQL WAL durability).
+    - 100% row preservation across snapshots (419), forecasts (5,004), recommendations (158), decisions (1), depot_risks (1,572), incidents (387).
+    - Zero duplicate submissions or regressions. Report: `docs/results/backup-restore-drill.json`.
+  - Recovery timing measurement `scripts/measure_recovery_times.py` across all 7 services:
+    - `postgres`: 0.38s running, 5.53s healthy, 0.38s data visible.
+    - `api`: 0.70s running, 6.03s healthy, 2.26s data visible.
+    - `worker`: 0.65s running, 5.94s healthy, 1.85s data visible.
+    - `predictor`: 0.63s running, 5.95s healthy, 1.54s data visible.
+    - `frontend`: 0.39s running, 5.39s healthy, 0.39s data visible.
+    - `prometheus`: 0.39s running, 5.41s healthy, 0.39s data visible.
+    - `grafana`: 0.40s running, 5.35s healthy, 0.99s data visible.
+    - `full_stack`: 1.02s running, 6.87s healthy, 3.06s data visible in API & UI. Report: `docs/results/recovery-times.json`.
+  - Updated `docs/resilience.md` and `docs/operations.md`.
 
 - WP12.1 API performance complete:
   - Baseline k6 sweep (10 to 400 VUs) executed: throughput saturated at 201 req/s, read p95 1,210.6 ms at 100 VUs, Postgres CPU 309.8% at 400 VUs.

@@ -48,19 +48,42 @@ When the simulator runs in continuous `RUNNING` mode (rather than paused and ste
 
 Evidence file: [docs/evidence/sprint-10-resilience-matrix.txt](evidence/sprint-10-resilience-matrix.txt).
 
-### Per-service kill -9 recovery times
+### Measured three-part service recovery times (Sprint 12 WP12.5)
 
-> [!NOTE]
-> The figures below represent **container process restart times** under Compose restart policies. Application query readiness following container restart takes **~1.2s**, and container healthcheck polling (`Health=healthy`) reports in **5.18s** (governed by Compose `interval: 5s`).
+Recovery measured empirically using `scripts/measure_recovery_times.py` across all stack services and full stack restart. For every service, three distinct recovery phases were timed:
+1. **Container Running:** Time until Docker engine reports container state `running`.
+2. **Container Healthy:** Time until Compose healthcheck reports `healthy` (governed by health interval).
+3. **Data Visible in UI/API:** Time until actual operational HTTP endpoints return HTTP 200 with data.
 
-| Service | Action | Container Restart Policy | Measured Process Restart Time (s) | Query Ready / Healthcheck | Post-Recovery Status |
-|---|---|---|---|---|---|
-| `api` | `kill -9` | Compose `unless-stopped` | 0.11 s | ~1.2 s / 5.18 s | HEALTHY |
-| `worker` | `kill -9` | Compose `unless-stopped` | 0.17 s | Ingest resumes in ~1.2 s | HEALTHY |
-| `predictor` | `kill -9` | Compose `unless-stopped` | 0.23 s | Health probe in ~1.2 s | HEALTHY |
-| `frontend` | `kill -9` | Compose `unless-stopped` | 0.10 s | Instant / N/A | HEALTHY |
-| `prometheus` | `kill -9` | Compose `unless-stopped` | 0.11 s | Scrape resumes ~1.5 s | HEALTHY |
-| `grafana` | `kill -9` | Compose `unless-stopped` | 0.11 s | Web UI ready ~1.8 s | HEALTHY |
+Evidence: `docs/results/recovery-times.json`
+
+| Service | Container Running | Healthy | Data Visible in UI/API | Endpoint Probe |
+|---|---:|---:|---:|---|
+| **postgres** | 0.38s | 5.53s | 0.38s | `GET /api/state` |
+| **api** | 0.70s | 6.03s | 2.26s | `GET /api/state` |
+| **worker** | 0.65s | 5.94s | 1.85s | `GET /health` |
+| **predictor** | 0.63s | 5.95s | 1.54s | `GET /health` |
+| **frontend** | 0.39s | 5.39s | 0.39s | `GET /` |
+| **prometheus** | 0.39s | 5.41s | 0.39s | `GET /-/healthy` |
+| **grafana** | 0.40s | 5.35s | 0.99s | `GET /api/health` |
+| **full_stack** | 1.02s | 6.87s | 3.06s | API + Frontend Combined |
+
+### Database backup, restore & idempotency drill (Sprint 12 WP12.5)
+
+Automated drill executed via `scripts/drill_backup_restore.py` using `scripts/backup_db.sh` and `scripts/restore_db.sh`.
+
+Evidence: `docs/results/backup-restore-drill.json`
+
+- **Measured RTO (Recovery Time Objective):** **2.93 seconds** (target < 15s MET). Complete database schema and row restoration from cold SQL dump.
+- **Measured RPO (Recovery Point Objective):** **< 5.0 seconds** (governed by continuous PostgreSQL transaction logging and worker tick ingestion interval).
+- **Integrity & Zero Resubmission Verification:**
+  - `snapshots`: 419 rows pre-backup == 419 rows post-restore (100% match).
+  - `forecasts`: 5,004 rows pre-backup == 5,004 rows post-restore (100% match).
+  - `recommendations`: 158 rows pre-backup == 158 rows post-restore (100% match).
+  - `decisions`: 1 row pre-backup == 1 row post-restore (100% match).
+  - `depot_risks`: 1,572 rows pre-backup == 1,572 rows post-restore (100% match).
+  - `incidents`: 387 rows pre-backup == 387 rows post-restore (100% match).
+  - **Idempotency Keys & State:** All UUID idempotency keys preserved identically. Zero `SUBMITTED` or `ARRIVED` recommendations degraded to `PROPOSED`. Zero duplicate allocations submitted by worker executor. Unit test in `tests/unit/test_backup_restore_idempotency.py` verifies executor rejection of restored submitted items.
 
 ### Database outage & traffic surge
 

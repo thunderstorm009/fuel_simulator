@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "backup_duration_seconds": 1.02,
+  "restore_duration_seconds": 2.93,
+  "backup_size_bytes": 77672944,
+  "counts_before": {
+    "snapshots": 419,
+    "forecasts": 5004,
+    "recommendations": 158,
+    "decisions": 1,
+    "depot_risks": 1572,
+    "incidents": 387
+  },
+  "counts_after": {
+    "snapshots": 419,
+    "forecasts": 5004,
+    "recommendations": 158,
+    "decisions": 1,
+    "depot_risks": 1572,
+    "incidents": 387
+  },
+  "rpo_seconds": 5.0,
+  "rto_seconds": 2.93
+}
