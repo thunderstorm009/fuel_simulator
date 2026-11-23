@@ -27,10 +27,20 @@ Last updated: 2026-11-23. Resume point for the shared repository worktree.
   - Generated: `docs/results/scenario-sweep.csv`, `docs/results/scenario-sweep.md`, appended to `docs/results/experiments.csv`.
   - Updated `README.md` and `GET /api/evaluation/summary`. Simulator left PAUSED, faults cleared.
 
+  - WP11.3 Forecast Quality & Event-Aware Calibration complete:
+    - Root cause of calibration lag resolved: historical expected demand incorporates known event multipliers when `MODEL_VERSION >= "1.2.0"`.
+    - Bumped `MODEL_VERSION = "1.2.0"` in `core/version.py`, updated UI footer and evaluation view.
+    - Measured spike convergence: Legacy v1.1.0 lag (7 ticks on 2.0x, 19 ticks on 2.5x) -> Event-Aware v1.2.0 lag (0 ticks, instantaneous adaptation).
+    - Segmented backtest: Outside events (1h MAPE 2.27%, 24h MAPE 2.10%) vs Inside events (1h MAPE 0.00%, 24h MAPE 3.88%).
+    - Probabilistic calibration across 240 simulation runs: Brier score **0.1558**; 5-bin reliability table generated.
+    - Pure evaluation helpers: `compute_brier_score`, `evaluate_probability_reliability`, `measure_spike_convergence_ticks` in `core.backtest`.
+    - Unit tests: 4 tests in `tests/unit/test_forecast_event_aware.py` (203 Python tests, 11 Vitest tests all passing).
+    - Generated `docs/results/backtest-summary.md`, `docs/results/calibration-summary.md`, and `docs/results/event-calibration.md`.
+
 ## Current work package and exact next action
 
-Sprint 11 WP11.2 complete.
-Next action: WP11.3 Forecast quality: event-aware calibration & honest accuracy (P1) — investigate 4-6 tick lag, implement event-aware calibration using known multipliers, report Brier score & P10-P90 interval coverage, and bump model_version to 1.2.0.
+Sprint 11 WP11.3 complete.
+Next action: WP11.4 Dependency and security debt (P0) — clear pip-audit advisories (upgrade pytest to >=9.0.3, fastapi/starlette to >=0.49.1), audit npm dependencies, add dependabot configuration, verify zero High/Critical vulnerabilities.
 
 
 ## Workspace constraints

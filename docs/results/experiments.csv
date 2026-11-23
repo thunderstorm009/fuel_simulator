@@ -60,3 +60,6 @@ date,git_sha,model_version,policy_version,scenario,policy,service_level,unmet_li
 2026-11-23 05:01:30,6f0fbab,1.1.0,2.1.0,randomized_sweep_60,naive,0.9714,7323.8,0.0211
 2026-11-23 05:01:30,6f0fbab,1.1.0,2.1.0,randomized_sweep_60,heuristic,0.9793,4798.5,0.0211
 2026-11-23 05:01:30,6f0fbab,1.1.0,2.1.0,randomized_sweep_60,heuristic_buffer,0.9793,4798.5,0.0211
+2026-11-23 06:15:14,1a140de,1.2.0,2.1.0,event_augmented_backtest,heuristic,1.0000,0.0,0.0271
+2026-11-23 06:17:04,1a140de,1.2.0,2.1.0,event_augmented_backtest,heuristic,1.0000,0.0,0.0271
+2026-11-23 06:17:44,1a140de,1.2.0,2.1.0,event_augmented_backtest,heuristic,1.0000,0.0,0.0271

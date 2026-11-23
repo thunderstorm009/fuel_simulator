@@ -194,7 +194,7 @@ describe("Sprint 9 Operator Views", () => {
       if (url.includes("/api/evaluation/summary")) {
         return jsonResponse({
           evaluation_type: "offline_benchmark",
-          model_version: "1.1.0",
+          model_version: "1.2.0",
           policy_version: "2.0.0",
           scenarios: [
             {
@@ -212,7 +212,7 @@ describe("Sprint 9 Operator Views", () => {
             },
           ],
           backtest: {
-            model_version: "1.1.0",
+            model_version: "1.2.0",
             policy_version: "2.0.0",
             aggregate: {
               "1h": { mape: 0.0307, bias: 0.0001, interval_coverage: 0.9149 },

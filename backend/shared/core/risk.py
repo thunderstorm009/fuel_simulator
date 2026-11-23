@@ -17,7 +17,8 @@ from core.forecast import (
     project_inventory,
     station_allocation_arrivals,
 )
-from core.models import Forecast, FuelType, RiskLevel, Snapshot, Station
+from core.models import Forecast, FuelType, RiskLevel, SimEvent, SimEventType, Snapshot, Station
+from core.version import MODEL_VERSION
 from core.world import PROFILE_NOISE
 
 
@@ -136,6 +137,21 @@ def confidence(data_status: str, history_len: int, ratio_stability: float) -> fl
     return status_factor * history_factor * stability_factor
 
 
+def get_station_multiplier_at_tick(
+    events: Sequence[SimEvent],
+    station_id: str,
+    tick: int,
+    fallback: float = 1.0,
+) -> float:
+    """Return active demand multiplier if a DEMAND_SPIKE event targets this station."""
+    for event in events:
+        if event.type is SimEventType.DEMAND_SPIKE and event.start_tick <= tick <= event.end_tick:
+            target = event.parameters.get("station_id")
+            if target in (None, station_id):
+                return float(event.parameters.get("multiplier", fallback))
+    return fallback
+
+
 def forecast_pair(
     snapshot: Snapshot,
     station: Station,
@@ -154,7 +170,20 @@ def forecast_pair(
         key=lambda row: (row.tick, row.id),
     )[-100:]
     expected_history = [
-        expected_demand(station.demand_profile, fuel_type, row.sim_time, 1.0, tick_minutes)
+        expected_demand(
+            station.demand_profile,
+            fuel_type,
+            row.sim_time,
+            (
+                getattr(row, "multiplier", None)
+                or (
+                    get_station_multiplier_at_tick(snapshot.events, station.id, row.tick, 1.0)
+                    if MODEL_VERSION >= "1.2.0"
+                    else 1.0
+                )
+            ),
+            tick_minutes,
+        )
         for row in history
     ]
     observed_history = [row.demand_liters for row in history]
