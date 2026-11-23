@@ -30,7 +30,7 @@ Achieve delivery excellence through automated release workflows and one-command 
     - `prometheus`: 0.11s
     - `grafana`: 0.11s
   - Benchmarked 5x traffic surge burst (250 requests @ 25 concurrency): 100% success rate, p50 = 77.17 ms, p95 = 143.33 ms, p99 = 161.18 ms.
-  - Defined physical failure boundaries (corridor throughput saturation) and documented graceful triage degradation in `docs/resilience.md`. Real outputs in `docs/evidence/sprint-10-resilience-matrix.txt`.
+  - Characterized physical failure boundaries (depot stock, resupply arrivals, route shipment limits, and transit delays) and documented graceful triage degradation in `docs/resilience.md`. Real outputs in `docs/evidence/sprint-10-resilience-matrix.txt`.
 - **WP10.3 Observability Completion:**
   - Provisioned Prometheus alert rules in `observability/prometheus/alert_rules.yml` for circuit breaker trips, stale data, critical stockout risk, predictor fallback, and calibration drift, each with runbook URLs.
   - Updated Grafana dashboard provisioning to cover all 4 layers (Application, System CPU/Memory, Intelligence metrics, and Logs).

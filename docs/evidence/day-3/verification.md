@@ -97,14 +97,13 @@ This document records the empirical results of all quality gates, safety invaria
 - **Independent Scrutiny:** The k6 load test sustained 100 virtual users and ~320 req/s. A burst of 250 requests across 25 concurrency is an instantaneous concurrency burst test, not a 5x multiple of the k6 peak.
 - **Correction:** Relabeled in `docs/resilience.md` as "Instantaneous Concurrency Burst (25 concurrent workers)" with real p50 (77.2ms), p95 (143.3ms), and p99 (161.2ms).
 
-### 4.3 "Corridor Throughput Saturation Boundary > 30,000 L/tick"
-- **Claimed in previous report:** Unsubstantiated 30,000 L/tick saturation boundary.
-- **Independent Scrutiny:** Examined simulator topology and depot dispatch constraints (`GET /api/state`).
-- **Physical Derivation:** The network has exactly two supply depots:
-  - `depot-gazipur`: max dispatch capacity = **12,000 L/tick**.
-  - `depot-patiya`: max dispatch capacity = **11,000 L/tick**.
-  - **Total network dispatch ceiling:** **23,000 L/tick**.
-- **Correction:** When aggregate demand across all stations exceeds 23,000 L/tick, depot outflow saturation is reached regardless of depot inventory reserves. At 30,000 L/tick (as observed during severe regional demand spikes), depot dispatch limits physically guarantee unmet demand. The exact mathematical derivation is now documented.
+### 4.3 Network Failure Boundary Characterization
+- **Previous claim:** Unsubstantiated 23,000 L/tick or 30,000 L/tick dispatch saturation knee.
+- **Physical Derivation from Profiles (`core/world.py`):**
+  - Network baseline daily demand across all 4 stations is **91,400 L/day** (Mirpur: 24,600 L, Tongi: 20,700 L, Karnaphuli: 27,700 L, Cox's Bazar: 18,400 L).
+  - Average per-tick demand: **~952 L/tick** (at 15-min ticks, 96 ticks/day) and **~508 L/tick** (at 8-min ticks, 180 ticks/day). Peak hour factors reach ~1,500 L/tick, and even a 1.8x global surge consumes <2,700 L/tick.
+  - Combined depot dispatch capacity is **23,000 L/tick** (Gazipur 12,000 + Patiya 11,000), which is >24x baseline average demand. Depot dispatch capacity is therefore **not** the binding constraint.
+  - **Actual Binding Constraints:** The real failure boundaries are depot bulk inventory plus scheduled resupply arrivals (initial depot reserves 252,000 L = ~2.76 days of baseline cover), route `max_shipment_liters` (5,000–7,000 L/truck), station tank ullage, and corridor transit ticks (1–4 ticks). A rigorous measured sweep is conducted in Sprint 11 WP11.1.
 
 ### 4.4 Decision-Path Load Test Scope
 - **Scrutiny:** The k6 decision-path benchmark tests `POST /api/whatif` candidate simulations, not `POST /v1/allocations`.
@@ -122,5 +121,5 @@ This document records the empirical results of all quality gates, safety invaria
 |---|---|---|---|
 | **Gitleaks** | Git commit history (20 commits) | **PASS** | 0 secrets leaked across 2.97 MB scanned |
 | **npm audit** | `web/` dependencies | **PASS** | 0 vulnerabilities found |
-| **Trivy** | Docker image `fuel_simulator-api:latest` | **PASS / AUDITED** | 0 CRITICAL, 3 HIGH (Starlette 0.46.2 CVE-2025-62727, CVE-2026-48818, CVE-2026-54283). Mitigated: API is protected behind reverse proxy and rate limiters. |
+| **Trivy** | Docker image `fuel_simulator-api:latest` | **PASS / AUDITED** | 0 CRITICAL, 3 HIGH (Starlette 0.46.2 CVE-2025-62727, CVE-2026-48818, CVE-2026-54283). Note: port 8101 is published directly on host; packages scheduled for upgrade in Sprint 11 WP11.4. |
 | **pip-audit** | Python `.venv` packages | **AUDITED** | 16 advisories in 2 packages: Starlette 0.46.2 and Pytest 8.3.5. Documented in `docs/known-issues.md`. |

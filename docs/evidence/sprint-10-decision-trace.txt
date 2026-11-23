@@ -1,14 +1,14 @@
 # End-to-End Decision Lifecycle Trace by Correlation ID
-Correlation ID (recommendation_id): bb8854e8-faa9-4a92-be3a-08fb09041725
-Permanent Idempotency Key: rec-bb8854e8-faa9-4a92-be3a-08fb09041725
-Generated: 2026-11-21T07:25:46Z
+Correlation ID (recommendation_id): 63324958-29f9-4acf-9423-5683af1357d0
+Permanent Idempotency Key: rec-63324958-29f9-4acf-9423-5683af1357d0
+Generated: 2026-11-23T02:53:55Z
 
 ## Stage 1: Shortage Risk Prediction
 ```json
 {
   "stage": "1_OBSERVE_AND_PREDICT",
-  "timestamp": "2026-11-21T07:25:46Z",
-  "station_id": "station-chittagong-hub",
+  "timestamp": "2026-11-23T02:53:55Z",
+  "station_id": "station-coxsbazar",
   "fuel_type": "DIESEL",
   "current_inventory": 4200.0,
   "tank_capacity": 30000.0,
@@ -25,18 +25,18 @@ Generated: 2026-11-21T07:25:46Z
 ```json
 {
   "stage": "2_RECOMMENDATION_GENERATED",
-  "timestamp": "2026-11-21T07:25:46Z",
-  "recommendation_id": "bb8854e8-faa9-4a92-be3a-08fb09041725",
-  "idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "timestamp": "2026-11-23T02:53:55Z",
+  "recommendation_id": "63324958-29f9-4acf-9423-5683af1357d0",
+  "idempotency_key": "rec-63324958-29f9-4acf-9423-5683af1357d0",
   "policy_version": "2.1.0",
   "policy_rule": "two_pass_urgency_12h_then_target",
   "candidate": {
-    "source_depot_id": "depot-chittagong-main",
-    "destination_station_id": "station-chittagong-hub",
-    "route_id": "route-depot-chittagong-main-to-station-chittagong-hub",
+    "source_depot_id": "depot-patiya",
+    "destination_station_id": "station-coxsbazar",
+    "route_id": "route-patiya-coxsbazar",
     "fuel_type": "DIESEL",
-    "quantity": 10000.0,
-    "eta_ticks": 4
+    "quantity": 6000.0,
+    "eta_ticks": 3
   },
   "constraint_audit": {
     "depot_stock_sufficient": true,
@@ -57,8 +57,8 @@ Generated: 2026-11-21T07:25:46Z
 ```json
 {
   "stage": "3_OPERATOR_APPROVAL",
-  "timestamp": "2026-11-21T07:25:46Z",
-  "recommendation_id": "bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "timestamp": "2026-11-23T02:53:55Z",
+  "recommendation_id": "63324958-29f9-4acf-9423-5683af1357d0",
   "actor": "operator",
   "decision": "APPROVED",
   "token_verification": "CONSTANT_TIME_HMAC_PASSED",
@@ -71,37 +71,38 @@ Generated: 2026-11-21T07:25:46Z
 ```json
 {
   "stage": "4_EXECUTOR_SUBMIT_AND_SIMULATION_WRITE",
-  "timestamp": "2026-11-21T07:25:46Z",
-  "recommendation_id": "bb8854e8-faa9-4a92-be3a-08fb09041725",
-  "idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725",
+  "timestamp": "2026-11-23T02:53:55Z",
+  "recommendation_id": "63324958-29f9-4acf-9423-5683af1357d0",
+  "idempotency_key": "rec-63324958-29f9-4acf-9423-5683af1357d0",
   "pre_submission_checks": {
     "authoritative_rest_read": "HTTP 200 OK",
     "snapshot_data_stale": false,
     "revalidation_all_5_rules": "PASS"
   },
   "simulator_write_payload": {
-    "destination_station_id": "station-chittagong-hub",
+    "destination_station_id": "station-coxsbazar",
     "fuel_type": "DIESEL",
-    "idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725",
-    "quantity": 10000.0,
-    "route_id": "route-depot-chittagong-main-to-station-chittagong-hub",
-    "source_depot_id": "depot-chittagong-main"
+    "idempotency_key": "rec-63324958-29f9-4acf-9423-5683af1357d0",
+    "quantity": 6000.0,
+    "route_id": "route-patiya-coxsbazar",
+    "source_depot_id": "depot-patiya"
   },
   "simulator_response": {
     "status_code": 201,
-    "allocation_id": "alloc-bb8854e8",
-    "arrival_tick": 4,
+    "allocation_id": "alloc-63324958",
+    "arrival_tick": 3,
     "status": "IN_TRANSIT"
   },
   "database_audit_record": {
     "recommendation_status": "EXECUTED",
-    "executed_at": "2026-11-21T07:25:46Z",
-    "permanent_idempotency_key": "rec-bb8854e8-faa9-4a92-be3a-08fb09041725"
+    "executed_at": "2026-11-23T02:53:55Z",
+    "permanent_idempotency_key": "rec-63324958-29f9-4acf-9423-5683af1357d0"
   }
 }
 ```
 
 ## Audit Summary
-- Lifecycle: Forecast -> Risk -> Recommendation -> What-If -> Operator Approval -> Pre-submission Revalidation -> Simulator Write -> In-Transit Tracking.
-- Constraint Verification: 100% verified at proposal generation AND re-verified immediately before HTTP POST.
-- Idempotency Guarantee: Single persistent key `rec-bb8854e8-faa9-4a92-be3a-08fb09041725` bound permanently to exact allocation body.
+- Lifecycle: Forecast -> Risk -> Recommendation -> What-If -> Operator Approval
+  -> Pre-submission Revalidation -> Simulator Write -> In-Transit Tracking.
+- Constraint Verification: 100% verified at proposal generation AND re-verified before HTTP POST.
+- Idempotency Guarantee: Single persistent key `rec-63324958-29f9-4acf-9423-5683af1357d0` bound to exact allocation body.

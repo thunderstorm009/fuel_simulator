@@ -1,5 +1,5 @@
 name: supply_shortfall
-description: Upstream refinery supply shortfall scaling planned DIESEL arrivals to 50% at Gazipur depot.
+description: Upstream supply shortfall scaling planned DIESEL arrivals to 50% at Gazipur depot.
 events:
   - type: supply_shortfall
     start_tick: 4

@@ -38,7 +38,7 @@ Forecasts still describe the do-nothing path plus already-known station allocati
 
 ## Two-pass constrained triage (Sprint 8)
 
-During constrained supply (refinery shortfalls, depot throughput limits, or multiple competing stations), single-pass greedy allocation risks starving downstream stations. Sprint 8 introduces a deterministic two-pass triage policy in `core/policies/heuristic.py`:
+During constrained supply (bulk resupply shortfalls, depot throughput limits, or multiple competing stations), single-pass greedy allocation risks starving downstream stations. Sprint 8 introduces a deterministic two-pass triage policy in `core/policies/heuristic.py`:
 - **Pass 1 (Emergency stockout prevention):** Determines the minimum 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk pair, allocating survival fuel to the most urgent stations first.
 - **Pass 2 (Target top-up):** Uses remaining depot physical inventory and remaining tick dispatch capacity to top stations up toward their 70% target inventory.
 - Physical reservations carry across passes monotonically.

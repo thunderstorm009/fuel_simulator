@@ -14,11 +14,11 @@
 Over the final 24 hours of autonomous engineering (Sprints 8, 9, and 10), the Fuel Supply Intelligence & Resilience Platform transitioned from a solid core architecture into an end-to-end, audited, mathematically constrained, and highly observable decision platform.
 
 Key achievements delivered and independently verified today:
-1. **Mathematical Constraints & Triage:** Delivered a two-pass constrained triage engine carrying depot reservations across passes, a P90 uncertainty buffer, and an optional Linear Programming solver (`scipy.optimize.linprog`) enforcing physical conservation laws.
-2. **Interactive Decision Sandbox (What-If):** Implemented a zero-database in-memory candidate evaluator (`POST /api/whatif`) executing in <50ms with a modern interactive frontend drawer.
+1. **Mathematical Constraints & Triage:** Delivered a two-pass constrained triage engine carrying depot reservations across passes, a P90 uncertainty buffer, and an optional Linear Programming solver (`scipy.optimize.linprog`) enforcing physical inventory, route shipment, and tank capacity constraints.
+2. **Interactive Decision Sandbox (What-If):** Implemented a zero-database in-memory candidate evaluator (`POST /api/whatif`) executing in <50ms unloaded (~834ms under 100 VU load) with a modern interactive frontend drawer.
 3. **Pure Detection & Crisis Coverage:** Built pure event detectors covering all 6 crisis types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`), proven across 54 deterministic scenario runs with 0.0000 variation.
 4. **Complete Operator Interface:** Filled all five UI coverage gaps (Regional Demand Panel, Incoming Supply Pipeline, Crisis Alert Center, Network Topology View, and Backtest/Policy Evaluation View).
-5. **Observability & Resilience Limits:** Codified Prometheus alert rules as code with operational runbooks; traced complete decision lifecycles by correlation ID; and empirically measured physical corridor throughput ceilings (23,000 L/tick dispatch limit).
+5. **Observability & Resilience Limits:** Codified Prometheus alert rules as code with operational runbooks; traced complete decision lifecycles by correlation ID; and characterized physical failure boundaries across depot reserves, resupply arrivals, route shipment caps, and transit delays.
 6. **Delivery Excellence:** Hardened token verification using constant-time comparison with sliding-window rate limiting (60 req/min); automated release workflows (`release.yml`); executed an automated container rollback drill; and verified zero secret leaks across all 20 git commits.
 
 ---
@@ -104,11 +104,11 @@ All screenshots were captured directly from the live application running on macO
 
 ### 7. Regional Demand Breakdown (`07-regional-demand.png`)
 ![Regional Demand](evidence/day-3/screens/07-regional-demand.png)
-*Corridor-level fuel consumption panel tracking demand aggregates and surge multipliers across Dhaka, Chittagong, and regional highways.*
+*Regional fuel consumption panel tracking demand aggregates and surge multipliers across Dhaka and Chattogram regions across highway, urban, industrial, and regional profiles.*
 
 ### 8. Incoming Supply Pipeline (`08-incoming-supply.png`)
 ![Incoming Supply](evidence/day-3/screens/08-incoming-supply.png)
-*Pipeline view of scheduled bulk refinery deliveries to depots and in-transit replenishment trucks with arrival ETA ticks.*
+*Pipeline view of scheduled bulk supply deliveries to depots and in-transit replenishment trucks with arrival ETA ticks.*
 
 ### 9. Topological Network View (`09-network.png`)
 ![Network View](evidence/day-3/screens/09-network.png)
@@ -157,7 +157,7 @@ The platform's decision core consists entirely of pure Python functions with zer
    - **Pass 1 (Emergency):** Prioritizes stations facing stockout within 12 hours, allocating minimum survival quantities while locking depot capacity.
    - **Pass 2 (Balanced):** Fills remaining tank ullage proportionally across stations without violating locked depot dispatch limits.
 3. **P90 Uncertainty Buffer:** Inflates replenishment thresholds by P90 demand variance, ensuring stations do not stock out during peak consumption noise.
-4. **Mathematical Optimization (`optimizer.py`):** Constrained Linear Programming formulation via SciPy (`scipy.optimize.linprog`) enforcing tank ullage, depot stock, and corridor throughput vectors. Disabled by default; activated via `ALLOCATION_POLICY=optimizer`.
+4. **Mathematical Optimization (`optimizer.py`):** Constrained Linear Programming formulation via SciPy (`scipy.optimize.linprog`) enforcing tank ullage, depot stock, and route max shipment limits. Disabled by default; activated via `ALLOCATION_POLICY=optimizer`.
 5. **Backtesting Engine (`backtest.py`):** Pure evaluation of historical MAPE and interval coverage across rolling prediction windows.
 6. **Honest Algorithmic Limits:**
    - *Deterministic Simulator:* Because the simulator generates demand using deterministic diurnal curves with seeded noise, low MAPE values (2.1%–3.1%) demonstrate implementation consistency with the simulator's equations, not general real-world accuracy.
@@ -185,13 +185,18 @@ The platform's decision core consists entirely of pure Python functions with zer
 - **Database Query Availability:** Following a hard database restart, the PostgreSQL database is ready to accept application queries in **~1.2s–1.5s**. Full Docker healthcheck (`Health=healthy`) reports in **5.18s** (governed by `interval: 5s` in Compose).
 - **Graceful API Degradation:** When PostgreSQL is stopped, the API gracefully degrades to HTTP 503 with structured JSON error shapes; the frontend displays a persistent OFFLINE banner; and the worker pauses polling without crashing.
 
-### 7.2 Physical Corridor Failure Boundaries
-- **Total Network Outflow Ceiling:** The physical simulator topology contains two supply depots:
-  - `depot-gazipur`: max dispatch capacity = **12,000 L/tick**.
-  - `depot-patiya`: max dispatch capacity = **11,000 L/tick**.
-  - **Combined network ceiling = 23,000 L/tick.**
-- **Physical Saturation Knee:** When aggregate regional demand across retail stations exceeds **23,000 L/tick** (or rises to 30,000 L/tick during multi-region demand spikes), depot outflow saturation is reached. No allocation algorithm can achieve 0 unmet demand because physical pipeline capacity is exceeded.
-- **Graceful Triage Response:** Rather than failing, the heuristic policy enters emergency triage mode, distributing survival fuel (Pass 1) and tagging partial allocations with `is_partial=True`.
+### 7.2 Physical Failure Boundaries vs Dispatch Capacity
+- **Demand Arithmetic vs Dispatch Limits (`core/world.py`):**
+  - Total network baseline demand across all 4 stations (`station-mirpur`, `station-tongi`, `station-karnaphuli`, `station-coxsbazar`) is **91,400 L/day** across all fuels.
+  - At 15-minute ticks (96 ticks/day), average demand is **~952 L/tick** (and **~508 L/tick** at 8-minute ticks).
+  - Peak baseline demand at maximum hourly factors reaches ~1,500 L/tick, and even an extreme 1.8x global surge is <2,700 L/tick.
+  - The two supply depots have a combined dispatch capacity of **23,000 L/tick** (`depot-gazipur`: 12,000 L/tick, `depot-patiya`: 11,000 L/tick). Because 23,000 L/tick is >24x baseline average demand, depot dispatch capacity is **not** the binding constraint.
+- **Actual Physical Binding Constraints:**
+  - **Depot Inventory & Resupply:** Initial combined depot inventory is 252,000 L (Gazipur 131,000 L + Patiya 121,000 L), providing approximately 2.76 days of baseline demand without resupply. When scheduled resupply arrivals are delayed or reduced by shortfall factors, depot stock exhausts.
+  - **Route Max Shipment Caps:** Routes restrict dispatches to 5,000–7,000 L per allocation batch.
+  - **Station Tank Headroom:** Allocations cannot exceed destination tank ullage.
+  - **Transit Delays:** Deliveries take 1–4 transit ticks and cannot arrive instantly.
+- **Graceful Triage Response:** Rather than failing, the heuristic policy enters emergency triage mode, distributing 12h survival fuel (Pass 1) and tagging partial allocations with `is_partial=True` and unserved reason codes.
 
 ---
 
@@ -203,7 +208,7 @@ The platform's decision core consists entirely of pure Python functions with zer
 - **Multi-Engine Security Scans:**
   - **Gitleaks:** Scanned all 20 git commits across 2.97 MB. **0 secrets found.**
   - **npm audit:** Scanned frontend dependency graph. **0 vulnerabilities found.**
-  - **Trivy:** Scanned `fuel_simulator-api:latest`. **0 CRITICAL vulnerabilities.** (3 High vulnerabilities reported in Starlette 0.46.2, mitigated behind reverse proxy).
+  - **Trivy:** Scanned `fuel_simulator-api:latest`. **0 CRITICAL vulnerabilities.** (3 High vulnerabilities reported in Starlette 0.46.2; port 8101 is published directly on host; dependency upgrade scheduled in Sprint 11 WP11.4).
   - **pip-audit:** Scanned Python environment. 16 advisories reported across Starlette and Pytest. Documented in `docs/known-issues.md`.
 
 ---
@@ -260,20 +265,21 @@ Tested candidate What-If simulations (`POST /api/whatif`) concurrently with read
 
 ## 12. Brief Compliance Audit
 
-Independent verification of `docs/BRIEF-COMPLIANCE.md` confirmed **100% compliance** across all 26 sections of the official BUP CSE Fest 2026 Hackathon Brief:
-- **Total Requirements Evaluated:** 52 line items across Sections 4 through 26.
-- **MET:** 51 items (verified with tests, code references, and live screenshots).
-- **OPTIONAL-SKIPPED:** 1 item (Section 8: Reinforcement Learning allocation policy; explicitly optional in the brief and omitted per AGENTS.md).
-- **PARTIAL / NOT MET:** 0 items.
+Independent verification of `docs/BRIEF-COMPLIANCE.md` against the official BUP CSE Fest 2026 Hackathon Brief text (`reference/`):
+- **Total Requirements Evaluated:** 109 line items across Sections 4 through 26.
+- **MET:** 107 items (verified with tests, code references, and live screenshots).
+- **OPTIONAL-SKIPPED:** 1 item (Section 8.1: Reinforcement Learning allocation policy; explicitly optional in the brief and omitted per AGENTS.md).
+- **PARTIAL:** 1 item (Section 19.5: Automated dependency scanning; Gitleaks and npm audit pass, but pip-audit/Trivy report 3 High Starlette advisories scheduled for patching in Sprint 11 WP11.4).
+- **NOT MET:** 0 items.
 
 ---
 
 ## 13. Known Issues and Limitations
 
 As documented in `docs/known-issues.md`:
-1. **Concurrency Knee at 100 VUs:** At 100 concurrent virtual users, connection contention at the FastAPI/asyncpg layer pushes p95 latency to ~1.2s. Throughput remains stable at 131 req/s with 0% errors.
-2. **Upstream Starlette Advisories:** Trivy and pip-audit report 3 High vulnerabilities in Starlette 0.46.2 (bundled via FastAPI 0.115). Mitigated by running behind Docker bridge networks without direct public ingress.
-3. **Drift Adaptation Lag:** Under sudden synthetic 2.5x demand surges, the EWMA calibration ratio requires 4–6 ticks to catch up to actual consumption.
+1. **Concurrency Knee at 100 VUs:** At 100 concurrent virtual users, connection contention at the FastAPI/asyncpg layer pushes p95 latency to ~1.2s (What-If p95: ~834ms). Throughput remains stable at 131 req/s with 0% errors. Performance optimizations are addressed in Sprint 12 WP12.1.
+2. **Upstream Starlette Advisories:** Trivy and pip-audit report 3 High vulnerabilities in Starlette 0.46.2. Port 8101 is published on the host; dependency upgrades to patched versions are addressed in Sprint 11 WP11.4.
+3. **Drift Adaptation Lag:** Under sudden synthetic 2.5x demand surges, the EWMA calibration ratio requires 4–6 ticks to catch up to actual consumption. Event-aware calibration is addressed in Sprint 11 WP11.3.
 
 ---
 
@@ -299,3 +305,17 @@ All evidence files generated today are permanently preserved in the repository:
 - Rollback Drill Output: `docs/evidence/sprint-10-rollback-drill.txt`
 - Decision Lifecycle Trace: `docs/evidence/sprint-10-decision-trace.txt`
 - Resilience Matrix: `docs/evidence/sprint-10-resilience-matrix.txt`
+
+---
+
+## 16. Corrections to Day 3 Claims (Sprint 11 Truth Audit)
+
+In accordance with Sprint 11 WP11.0, an exhaustive audit was conducted across Day 3 claims, code, tests, and documentation:
+
+1. **Failure Boundary & Dispatch Capacity:** The Day 3 claim of a "23,000 L/tick dispatch ceiling" and "30,000 L/tick demand saturation knee" derived from depot dispatch capacity was corrected. True network baseline demand across all 4 stations (`world.py`) is 91,400 L/day (~952 L/tick average at 15-min ticks, ~508 L/tick at 8-min ticks). The 23,000 L/tick depot dispatch capacity is >24x average demand and is not the binding constraint. The real binding boundaries are depot bulk inventory plus scheduled resupply arrivals (~2.76 days initial baseline cover), route max shipment limits (5,000–7,000 L), station tank ullage, and transit delay ticks (1–4 ticks).
+2. **What-If Latency Clarification:** Clarified that the "<50ms" What-If latency applies specifically to unloaded in-memory candidate simulations. Under 100 VU concurrent k6 load, What-If median latency is 122–150 ms and p95 is ~834 ms.
+3. **Regional Terminology:** Corrected all references from "Chittagong" to "Chattogram". Corrected "regional highways" from being mislabeled as a region to being identified as a station demand profile (`highway`); the simulator features two distinct regions: `region-dhaka` and `region-chattogram`.
+4. **Supply Concept Precision:** Replaced all informal references to "refinery" and "pipeline capacity" with simulator concepts: scheduled bulk depot supply arrivals (`/v1/supply-arrivals`) and road transport routes (`/v1/routes`).
+5. **Security Posture Transparency:** Removed the unsupported claim that Starlette vulnerabilities are "mitigated behind a reverse proxy", as port 8101 is published directly on the host. Scheduled immediate package upgrades in Sprint 11 WP11.4.
+6. **Recovery Time Distinction:** Clarified that container process restart times (0.10s–0.23s) are distinct from full end-to-end query recovery (~1.2s) and Compose healthcheck reporting (5.18s).
+7. **Compliance Count Accuracy:** Re-enumerated the compliance matrix directly from the extracted Hackathon Brief PDF text, correcting the count from 52 self-graded items to 109 systematically tracked requirements (107 MET, 1 OPTIONAL-SKIPPED, 1 PARTIAL).

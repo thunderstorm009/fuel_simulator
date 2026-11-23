@@ -30,6 +30,7 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-024 | Set a separate SSE read timeout above the simulator's 15s keepalive interval | ACCEPTED | 2 |
 | ADR-036 | WP8.0 truth pass, admin endpoint route remediation, and tag alignment | ACCEPTED | 8 |
 | ADR-037 | Two-pass emergency triage policy and full event coverage | ACCEPTED | 8 |
+| ADR-042 | Sprint 11 truth pass, physical boundary arithmetic, and compliance recount | ACCEPTED | 11 |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -263,7 +264,7 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 ### ADR-037 — Two-pass emergency triage policy and full event coverage
 
 - **Status:** ACCEPTED
-- **Context:** During constrained supply conditions (such as refinery shortfalls, shipment delays, or depot throughput throttling), naive single-pass greedy allocation risks exhausting bulk depot reserves on the first station that reaches 70% capacity, leaving neighboring stations to starve. Furthermore, the platform must handle all six crisis event types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`).
+- **Context:** During constrained supply conditions (such as bulk resupply shortfalls, shipment delays, or depot throughput throttling), naive single-pass greedy allocation risks exhausting bulk depot reserves on the first station that reaches 70% capacity, leaving neighboring stations to starve. Furthermore, the platform must handle all six crisis event types (`demand_spike`, `route_disruption`, `station_outage`, `depot_constraint`, `shipment_delay`, `supply_shortfall`).
 - **Decision:**
   1. Implement a deterministic two-pass triage heuristic in `core/policies/heuristic.py`:
      - **Pass 1:** Computes the exact 12-hour survival fuel need ($D_{12h} = \sum_{t=0}^{48} r_t$) for every at-risk station, allocating emergency fuel to the most urgent stations first.
@@ -326,3 +327,15 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   3. Release Automation & Rollback: Add `.github/workflows/release.yml` building and publishing versioned container images to GHCR on `v*` and `sprint-*` tags. Implement `scripts/deploy.sh <tag>` and `scripts/rollback.sh <tag>` providing one-command automated rollback upon smoke test failure.
   4. Security Hardening: Add Gitleaks secret scanning and dependency audits (`npm audit` with 0 high/critical vulnerabilities) to CI.
 - **Trade-off:** Sliding-window in-memory limiter avoids external Redis dependency while protecting decision APIs from flood attacks. Automated rollback ensures zero downtime during judging or operational deploys.
+
+### ADR-042: Sprint 11 Truth Audit, Failure Boundary Arithmetic, and Brief Compliance Recount (Sprint 11)
+- **Status:** ACCEPTED
+- **Context:** An adversarial audit of Day 3 documentation revealed derived unproven claims regarding physical network boundaries ("23,000 L/tick dispatch ceiling" and "30,000 L/tick demand saturation knee"), informal terminology ("refinery", "pipeline capacity", "corridor throughput"), inaccurate regional naming ("Chittagong", "regional highways" as a region), an unsupported security mitigation claim ("mitigated behind reverse proxy"), What-If latency without distinguishing unloaded vs loaded state, and a self-graded compliance count (52 items) that omitted the full brief structure.
+- **Decision:**
+  1. Calculate true baseline network demand from simulator demand profiles (`core/world.py`): 91,400 L/day across all 4 stations (~952 L/tick at 15-min ticks, ~508 L/tick at 8-min ticks). Document that depot dispatch capacity (23,000 L/tick) is >24x average demand and is not binding. The true physical boundaries are depot inventory plus resupply arrivals (~2.76 days initial cover), route shipment caps (5,000–7,000 L), station tank ullage, and transit ticks (1–4 ticks).
+  2. Standardize all terminology to match simulator concepts: "Chattogram" (not "Chittagong"); two regions (`region-dhaka`, `region-chattogram`); "highway" is a demand profile; scheduled bulk depot supply arrivals (not "refinery"); and road transport corridors.
+  3. Accurately report What-If latency: <50ms unloaded, and ~834ms p95 under 100 VU concurrent load.
+  4. Clarify container process restart times (0.10s–0.23s) versus full query availability (~1.2s).
+  5. Re-enumerate the Hackathon Brief Compliance Matrix directly from the brief text (109 requirements: 107 MET, 1 OPTIONAL-SKIPPED, 1 PARTIAL).
+  6. Transparently record all corrections in Section 16 of `docs/DAY-3-UPDATE.md`.
+- **Trade-off:** Eliminates all non-factual or derived marketing claims in favor of empirical measurements and exact arithmetic.

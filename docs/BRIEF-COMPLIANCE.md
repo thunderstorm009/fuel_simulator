@@ -107,7 +107,7 @@
 | 19.2 | Strict schema validation on all inputs (Pydantic models) | **MET** | `backend/shared/core/models.py`, `tests/unit/test_models.py` | Sprint 1 |
 | 19.3 | Token-protected operator actions (`X-Operator-Token`) | **MET** | `backend/api/routes/recommendations.py:15`, `tests/unit/test_policy.py` | Sprint 4 |
 | 19.4 | Automated static analysis (Ruff) and TypeScript strict typechecking | **MET** | `make lint`, `ruff check`, `tsc -b` clean | Sprints 1–7 |
-| 19.5 | Automated dependency vulnerability and secret scan workflows | **MET** | `.github/workflows/ci.yml:security`, `.gitleaks.toml` (0 secrets across 18 commits), `npm audit` (0 vulnerabilities) | Sprint 10 |
+| 19.5 | Automated dependency vulnerability and secret scan workflows | **PARTIAL** | Gitleaks (0 secrets) & npm audit (0 vulns) pass; pip-audit and Trivy show High Starlette advisories; upgrade scheduled in Sprint 11 WP11.4 | Sprint 11 |
 | **20** | **Required Deliverables (The 11 Official Deliverables)** | | | |
 | 20.1 | Deliverable 1: Working Application | **MET** | 8 healthy Docker containers, full operator web interface | Sprint 7 |
 | 20.2 | Deliverable 2: Source Repository | **MET** | Clean git history, structured modules, documented ADRs | Sprints 1–7 |
@@ -136,19 +136,30 @@
 | 23.6 | Step 6: Authenticated operator approval | **MET** | Documented in `docs/final-demo-script.md` | Sprint 4 |
 | 23.7 | Step 7: Worker execution and delivery arrival | **MET** | Proven live in Sprint 4 (arrival at tick 137) | Sprint 4 |
 | 23.8 | Step 8: System recovery monitoring | **MET** | Documented in `docs/resilience.md` | Sprint 5 |
-| **24** | **Evaluation Criteria Alignment** | | | |
-| 24.1 | Technical Execution (40%) | **MET** | Clean code, pure domain logic, strict validation, 141+ tests | Sprints 1–7 |
-| 24.2 | Intelligence & Decision Quality (25%) | **MET** | Empirical EWMA, Monte Carlo risk, explainable heuristics | Sprints 3–4 |
-| 24.3 | Resilience & Fault Handling (15%) | **MET** | Circuit breakers, baseline fallback, zero 5xx under chaos | Sprint 5 |
-| 24.4 | Usability & Human Governance (10%) | **MET** | Modern React UI, constraint audit, token gate, SIMULATED tags | Sprints 2–4 |
-| 24.5 | DevOps, Load & Quality (10%) | **MET** | Compose reproducibility, CI passing, k6 205k requests, 34s cold start | Sprints 6–7 |
-| **25** | **What Judges Look For (Critical Edge-Case Verification)** | | | |
+| **25** | **What Judges Look For (Section 25 / Critical Verification)** | | | |
 | 25.1 | Never exceed depot inventory or destination tank ullage | **MET** | Enforced by `backend/shared/core/validator.py` and pre-submit recheck | Sprint 4 |
 | 25.2 | Never bypass human approval gate | **MET** | Worker executor queries only rows with `status == 'APPROVED'` | Sprint 4 |
 | 25.3 | Never submit allocation on stale snapshot | **MET** | Worker executor expires approval if `snapshot.stale` is true | Sprint 4 |
 | 25.4 | Permanent idempotency key reuse safety | **MET** | `executor.py:85` strictly enforces exact body equality on retry | Sprint 4 |
-| **26** | **Constraints and Guardrails** | | | |
+| **26** | **Constraints and Guardrails (Section 26)** | | | |
 | 26.1 | All operator-facing views labelled SIMULATED | **MET** | Header banner in `web/src/app/App.tsx`, API simulated tags | Sprint 2 |
 | 26.2 | Simulator endpoints never called directly from browser | **MET** | Browser interacts exclusively with port 8101 (`backend/api`) | Sprint 1 |
 | 26.3 | Zero application calls to `/admin/*` | **MET** | Verified by `git grep -n "/admin" -- backend web intel` (0 hits) | Sprint 8 |
 | 26.4 | Clean clone works with zero private prompts or secrets | **MET** | Verified by `scripts/verify_clean_clone.sh` in clean `/tmp` | Sprint 7 |
+
+---
+
+## Evaluation Criteria Alignment (Brief Section 24)
+
+The official Hackathon Brief (Section 24) defines 7 evaluation categories with exact percentage weights:
+
+| Criterion | Weight | Platform Implementation & Evidence | Status |
+|---|---|---|---|
+| **Working Product & User Experience** | 20% | React 19 UI, complete operator workflows, 10 operator views, What-If simulator, constraint checklists, SIMULATED labelling | Verified live (`docs/evidence/day-3/screens/`) |
+| **Intelligence & Decision Quality** | 20% | Diurnal demand forecasting (`forecast.py`), Monte Carlo risk (`risk.py`), explainable two-pass triage (`heuristic.py`), LP optimizer (`optimizer.py`), pure anomaly detectors (`detect.py`) | Verified across 54 deterministic runs (delta 0.0000) |
+| **Architecture & Integration** | 15% | Clean separation of concerns: API DB-only read path, worker simulator I/O ownership, pure domain core, typed `SimClient` with circuit breakers and retries | Verified in architecture review and integration tests |
+| **DevOps & Engineering Quality** | 15% | Docker Compose (8 services), release workflow, rollback automation (`deploy.sh`, `rollback.sh`), clean clone verification, 182 Python + 11 Vitest tests | Verified in automated gates and scripts |
+| **Resilience & Incident Response** | 15% | Handles all 5 simulator faults + outages; circuit breakers; baseline heuristic fallback; measured recovery times; reversible chaos | Verified in `docs/resilience.md` |
+| **Observability & Performance** | 10% | 4-layer Prometheus metrics, provisioned Grafana dashboards, alert rules as code, k6 load benchmarks (205k requests, 0% errors) | Verified in `docs/loadtest.md` and Grafana panels |
+| **Demo & Problem Understanding** | 5% | 10-minute presentation guide (`docs/JUDGING-DAY.md`), surprise drill rehearsal (`scripts/surprise_drill.sh`), clean clone in 34s | Rehearsed and verified |
+| **Total** | **100%** | Full alignment across all brief evaluation dimensions | Fully aligned |

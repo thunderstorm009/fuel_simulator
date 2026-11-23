@@ -1,33 +1,31 @@
 # Project progress
 
-Last updated: 2026-11-21. Resume point for the shared repository worktree.
+Last updated: 2026-11-23. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `sprints-8-10`, based on `dc7f60f`. Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
+- Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`.
 - Sprints 1–10: All gates passed and tagged.
-- Day 3 Verification & Publication: COMPLETE. 182 Python tests, 11 Vitest tests, 17 genuine screenshots captured, 54 deterministic scenario runs (delta 0.0000), 2,000-tick backtest calibration, decision-path k6 benchmark, and full Hackathon Brief Compliance Matrix (100% MET/OPTIONAL-SKIPPED).
-- Next: Branch publish and pull request creation.
+- Sprint 11: In progress. WP11.0 (Truth pass on Day 3 and related docs) COMPLETE.
+- Next: WP11.1 Measured failure boundary (P0).
 
 ## Verification in this work package
 
-- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed; 88 files checked, 0 errors.
-- `.venv/bin/pytest tests/`: 182 Python tests passed in 1.63s.
-- `npm --prefix web test -- --run && npm --prefix web run build`: 11 Vitest tests passed; Vite production build passed cleanly (508 modules).
-- `docker compose config -q`: passed.
+- Truth-pass grep: `git grep -n -i "refinery\|pipeline capacity\|corridor throughput\|chittagong\|conservation law\|reverse proxy\|vehicle quota\|price spike\|redis\|cryptograph" -- . ':!prompts' ':!reference'`: all hits verified as true (ADRs, historical audits, or Day 3 corrections).
+- Brief compliance matrix re-enumerated from brief text: 109 requirements (107 MET, 1 OPTIONAL-SKIPPED, 1 PARTIAL).
+- Derived physical limits replaced with exact demand arithmetic from `core/world.py`: 91,400 L/day across 4 stations, ~952 L/tick (15-min) average, depot dispatch capacity (23k L/tick) is >24x demand and not binding; binding limits are depot stock, resupply arrivals, route shipment caps (5-7k L), tank ullage, and transit delay.
+- What-If latency accurately stated (<50ms unloaded, ~834ms under 100 VU load).
+- Container process restart times (0.10s-0.23s) distinguished from full query recovery (~1.2s).
+- `.venv/bin/ruff format --check . && .venv/bin/ruff check .`: passed.
+- `.venv/bin/pytest tests/`: 182 passed.
+- `npm --prefix web run typecheck && npm --prefix web run test`: passed (11 Vitest tests).
 - `git diff --check`: passed.
-- `bash scripts/sprint_gate.sh 8, 9, 10`: all passed exit 0.
-- `bash scripts/verify_clean_clone.sh`: passed exit 0.
-- Gitleaks & npm audit: 0 secrets leaked across 20 commits, 0 npm vulnerabilities.
-- Real screenshots: 17 PNG captures in `docs/evidence/day-3/screens/` verified < 440 KB.
-- Automated rollback: tested live with `scripts/deploy.sh` and `scripts/rollback.sh`.
-- Decision load test: 8,540 requests @ 100 VUs, median 150.1ms, 0.0% error rate.
-- Brief compliance: 100% of requirements across sections 4-26 verified as MET or OPTIONAL-SKIPPED.
 
 ## Current work package and exact next action
 
-All 10 Sprints and Day 3 deliverables are COMPLETE, audited, and committed.
-Next action: Pre-push verification, push branch `sprints-8-10` and tags to origin, and create pull request.
+Sprint 11 WP11.0 complete.
+Next action: WP11.1 Measured failure boundary (P0) — parameter sweeps across 192+ ticks for demand spikes, supply shortfalls, disrupted routes, station outages, and combined crisis scenarios.
+
 
 ## Workspace constraints
 

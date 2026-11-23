@@ -23,7 +23,7 @@
 
 ## Project Overview
 
-In regional fuel logistics, supply chain disruptions—such as highway blockages, unexpected demand spikes, refinery delays, and transport bottlenecks—can quickly trigger cascading stockouts at retail filling stations.
+In regional fuel logistics, supply chain disruptions—such as highway blockages, unexpected demand spikes, supply arrival delays, and transport bottlenecks—can quickly trigger cascading stockouts at retail filling stations.
 
 The **Fuel Supply Intelligence & Resilience Platform** provides an integrated operational control loop on top of the official BUP CSE Fest 2026 Fuel Supply Simulator. It connects to the simulator's REST and Server-Sent Event (SSE) streams, continuously ingests downstream fuel distribution telemetry, forecasts future stockout trajectories using pure statistical models, and produces constrained, explainable replenishment recommendations.
 
@@ -45,7 +45,7 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 - **2. Detect:** Pure mathematical anomaly detectors (`backend/shared/core/detect.py`) identifying demand surges (ratio >= 1.3), corridor disruptions, station outages, depot constraints, and model calibration drift.
 - **3. Predict:** Pure empirical demand forecasting with diurnal curve modeling (`forecast.py`) and Monte Carlo stockout risk projection with P10–P90 confidence intervals (`risk.py`).
 - **4. Decide:** Constrained two-pass triage heuristic prioritizing stations facing stockout within 12 hours while locking depot dispatch capacity; optional SciPy Linear Programming solver (`optimizer.py`).
-- **5. Simulate:** Pure zero-database in-memory What-If simulator (`POST /api/whatif`, `WhatIfSimulator.tsx`) computing post-dispatch tank inventory and averted stockout hours in <50ms prior to decision.
+- **5. Simulate:** Pure zero-database in-memory What-If simulator (`POST /api/whatif`, `WhatIfSimulator.tsx`) computing post-dispatch tank inventory and averted stockout hours (<50ms unloaded, ~834ms under 100 VU load) prior to decision.
 - **6. Approve:** Enforced human authority gate using constant-time token comparison (`hmac.compare_digest`) with sliding-window rate limiting (60 req/min).
 - **7. Act:** Outbox-pattern background executor re-verifying freshness and physical constraints at the exact moment of dispatch; permanent idempotency key prevents duplicate execution.
 - **8. Monitor:** Low-cardinality Prometheus metrics, provisioned 4-layer Grafana dashboards, codified alert rules with runbooks, and correlation-traced decision lifecycles.
@@ -62,10 +62,10 @@ All interface views are rendered in React 19, TypeScript 5.8, and Tailwind CSS. 
 | **Inventory Matrix** | ![Inventory View](docs/evidence/day-3/screens/02-inventory.png) | On-hand fuel inventory by station and product (Diesel, Petrol, Octane) shown against tank limits alongside bulk depot supply sources. |
 | **Shortage Risk & Forecasts** | ![Risk Matrix](docs/evidence/day-3/screens/03-forecast-risk.png) | Color-coded shortage risk matrix with interactive `TrajectoryDrawer` showing 24-hour Monte Carlo inventory projections and uncertainty bands. |
 | **Replenishment Recommendations** | ![Recommendations View](docs/evidence/day-3/screens/04-recommendations.png) | Urgency-ranked allocation proposals with complete physical constraint validation, structured explanations, and operator approval controls. |
-| **What-If Simulation Sandbox** | ![What-If Sandbox](docs/evidence/day-3/screens/05-what-if.png) | Candidate what-if evaluator testing hypothetical dispatch volume and timing against physical constraints in <50ms prior to approval. |
+| **What-If Simulation Sandbox** | ![What-If Sandbox](docs/evidence/day-3/screens/05-what-if.png) | Candidate what-if evaluator testing hypothetical dispatch volume and timing against physical constraints (<50ms unloaded, ~834ms under 100 VU load) prior to approval. |
 | **Crisis Alert Center** | ![Alert Center](docs/evidence/day-3/screens/06-alerts.png) | Real-time crisis alert hub surfacing active anomalies with severity badges and generative plain-text incident explanations. |
-| **Regional Demand Breakdown** | ![Regional Demand](docs/evidence/day-3/screens/07-regional-demand.png) | Corridor-level fuel consumption panel tracking demand aggregates and surge multipliers across Dhaka, Chittagong, and regional highways. |
-| **Incoming Supply Pipeline** | ![Incoming Supply](docs/evidence/day-3/screens/08-incoming-supply.png) | Scheduled bulk deliveries to depots and in-transit replenishment trucks with arrival ETA ticks. |
+| **Regional Demand Breakdown** | ![Regional Demand](docs/evidence/day-3/screens/07-regional-demand.png) | Regional fuel consumption panel tracking demand aggregates and surge multipliers across Dhaka and Chattogram regions across urban, industrial, highway, and regional demand profiles. |
+| **Incoming Supply Pipeline** | ![Incoming Supply](docs/evidence/day-3/screens/08-incoming-supply.png) | Scheduled bulk resupply arrivals to depots and in-transit replenishment trucks with arrival ETA ticks. |
 | **Network Topology View** | ![Network View](docs/evidence/day-3/screens/09-network.png) | Graph topology visualizing supply nodes (Gazipur, Patiya depots), retail stations, connecting corridors, and active disruptions. |
 | **Forecasting Evaluation** | ![Evaluation View](docs/evidence/day-3/screens/10-evaluation.png) | Empirical evaluation view presenting backtest MAPE across 1h–24h horizons (2.1%–3.1%) and deterministic scenario policy comparisons. |
 | **Decision Audit History** | ![Decision History](docs/evidence/day-3/screens/11-decision-history.png) | Permanent audit trail proving owner-authorized human approval, worker execution, and confirmed arrival (`ARRIVED`) in the simulator. |
