@@ -1,13 +1,13 @@
 # Project progress
 
-Last updated: 2026-11-23. Resume point for the shared repository worktree.
+Last updated: 2026-11-24. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `sprints-11-13`, based on `origin/main` (`10554f0`). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`.
+- Branch: `day-6-7`, branched from `main` (`9f992d4` after PR #3 merge). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`.
 - Sprints 1–13: ALL COMPLETE. All gates passed and tagged.
-- Sprint 13: COMPLETE. WP13.1 (Playwright Browser E2E in CI), WP13.2 (Usability & Axe-Core Accessibility), WP13.3 (Demo director, preflight & offline backup), WP13.4 (Documentation consolidation & claims ledger), and WP13.5 (Final multi-perspective audit & release packaging) COMPLETE.
-- Next: Handoff to human project owner for license choice, repository publication, and release v1.0.0.
+- Sprint 14 (Day 6): IN PROGRESS. WP14.1 (CI/workflow validation with actionlint), WP14.2 (Defect hunt and gate battery), WP14.3 (Clean clone and reproducibility), WP14.4 (Load, chaos & resilience matrix), WP14.5 (Security and hygiene scans), WP14.6 (Requirement closure audit), WP14.7 (Architecture and docs refresh), WP14.8 (Day 6 gate and tag sprint-14).
+- Sprint 15 (Day 7): PLANNED. Real browser evidence, 20+ screenshots, README completion, presentation pack, rehearsals, release v1.0.0.
 
 ## Verification in this work package (Sprint 13)
 
