@@ -193,6 +193,45 @@ async def test_breaker_opens_then_half_open_probe_closes_it() -> None:
 
 @pytest.mark.asyncio
 @respx.mock
+async def test_breaker_half_open_probe_reset_on_cancellation() -> None:
+    import asyncio
+
+    now = [0.0]
+    route = respx.get("http://sim.test/v1/instance").mock(
+        side_effect=[
+            httpx.Response(503, json={"error": {"code": "FAULT_INJECTED"}}) for _ in range(5)
+        ]
+    )
+    async with SimClient("http://sim.test", max_retries=0, clock=lambda: now[0]) as client:
+        for _ in range(5):
+            with pytest.raises(SimUnavailable):
+                await client.get_instance()
+        assert client.breaker.state is BreakerState.OPEN
+        now[0] = 10.1
+
+        in_flight = asyncio.Event()
+
+        async def hanging_probe(request: httpx.Request) -> httpx.Response:
+            in_flight.set()
+            await asyncio.sleep(5.0)
+            return httpx.Response(200, json=INSTANCE)
+
+        route.side_effect = [hanging_probe, httpx.Response(200, json=INSTANCE)]
+
+        task = asyncio.create_task(client.get_instance())
+        await in_flight.wait()
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+        # Probe in flight flag must be cleared; next attempt must succeed without "probe in flight"
+        result = await client.get_instance()
+        assert result.data.tick == 0
+        assert client.breaker.state is BreakerState.CLOSED
+
+
+@pytest.mark.asyncio
+@respx.mock
 async def test_demand_history_always_sends_bounded_limit_and_station() -> None:
     rows = [
         {

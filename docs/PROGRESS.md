@@ -4,10 +4,35 @@ Last updated: 2026-11-24. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `day-6-7`, branched from `main` (`9f992d4` after PR #3 merge). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`.
-- Sprints 1–13: ALL COMPLETE. All gates passed and tagged.
-- Sprint 14 (Day 6): IN PROGRESS. WP14.1 (CI/workflow validation with actionlint), WP14.2 (Defect hunt and gate battery), WP14.3 (Clean clone and reproducibility), WP14.4 (Load, chaos & resilience matrix), WP14.5 (Security and hygiene scans), WP14.6 (Requirement closure audit), WP14.7 (Architecture and docs refresh), WP14.8 (Day 6 gate and tag sprint-14).
-- Sprint 15 (Day 7): PLANNED. Real browser evidence, 20+ screenshots, README completion, presentation pack, rehearsals, release v1.0.0.
+- Branch: `day-6-7`, branched from `main` (`9f992d4` after PR #3 merge). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`, `sprint-14`.
+- Sprints 1–14: ALL COMPLETE. All gates passed and tagged.
+- Sprint 15 (Day 7): IN PROGRESS. Real browser evidence, 20+ screenshots, README completion, presentation pack, rehearsals, release v1.0.0.
+
+## Verification in this work package (Sprint 14)
+
+- **WP14.1 CI and workflow audit (P0):**
+  - Actionlint via Docker verified across all `.github/workflows/*.yml` with 0 errors.
+  - Fail-fast discovery guard (`npm --prefix web run test:e2e -- --list`) validated.
+- **WP14.2 & WP14.4 Defect hunt & resilience verification (P0):**
+  - Resolved DEF-05 (ADR-050): In-memory snapshot cache invalidation on same-tick in-place metadata updates. Unit test added in `test_api_caching_and_rate_limit.py`.
+  - Resolved DEF-06 (ADR-051): Circuit breaker half-open probe concurrency deadlock under `asyncio.gather` and probe cancellation. Sequential instance pre-flight in `ingest.py`, probe expiration and `try ... finally` probe reset in `sim_client.py`. Unit test added in `test_sim_client.py`.
+  - Standardized script frontend port in `scripts/fault_demo.sh` to port 5173 (ADR-052).
+  - Executed all 8 fault scenes in `scripts/fault_demo.sh` with sub-second recovery verified (0.21s to 1.79s).
+- **WP14.3 Clean clone and reproducibility verification (P0):**
+  - Clean clone check (`scripts/verify_clean_clone.sh`) passed in `/tmp` with zero untracked dependencies or secrets.
+  - Cold start benchmark (`scripts/cold_start_check.sh --confirm-volume-destroy`): 36 seconds from wiped volumes across all 8 containers.
+  - 54 scenario runner runs verified with 100% determinism (delta 0.0000).
+- **WP14.5 Security and engineering hygiene (P0):**
+  - pip-audit (0 vulns), npm audit (0 vulns), Gitleaks (0 leaks across 65 commits), Trivy container scan (0 High/Critical findings).
+  - Tracked files > 5 MB: 0 files. Git diff whitespace: clean.
+- **WP14.6 & WP14.7 Requirement closure & architecture refresh (P0):**
+  - Audited all 109 requirements in `docs/BRIEF-COMPLIANCE.md`: 100% MET.
+  - Updated `docs/SUBMISSION-MAP.md` mapping all 11 official deliverables.
+  - Architecture updated with composite byte caching and concurrency-safe half-open circuit breaker (ADR-050, ADR-051, ADR-052).
+- **WP14.8 Day 6 Gate & Adversarial Audit (P0):**
+  - Adversarial audit panel review across R1, R3, R4, R5, R7 in `docs/reviews/day-6-audit.md` with PASS verdict.
+  - Authored `docs/sprint-reports/sprint-14.md` and `docs/DAY-6-UPDATE.md`.
+  - Mechanical gate passed via `bash scripts/sprint_gate.sh 14`. Tagged `sprint-14`.
 
 ## Verification in this work package (Sprint 13)
 

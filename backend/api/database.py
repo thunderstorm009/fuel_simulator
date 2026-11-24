@@ -114,6 +114,15 @@ class PostgresReadRepository:
             return None
         snap_id = meta["id"]
         if self._cached_snapshot_record is not None and self._cached_snapshot_id == snap_id:
+            if (
+                self._cached_snapshot_record.get("fetched_at") == meta.get("fetched_at")
+                and self._cached_snapshot_record.get("stale") == meta.get("stale")
+                and self._cached_snapshot_record.get("data_status") == meta.get("data_status")
+            ):
+                return self._cached_snapshot_record
+            self._cached_snapshot_record["fetched_at"] = meta["fetched_at"]
+            self._cached_snapshot_record["stale"] = meta["stale"]
+            self._cached_snapshot_record["data_status"] = meta["data_status"]
             return self._cached_snapshot_record
 
         row = await self.pool.fetchrow(

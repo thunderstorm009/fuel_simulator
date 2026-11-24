@@ -1,5 +1,5 @@
 === 1. Cloning repository into temporary folder ===
-Cloning into '/tmp/fuel_sim_clean_verify_1795426598'...
+Cloning into '/tmp/fuel_sim_clean_verify_1795502853'...
 done.
 === 2. Verifying ignored development files are absent ===
 CONFIRMED ABSENT: .env
@@ -74,7 +74,7 @@ dist/assets/TrajectoryDrawer-CinM8TjD.js    426.04 kB │ gzip: 122.33 kB
 pytest
 ============================= test session starts ==============================
 platform darwin -- Python 3.12.16, pytest-9.2.0, pluggy-1.7.0
-rootdir: /private/tmp/fuel_sim_clean_verify_1795426598
+rootdir: /private/tmp/fuel_sim_clean_verify_1795502853
 configfile: pyproject.toml
 testpaths: tests
 plugins: respx-0.22.0, platformdirs-4.14.8, anyio-4.16.0, asyncio-1.5.0
@@ -137,28 +137,28 @@ tests/unit/test_what_if.py ..                                            [100%]
     from starlette.testclient import TestClient as TestClient  # noqa
 
 tests/unit/test_sse_stream.py::test_broadcaster_survives_transient_db_disconnection
-  /opt/homebrew/Cellar/python@3.12/3.12.16/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:769: RuntimeWarning: coroutine 'Queue.get' was never awaited
-    def __setattr__(self, name, value):
+  /opt/homebrew/Cellar/python@3.12/3.12.16/Frameworks/Python.framework/Versions/3.12/lib/python3.12/unittest/mock.py:2217: RuntimeWarning: coroutine 'Queue.get' was never awaited
+    def __init__(self, name, parent):
   Enable tracemalloc to get traceback where the object was allocated.
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
-======================= 237 passed, 2 warnings in 3.60s ========================
+======================= 237 passed, 2 warnings in 3.54s ========================
 npm --prefix web run test
 
 > fuel-supply-platform-frontend@0.1.0 test
 > vitest run
 
 
- RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795426598/web
+ RUN  v5.1.1 /private/tmp/fuel_sim_clean_verify_1795502853/web
 
- ✓ tests/NewViews.test.tsx (5 tests) 130ms
- ✓ tests/App.test.tsx (6 tests) 315ms
+ ✓ tests/NewViews.test.tsx (5 tests) 115ms
+ ✓ tests/App.test.tsx (6 tests) 310ms
 
  Test Files  2 passed (2)
       Tests  11 passed (11)
-   Start at  15:36:55
-   Duration  1.19s (environment 41%, tests 23%, transform 20%, import 8%, setup 6%)
+   Start at  12:47:51
+   Duration  1.07s (environment 41%, tests 25%, transform 19%, import 8%, setup 6%)
 
 MECHANICAL GATE: PASS (Sprint 6)
 === Clean clone verification PASSED ===

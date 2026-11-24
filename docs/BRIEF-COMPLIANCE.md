@@ -2,7 +2,7 @@
 
 - **Project:** Fuel Supply Intelligence & Resilience Platform
 - **Source of Truth:** Official Hackathon Brief (`reference/BUP_CSE_FEST_2026_Participant_Facing_Hackathon_Draft.pdf`) and Simulator Integration Guide (`reference/BUP_Fuel_Supply_Simulator_Integration_Guide_Final.pdf`).
-- **Last Verified:** 2026-11-23 (Sprint 13 Closeout)
+- **Last Verified:** 2026-11-24 (Day 6 Verification Battery & Sprint 14 Audit)
 - **Status Values:**
   - `MET`: Fully implemented, verified with automated tests or running evidence.
   - `PARTIAL`: Core built; extensions scheduled in Sprints 8–10.
@@ -158,7 +158,7 @@ The official Hackathon Brief (Section 24) defines 7 evaluation categories with e
 | **Working Product & User Experience** | 20% | React 19 UI, complete operator workflows, 10 operator views, What-If simulator, constraint checklists, SIMULATED labelling | Verified live (`docs/evidence/day-3/screens/`) |
 | **Intelligence & Decision Quality** | 20% | Diurnal demand forecasting (`forecast.py`), Monte Carlo risk (`risk.py`), explainable two-pass triage (`heuristic.py`), LP optimizer (`optimizer.py`), pure anomaly detectors (`detect.py`) | Verified across 54 deterministic runs (delta 0.0000) |
 | **Architecture & Integration** | 15% | Clean separation of concerns: API DB-only read path, worker simulator I/O ownership, pure domain core, typed `SimClient` with circuit breakers and retries | Verified in architecture review and integration tests |
-| **DevOps & Engineering Quality** | 15% | Docker Compose (8 services), release workflow, rollback automation (`deploy.sh`, `rollback.sh`), clean clone verification, 182 Python + 11 Vitest tests | Verified in automated gates and scripts |
+| **DevOps & Engineering Quality** | 15% | Docker Compose (8 services), release workflow, rollback automation (`deploy.sh`, `rollback.sh`), clean clone verification, 239 Python + 11 Vitest + 12 Playwright tests | Verified in automated gates and scripts |
 | **Resilience & Incident Response** | 15% | Handles all 5 simulator faults + outages; circuit breakers; baseline heuristic fallback; measured recovery times; reversible chaos | Verified in `docs/resilience.md` |
 | **Observability & Performance** | 10% | 4-layer Prometheus metrics, provisioned Grafana dashboards, alert rules as code, k6 load benchmarks (205k requests, 0% errors) | Verified in `docs/loadtest.md` and Grafana panels |
 | **Demo & Problem Understanding** | 5% | 10-minute presentation guide (`docs/JUDGING-DAY.md`), surprise drill rehearsal (`scripts/surprise_drill.sh`), clean clone in 34s | Rehearsed and verified |

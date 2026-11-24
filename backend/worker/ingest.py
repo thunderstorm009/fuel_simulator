@@ -53,8 +53,8 @@ class SnapshotIngestor:
         self.on_snapshot = on_snapshot
 
     async def fetch_snapshot(self) -> Snapshot:
+        instance = await self.client.get_instance()
         results = await asyncio.gather(
-            self.client.get_instance(),
             self.client.get_regions(),
             self.client.get_depots(),
             self.client.get_stations(),
@@ -65,7 +65,6 @@ class SnapshotIngestor:
             self.client.get_metrics(),
         )
         (
-            instance,
             regions,
             depots,
             stations,
@@ -75,6 +74,7 @@ class SnapshotIngestor:
             allocations,
             metrics,
         ) = results
+        all_results = (instance, *results)
         station_rows = stations.data
         histories = await asyncio.gather(
             *(
@@ -83,7 +83,9 @@ class SnapshotIngestor:
             )
         )
         fetched_at = self._now()
-        stale = any(result.stale for result in results) or any(result.stale for result in histories)
+        stale = any(result.stale for result in all_results) or any(
+            result.stale for result in histories
+        )
         data_status = derive_data_status(0.0, stale, self.client.breaker.state)
         return Snapshot(
             instance=instance.data,

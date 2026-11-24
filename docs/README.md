@@ -28,7 +28,7 @@ This directory contains the complete technical, operational, architectural, and 
 ## 3. Intelligence, Policies & Verification
 
 - **[intelligence.md](intelligence.md)** — Predictive engine details: diurnal baseline models, Monte Carlo probabilistic simulation (P10/P90), event-aware calibration, and anomaly detection.
-- **[decisions.md](decisions.md)** — Architectural Decision Records (ADRs) log indexing all 49 key architectural choices (ADR-001 through ADR-049).
+- **[decisions.md](decisions.md)** — Architectural Decision Records (ADRs) log indexing all 52 key architectural choices (ADR-001 through ADR-052).
 - **[BRIEF-COMPLIANCE.md](BRIEF-COMPLIANCE.md)** — Exhaustive line-by-line verification matrix against all 109 requirements in the official hackathon specification.
 - **[security-and-guardrails.md](security-and-guardrails.md)** — Security posture: token authentication, secret scanning (Gitleaks), container vulnerability audits (Trivy), dependency checks (pip-audit), and LLM guardrails.
 - **[known-issues.md](known-issues.md)** — Transparent log of known operational boundaries, residual risks, and non-blocking edge cases.

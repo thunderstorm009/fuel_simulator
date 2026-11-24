@@ -48,25 +48,28 @@ def _data_status(age_seconds: float, stale: bool, stored_status: str) -> str:
     return "HEALTHY"
 
 
-# In-memory response cache keyed by (endpoint, snapshot_id) storing serialized bytes
-_RESPONSE_CACHE: dict[str, tuple[int, bytes]] = {}
+# In-memory response cache keyed by endpoint storing (etag, serialized bytes)
+_RESPONSE_CACHE: dict[str, tuple[str, bytes]] = {}
 
 
 def clear_response_cache() -> None:
     _RESPONSE_CACHE.clear()
 
 
-def _make_etag(snap_id: int) -> str:
+def _make_etag(snap_id: int, fetched_at: datetime | None = None) -> str:
+    if fetched_at is not None:
+        ts = int(fetched_at.timestamp())
+        return f'W/"snap-{snap_id}-{ts}"'
     return f'W/"snap-{snap_id}"'
 
 
-def _matches_etag(request: Request, snap_id: int) -> bool:
+def _matches_etag(request: Request, snap_id: int, fetched_at: datetime | None = None) -> bool:
     header = request.headers.get("if-none-match")
     if not header:
         return False
-    expected = _make_etag(snap_id)
+    expected = _make_etag(snap_id, fetched_at)
     raw = header.strip()
-    return raw in (expected, f'"snap-{snap_id}"', f"snap-{snap_id}")
+    return raw in (expected, expected.replace("W/", ""))
 
 
 async def _latest(
@@ -90,12 +93,12 @@ async def _latest(
 @router.get("/state")
 async def state(request: Request, repository: RepositoryDep) -> Response:
     snapshot, fetched_at, age, status, stale, snap_id = await _latest(repository)
-    etag = _make_etag(snap_id)
-    if _matches_etag(request, snap_id):
+    etag = _make_etag(snap_id, fetched_at)
+    if _matches_etag(request, snap_id, fetched_at):
         return Response(status_code=304, headers={"ETag": etag})
 
     cache_key = "state"
-    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == snap_id:
+    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == etag:
         return Response(
             content=_RESPONSE_CACHE[cache_key][1],
             media_type="application/json",
@@ -122,7 +125,7 @@ async def state(request: Request, repository: RepositoryDep) -> Response:
         "simulated": True,
     }
     raw_bytes = json.dumps(jsonable_encoder(data)).encode("utf-8")
-    _RESPONSE_CACHE[cache_key] = (snap_id, raw_bytes)
+    _RESPONSE_CACHE[cache_key] = (etag, raw_bytes)
     return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
@@ -213,12 +216,12 @@ async def version_info(request: Request) -> dict[str, Any]:
 @router.get("/depots/risk")
 async def depot_risk(request: Request, repository: RepositoryDep) -> Response:
     _, fetched_at, age, status, stale, snap_id = await _latest(repository)
-    etag = _make_etag(snap_id)
-    if _matches_etag(request, snap_id):
+    etag = _make_etag(snap_id, fetched_at)
+    if _matches_etag(request, snap_id, fetched_at):
         return Response(status_code=304, headers={"ETag": etag})
 
     cache_key = "depots_risk"
-    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == snap_id:
+    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == etag:
         return Response(
             content=_RESPONSE_CACHE[cache_key][1],
             media_type="application/json",
@@ -239,7 +242,7 @@ async def depot_risk(request: Request, repository: RepositoryDep) -> Response:
         "simulated": True,
     }
     raw_bytes = json.dumps(jsonable_encoder(data)).encode("utf-8")
-    _RESPONSE_CACHE[cache_key] = (snap_id, raw_bytes)
+    _RESPONSE_CACHE[cache_key] = (etag, raw_bytes)
     return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
@@ -259,12 +262,12 @@ async def metrics_summary(repository: RepositoryDep) -> dict[str, Any]:
 @router.get("/risks")
 async def risks(request: Request, repository: RepositoryDep) -> Response:
     _, fetched_at, age, status, stale, snap_id = await _latest(repository)
-    etag = _make_etag(snap_id)
-    if _matches_etag(request, snap_id):
+    etag = _make_etag(snap_id, fetched_at)
+    if _matches_etag(request, snap_id, fetched_at):
         return Response(status_code=304, headers={"ETag": etag})
 
     cache_key = "risks"
-    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == snap_id:
+    if cache_key in _RESPONSE_CACHE and _RESPONSE_CACHE[cache_key][0] == etag:
         return Response(
             content=_RESPONSE_CACHE[cache_key][1],
             media_type="application/json",
@@ -281,7 +284,7 @@ async def risks(request: Request, repository: RepositoryDep) -> Response:
         "simulated": True,
     }
     raw_bytes = json.dumps(jsonable_encoder(data)).encode("utf-8")
-    _RESPONSE_CACHE[cache_key] = (snap_id, raw_bytes)
+    _RESPONSE_CACHE[cache_key] = (etag, raw_bytes)
     return Response(content=raw_bytes, media_type="application/json", headers={"ETag": etag})
 
 
