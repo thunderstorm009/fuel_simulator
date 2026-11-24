@@ -4,9 +4,26 @@ Last updated: 2026-11-24. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `day-6-7`, branched from `main` (`9f992d4` after PR #3 merge). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`, `sprint-14`.
-- Sprints 1–14: ALL COMPLETE. All gates passed and tagged.
-- Sprint 15 (Day 7): IN PROGRESS. Real browser evidence, 20+ screenshots, README completion, presentation pack, rehearsals, release v1.0.0.
+- Branch: `day-6-7`, branched from `main` (`9f992d4` after PR #3 merge). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`, `sprint-14`, `sprint-15`.
+- Sprints 1–15: ALL COMPLETE. All gates passed and tagged.
+- Release: `v1.0.0` ready for merge into `main`.
+
+## Verification in this work package (Sprint 15)
+
+- **WP15.1 Real Browser Evidence & Accessibility Audit (P0):**
+  - Built `scripts/capture_day7_evidence.js` using Playwright; captured 22 high-resolution screenshots (1440x960 2x & mobile) in `docs/evidence/day-7/screens/` with SHA256 hashes in `MANIFEST.md`.
+  - Audited all 8 operational views with `@axe-core/playwright`: 0 critical violations, 98.75/100 platform average score (100/100 on 7 subpages).
+- **WP15.2 Master README Completion (P0):**
+  - Updated root `README.md` with comprehensive Proof By Day (Day 1 through Day 7), test badges (262 total tests), 100% verified relative links.
+- **WP15.3 Final Presentation Pack (P0):**
+  - Delivered `PITCH-10MIN.md` (timed script across 8 acts), `SLIDES.md` (14 slides), `slides.html` (interactive deck), `slides.pdf` (Playwright export, 353 KB), `QA-CHEATSHEET.md` (15+ evidence answers), and `BACKUP-PLAN.md` (offline contingency).
+- **WP15.4 Live Judging Rehearsals (P0):**
+  - Executed 3 automated preflight and live rehearsal runs using `scripts/demo_director.py` against running stack (<2.0s duration each, 100% verified).
+- **WP15.5 Master Claims Ledger (P0):**
+  - Traced all 34 reported metrics and claims to executable shell commands in `docs/evidence/day-7/claims-ledger.md`.
+- **WP15.6 & WP15.7 Sprint 15 Gate & Multi-Perspective Audit (P0):**
+  - Authored `docs/sprint-reports/sprint-15.md`, `docs/DAY-7-UPDATE.md`, and multi-perspective audit `docs/reviews/day-6-7-audit.md` (unanimous PASS across R1, R3, R4, R5, R6, R7, D6).
+  - Mechanical gate check passed via `bash scripts/sprint_gate.sh 15`. Tagged `sprint-15`.
 
 ## Verification in this work package (Sprint 14)
 

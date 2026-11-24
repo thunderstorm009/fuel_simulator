@@ -4,21 +4,22 @@
 > A simulation-driven platform for fuel inventory intelligence, demand forecasting, shortage-risk analysis and resilient allocation decision support.
 
 [![CI Status](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
-[![Python Tests](https://img.shields.io/badge/pytest-237%20passed-brightgreen)](tests/)
+[![Python Tests](https://img.shields.io/badge/pytest-239%20passed-brightgreen)](tests/)
 [![Frontend Tests](https://img.shields.io/badge/vitest-11%20passed-brightgreen)](web/tests/)
 [![E2E Tests](https://img.shields.io/badge/playwright-12%20passed-brightgreen)](tests/e2e/)
-[![Accessibility](https://img.shields.io/badge/axe--core-0%20critical%20violations-brightgreen)](docs/evidence/day-4/accessibility-audit.md)
+[![Total Tests](https://img.shields.io/badge/total%20tests-262%20passed-brightgreen)](tests/)
+[![Accessibility](https://img.shields.io/badge/axe--core-98.75%2F100%20(0%20critical)-brightgreen)](docs/evidence/day-7/browser-audit.md)
 [![Throughput](https://img.shields.io/badge/k6%20throughput-625.8%20req%2Fs-blue)](docs/loadtest.md)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-8%20services-blue)](docker-compose.yml)
-[![Judging Guide](https://img.shields.io/badge/Judging-Runbook-blueviolet)](docs/JUDGING-DAY.md)
+[![Release](https://img.shields.io/badge/release-v1.0.0-blueviolet)](https://github.com/thunderstorm009/fuel_simulator/releases/tag/v1.0.0)
 [![Scope](https://img.shields.io/badge/scope-SIMULATED-orange)](#scope-and-limitations)
 
 ---
 
 ## Main Operator Dashboard
 
-![Fuel Supply Intelligence Platform Dashboard](docs/evidence/day-4/screens/01-dashboard.png)
-*Figure 1: Main operator overview displaying real-time simulated network state across regional corridors (Dhaka, Chattogram, Cox's Bazar), overall service level, active policy indicator (`two_pass_urgency_12h_then_target`), Server-Sent Events push status (`● LIVE PUSH`), and regional depot reserves.*
+![Fuel Supply Intelligence Platform Dashboard](docs/evidence/day-7/screens/01-dashboard-overview.png)
+*Figure 1: Main operator overview displaying real-time simulated network state across regional corridors (Dhaka, Chittagong, Sylhet, Khulna, Rajshahi), overall service level, active policy indicator (`two_pass_urgency_12h_then_target`), Server-Sent Events push status (`● LIVE PUSH`), and regional depot reserves.*
 
 ---
 
@@ -56,19 +57,35 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 
 ## Application Showcase
 
-All interface views are rendered in React 19, TypeScript 5.8, and Tailwind CSS. Screenshots below are captured directly from the live running platform on Day 4:
+All interface views are rendered in React 19, TypeScript 5.8, and Tailwind CSS. Screenshots below are captured directly from the live running platform on Day 7 (1440x960 @ 2x, cataloged in [`docs/evidence/day-7/screens/MANIFEST.md`](docs/evidence/day-7/screens/MANIFEST.md)):
 
 | View | Screenshot | Description |
 |---|---|---|
-| **Inventory Matrix** | ![Inventory View](docs/evidence/day-3/screens/02-inventory.png) | On-hand fuel inventory by station and product (Diesel, Petrol, Octane) shown against tank limits alongside bulk depot supply sources. |
-| **Shortage Risk & Forecasts** | ![Risk Matrix](docs/evidence/day-4/screens/03-forecast-risk.png) | Color-coded shortage risk matrix with interactive `TrajectoryDrawer` showing 24-hour Monte Carlo inventory projections and uncertainty bands. |
-| **Replenishment Recommendations** | ![Recommendations View](docs/evidence/day-4/screens/04-recommendations.png) | Urgency-ranked allocation proposals with complete physical constraint validation, structured explanations, operator name/token inputs, and approval controls. |
-| **What-If Simulation Sandbox** | ![What-If Sandbox](docs/evidence/day-3/screens/05-what-if.png) | Candidate what-if evaluator testing hypothetical dispatch volume and timing against physical constraints (<50ms unloaded, ~288ms under 200 VU load) prior to approval. |
-| **Decision Audit History** | ![Decision History](docs/evidence/day-4/screens/06-decision-history.png) | Permanent audit trail proving operator identity (`actor`), timestamp, action, and UUID idempotency key, with Export CSV and Export JSON controls. |
-| **Crisis Alert Center** | ![Alert Center](docs/evidence/day-4/screens/07-alerts.png) | Real-time crisis alert hub surfacing active anomalies with severity badges and generative plain-text incident explanations. |
-| **Network Topology View** | ![Network View](docs/evidence/day-4/screens/08-network.png) | Graph topology visualizing supply nodes (Gazipur, Patiya depots), retail stations, connecting corridors, and active disruptions. |
-| **Forecasting Evaluation** | ![Evaluation View](docs/evidence/day-4/screens/09-evaluation.png) | Empirical evaluation view presenting 60-scenario sweep results, Brier calibration score (0.1558), and backtest MAPE across 1h–24h horizons (2.1%–3.1%). |
-| **System Health & Observability** | ![System Health](docs/evidence/day-4/screens/10-system-health.png) | Aggregated component health status (API, Worker, Predictor, Database, Simulator) with data freshness tracking, memory usage, and SSE push status. |
+| **Inventory Matrix** | ![Inventory View](docs/evidence/day-7/screens/03-station-inventory-ullage.png) | On-hand fuel inventory by station and product (Diesel, Petrol, Octane) shown against tank limits alongside bulk depot supply sources and available ullage. |
+| **Shortage Risk & Forecasts** | ![Risk Matrix](docs/evidence/day-7/screens/04-shortage-risk-matrix.png) | Color-coded shortage risk matrix with interactive `TrajectoryDrawer` showing 24-hour Monte Carlo inventory projections and uncertainty bands. |
+| **Replenishment Recommendations** | ![Recommendations View](docs/evidence/day-7/screens/06-recommendations-ranked.png) | Urgency-ranked allocation proposals with complete physical constraint validation, structured explanations, operator name/token inputs, and approval controls. |
+| **What-If Simulation Sandbox** | ![What-If Sandbox](docs/evidence/day-7/screens/08-what-if-counterfactual-runway.png) | Candidate what-if evaluator testing hypothetical dispatch volume and timing against physical constraints (<50ms unloaded, ~288ms under 200 VU load) prior to approval. |
+| **Decision Audit History** | ![Decision History](docs/evidence/day-7/screens/10-decision-history.png) | Permanent audit trail proving operator identity (`actor`), timestamp, action, and UUID idempotency key, with Export CSV and Export JSON controls. |
+| **Crisis Alert Center** | ![Alert Center](docs/evidence/day-7/screens/16-alert-center-incidents.png) | Real-time crisis alert hub surfacing active anomalies with severity badges, search filters, and generative plain-text incident explanations. |
+| **Network Topology View** | ![Network View](docs/evidence/day-7/screens/12-network-topology.png) | Graph topology visualizing supply nodes (Gazipur, Patiya depots), retail stations, connecting corridors, and active transit trucks. |
+| **Forecasting Evaluation** | ![Evaluation View](docs/evidence/day-7/screens/21-evaluation-policy-comparison.png) | Empirical evaluation view presenting 60-scenario sweep results, Brier calibration score (0.1558), and backtest MAPE across 1h–24h horizons (2.1%–3.1%). |
+| **System Health & Observability** | ![System Health](docs/evidence/day-7/screens/18-system-health-dashboard.png) | Aggregated component health status (API, Worker, Predictor, Database, Simulator) with data freshness tracking, memory usage, and SSE push status. |
+
+---
+
+## Proof By Day (Day 1 through Day 7)
+
+Every capability in this platform was built sequentially in one continuous repository, verified empirically, and documented daily with zero fabricated claims:
+
+| Day | Sprints | Key Engineering Milestone & Verifications | Real Verification Evidence |
+|:---:|:---:|---|---|
+| **Day 1** | Sprints 1–2 | **Topology, Simulator Contract & Foundation:** Defined typed Pydantic models matching official simulator schemas. Built typed simulator client contract with retry jitter. Codified PostgreSQL relational schema and multi-container Docker Compose topology (8 services). | [`docs/DAY-1-UPDATE.md`](docs/DAY-1-UPDATE.md)<br/>[`docs/sprint-reports/sprint-01.md`](docs/sprint-reports/sprint-01.md) |
+| **Day 2** | Sprints 3–4 | **Ingestion Pipeline & Operator Dashboard:** Engineered background worker ingestion daemon consuming REST polling and SSE invalidation hints. Enforced atomic transaction writes. Built React 19 + TypeScript operator control loop with inventory matrix and initial telemetry. | [`docs/DAY-2-UPDATE.md`](docs/DAY-2-UPDATE.md)<br/>[`docs/sprint-reports/sprint-02.md`](docs/sprint-reports/sprint-02.md) |
+| **Day 3** | Sprints 5–6 | **Diurnal Forecasting & Monte Carlo Risk:** Implemented pure statistical diurnal curve demand forecasting with day-of-week seasonality factors. Built vectorized Monte Carlo stockout risk engine (300 stochastic paths, P10/P50/P90 bounds in <12ms). Added interactive Recharts Trajectory Drawer. | [`docs/DAY-3-UPDATE.md`](docs/DAY-3-UPDATE.md)<br/>[`docs/sprint-reports/sprint-03.md`](docs/sprint-reports/sprint-03.md) |
+| **Day 4** | Sprints 7–8 | **Two-Pass Triage & Human Governance Gate:** Developed Two-Pass Urgency Triage heuristic prioritizing stations facing stockout within 12 hours. Codified 5 physical constraint audits. Enforced mandatory human approval with constant-time token comparison and transactional outbox executor. | [`docs/DAY-4-UPDATE.md`](docs/DAY-4-UPDATE.md)<br/>[`docs/sprint-reports/sprint-04.md`](docs/sprint-reports/sprint-04.md) |
+| **Day 5** | Sprints 9–10 | **Hosted CI Hardening & Discovery Guard:** Resolved hosted CI Playwright module resolution defect across sibling directories (DEF-01 / ADR-049). Added fail-fast zero-discovery guard. Completed 60-scenario randomized crisis sweep (240 live runs, seed=42) proving +0.79% SLA advantage. | [`docs/DAY-5-UPDATE.md`](docs/DAY-5-UPDATE.md)<br/>[`docs/sprint-reports/sprint-11.md`](docs/sprint-reports/sprint-11.md) |
+| **Day 6** | Sprint 14 | **Defect Closure, Concurrency Hardening & Cold Start:** Resolved in-memory snapshot cache staleness on same-tick polls (DEF-05 / ADR-050). Resolved circuit breaker half-open probe concurrency deadlock under `asyncio.gather` (DEF-06 / ADR-051). Verified 8 fault scenes (<1.79s recovery), 36s cold-start from wiped volumes, and 0 security vulnerabilities. | [`docs/DAY-6-UPDATE.md`](docs/DAY-6-UPDATE.md)<br/>[`docs/sprint-reports/sprint-14.md`](docs/sprint-reports/sprint-14.md) |
+| **Day 7** | Sprint 15 | **Presentation Pack, Browser Proof & Release v1.0.0:** Captured 22 high-resolution real browser screenshots (1440x960 2x & mobile). Audited WCAG 2.1 AA accessibility across 8 views (0 critical violations, 98.75/100 score). Verified 3 live judging rehearsals (<2.0s). Delivered complete presentation pack (`PITCH-10MIN.md`, `SLIDES.md`, `slides.html`, `slides.pdf`, `QA-CHEATSHEET.md`, `BACKUP-PLAN.md`), master claims ledger (34 claims traced), and release `v1.0.0`. | [`docs/DAY-7-UPDATE.md`](docs/DAY-7-UPDATE.md)<br/>[`docs/sprint-reports/sprint-15.md`](docs/sprint-reports/sprint-15.md) |
 
 ---
 
@@ -125,7 +142,7 @@ flowchart TD
 
 ## Sprint Implementation Summary
 
-The platform was engineered across thirteen sequential 4-hour development sprints in one continuous codebase:
+The platform was engineered across fifteen sequential 4-hour development sprints in one continuous codebase:
 
 | Sprint | Focus & Milestone | Status | Key Deliverables |
 |---|---|---|---|
@@ -142,6 +159,8 @@ The platform was engineered across thirteen sequential 4-hour development sprint
 | **Sprint 11** | Scientific Evaluation & Security Debt | **PASS** | 60-scenario sweep (240 live runs, 95% bootstrap CI), event-aware calibration (0-tick lag), 0 security findings, tick 8/15 compatibility. ([Report](docs/sprint-reports/sprint-11.md)) |
 | **Sprint 12** | API Performance, SSE Push & Soak Test | **PASS** | Throughput tripled to **625.8 req/s**, SSE push (-95% read traffic), 90m soak test, alert routing, backup/restore drill (**RTO: 2.93s**), runtime policy switch with auto-rollback. ([Report](docs/sprint-reports/sprint-12.md)) |
 | **Sprint 13** | Polish, E2E Browser Suite, Demo Director & Delivery | **PASS** | Playwright E2E suite (12 passed in 31.7s), axe-core accessibility audit (0 critical violations), operator name capture, CSV/JSON export, demo director & preflight, offline backup pack. ([Report](docs/sprint-reports/sprint-13.md)) |
+| **Sprint 14** | Defect Closure, Concurrency Hardening & Verification Battery | **PASS** | Resolved DEF-05 (cache staleness) & DEF-06 (half-open breaker deadlock); verified 8 fault scenes (<1.79s); 36s cold-start; 0 security vulnerabilities; clean-clone proof; tagged `sprint-14`. ([Report](docs/sprint-reports/sprint-14.md)) |
+| **Sprint 15** | Final Presentation Pack, Real Browser Evidence & Release v1.0.0 | **PASS** | Captured 22 high-resolution screenshots; axe-core accessibility audit (98.75/100); 3 judging rehearsals; 10-minute pitch script, slide deck (HTML & PDF), Q&A defense; release `v1.0.0`. ([Report](docs/sprint-reports/sprint-15.md)) |
 
 ---
 
@@ -151,11 +170,11 @@ The platform was engineered across thirteen sequential 4-hour development sprint
 
 ```text
 ============================= test session starts ==============================
-collected 234 items
-tests/unit/ .................................................... passed (156)
-tests/integration/ ............................................ passed (48)
-tests/scenarios/ .............................................. passed (30)
-======================= 234 passed, 1 warning in 7.62s ========================
+collected 239 items
+tests/unit/ .................................................... passed (158)
+tests/integration/ ............................................ passed (49)
+tests/scenarios/ .............................................. passed (32)
+======================= 239 passed, 2 warnings in 3.38s =======================
 
 RUN  web vitest
 ✓ tests/NewViews.test.tsx (5 tests)
@@ -165,8 +184,11 @@ Test Files  2 passed (2) | Tests  11 passed (11) in 1.48s
 RUN  playwright test (E2E browser suite)
 ✓ 12 tests passed in 31.7s (dashboard, tour, spike, approve/reject, what-if, fault, alerts, health, SSE, a11y)
 
+Total Automated Test Suite:
+✓ 262 passed across Python, Vitest, and Playwright E2E
+
 axe-core accessibility audit:
-✓ 0 Critical violations across all 8 operational pages (Scores: 90/100 subpages, 80/100 overview)
+✓ 0 Critical violations across all 8 operational pages (Scores: 100/100 on 7 subpages, 90/100 overview; average 98.75/100)
 
 ruff check .        --> All checks passed!
 ruff format --check --> Clean, 0 formatting issues
@@ -271,32 +293,46 @@ make smoke
 ## Documentation & Evidence Index
 
 - **Master Documentation Index:** [docs/README.md](docs/README.md)
+- **Judging & Presentation Pack:**
+  - [Judging Presentation Script (10-Minute Timed Pitch)](docs/presentation/PITCH-10MIN.md)
+  - [Slide Deck Notes (Markdown)](docs/presentation/SLIDES.md)
+  - [Standalone Interactive Slide Deck (HTML)](docs/presentation/slides.html)
+  - [Slide Deck PDF Export](docs/presentation/slides.pdf)
+  - [Judge Technical Q&A Defense Cheatsheet](docs/presentation/QA-CHEATSHEET.md)
+  - [Emergency Backup & Contingency Plan](docs/presentation/BACKUP-PLAN.md)
+  - [Judging Day Presentation Guide](docs/JUDGING-DAY.md)
+  - [Static Demo Backup Pack & Voiceover Script](docs/DEMO-BACKUP.md)
 - **Domain & Architecture:**
   - [Problem Understanding & Mathematical Balancing](docs/PROBLEM-UNDERSTANDING.md)
   - [System Architecture & Sequence Diagrams](docs/architecture.md)
   - [Relational Data Model](docs/data-model.md)
   - [Simulator Integration Contract](docs/simulator-contract.md)
   - [Event Handling & SSE Push Updates](docs/event-handling.md)
-- **Judging & Operations:**
-  - [Judging Day Presentation Guide](docs/JUDGING-DAY.md)
-  - [Static Demo Backup Pack & Voiceover Script](docs/DEMO-BACKUP.md)
+- **Operations & Runbooks:**
   - [Operator User Guide](docs/operator-guide.md)
   - [Operational Runbook & Silencing Rules](docs/runbook.md)
   - [Production Operations & Backup/Restore](docs/operations.md)
   - [Judge Technical Q&A (Evidence-Backed Defense)](docs/qa.md)
-- **Scientific Evaluation & Delivery Updates:**
-  - [Day 1 Engineering Update](docs/DAY-1-UPDATE.md)
-  - [Day 2 Engineering Update](docs/DAY-2-UPDATE.md)
-  - [Day 3 Engineering Update](docs/DAY-3-UPDATE.md)
-  - [Day 4 Final Engineering Update & Verification Table](docs/DAY-4-UPDATE.md)
-  - [Day 5 Post-Mortem & Fixes Report](docs/DAY-5-UPDATE.md)
+- **Daily Engineering Updates & Sprint Reports:**
+  - [Day 1 Engineering Update](docs/DAY-1-UPDATE.md) | [Sprint 1 Report](docs/sprint-reports/sprint-01.md)
+  - [Day 2 Engineering Update](docs/DAY-2-UPDATE.md) | [Sprint 2 Report](docs/sprint-reports/sprint-02.md)
+  - [Day 3 Engineering Update](docs/DAY-3-UPDATE.md) | [Sprint 3 Report](docs/sprint-reports/sprint-03.md)
+  - [Day 4 Engineering Update](docs/DAY-4-UPDATE.md) | [Sprint 4 Report](docs/sprint-reports/sprint-04.md)
+  - [Day 5 Engineering Update](docs/DAY-5-UPDATE.md) | [Sprint 11 Report](docs/sprint-reports/sprint-11.md)
+  - [Day 6 Engineering Update](docs/DAY-6-UPDATE.md) | [Sprint 14 Report](docs/sprint-reports/sprint-14.md)
+  - [Day 7 Engineering Update](docs/DAY-7-UPDATE.md) | [Sprint 15 Report](docs/sprint-reports/sprint-15.md)
+- **Scientific Evidence & Benchmarks:**
+  - [Master Claims Ledger (34 Numbers Traced)](docs/evidence/day-7/claims-ledger.md)
+  - [Day 7 Screenshot Evidence Manifest (SHA256 Catalog)](docs/evidence/day-7/screens/MANIFEST.md)
+  - [Day 7 Browser & Accessibility Audit](docs/evidence/day-7/browser-audit.md)
+  - [Live Judging Rehearsal Log (3 Runs)](docs/evidence/day-7/rehearsal.md)
   - [60-Scenario Sweep Report (95% Bootstrap CI)](docs/results/scenario-sweep.md)
   - [Physical Failure Boundaries & Truck Caps](docs/results/failure-boundary.md)
   - [Forecast Backtesting Summary (MAPE 2.11%)](docs/results/backtest-summary.md)
   - [Event-Aware Calibration Analysis](docs/results/event-calibration.md)
   - [k6 Load & Latency Benchmark Report](docs/loadtest.md)
   - [Live Soak Test 90-Minute Report](docs/results/soak-test-summary.md)
-  - [Architectural Decision Records Log (ADR-001 through ADR-049)](docs/decisions.md)
+  - [Architectural Decision Records Log (ADR-001 through ADR-052)](docs/decisions.md)
   - [Hackathon Brief Compliance Matrix (All 109 Requirements)](docs/BRIEF-COMPLIANCE.md)
 
 ---
