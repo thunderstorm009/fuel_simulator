@@ -248,5 +248,6 @@ The API service incorporates five distinct optimization layers introduced in Spr
    - `idx_depot_risks_snapshot_depot ON depot_risks (snapshot_id, depot_id)`
    - `idx_snapshots_tick_desc ON snapshots (tick DESC)`
    (Reduced query planning and execution times from 15.3ms to 0.103ms — a 149x speedup).
-4. **Sub-Millisecond Byte Caching:** In-memory pre-serialized UTF-8 byte cache for `GET /api/overview` and `GET /api/forecasts` with automatic eviction on state changes.
-5. **HTTP ETag / 304 Not Modified:** Client-side cache validation eliminates redundant payload transfers when underlying ticks have not advanced.
+4. **Sub-Millisecond Byte Caching:** In-memory pre-serialized UTF-8 byte cache for `GET /api/state`, `GET /api/risks`, and `GET /api/depots/risk` keyed by composite ETag (snapshot ID + timestamp) ensuring sub-millisecond cached reads within the poll interval and instant freshness updates upon same-tick database polls (ADR-044, ADR-050).
+5. **HTTP ETag / 304 Not Modified:** Client-side cache validation eliminates redundant payload transfers when underlying ticks and metadata have not advanced.
+6. **Concurrency-Safe Half-Open Circuit Breaker:** Sequential instance health pre-flight prevents concurrent probe collision across gathered endpoints and ensures fail-safe probe flag reset under cancellation (ADR-051).

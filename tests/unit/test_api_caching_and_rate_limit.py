@@ -150,3 +150,25 @@ def test_cache_invalidation_on_new_snapshot(client: TestClient) -> None:
     new_etag = res2.headers.get("etag")
     assert "snap-101" in new_etag
     assert new_etag != old_etag
+
+
+def test_cache_invalidation_on_same_tick_snapshot_update(client: TestClient) -> None:
+    repo = MockSnapshotRepo(snapshot_id=100)
+    app.dependency_overrides[get_repository] = lambda: repo
+
+    # Initial request on snapshot 100
+    res1 = client.get("/api/state")
+    assert res1.status_code == 200
+    res1_time = res1.json()["fetched_at"]
+
+    # Same tick / same snapshot ID, but in-place metadata update (e.g. fresh poll)
+    from datetime import timedelta
+
+    new_time = repo.record["fetched_at"] + timedelta(seconds=10)
+    repo.record["fetched_at"] = new_time
+
+    # Must return updated fetched_at and not stale in-memory cached state
+    res2 = client.get("/api/state")
+    assert res2.status_code == 200
+    assert res2.json()["fetched_at"] == new_time.isoformat()
+    assert res2.json()["fetched_at"] != res1_time

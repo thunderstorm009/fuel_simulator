@@ -86,6 +86,7 @@ class CircuitBreaker:
         self._failure_count = 0
         self._opened_at = 0.0
         self._probe_in_flight = False
+        self._probe_started_at = 0.0
         self._lock = asyncio.Lock()
         self._update_metric()
 
@@ -107,8 +108,16 @@ class CircuitBreaker:
                 self._update_metric()
             if self._state is BreakerState.HALF_OPEN:
                 if self._probe_in_flight:
-                    raise SimUnavailable("circuit breaker half-open probe is in flight")
+                    if self._clock() - self._probe_started_at > self.reset_after_s:
+                        self._probe_in_flight = False
+                    else:
+                        raise SimUnavailable("circuit breaker half-open probe is in flight")
                 self._probe_in_flight = True
+                self._probe_started_at = self._clock()
+
+    async def reset_probe(self) -> None:
+        async with self._lock:
+            self._probe_in_flight = False
 
     async def record_success(self) -> None:
         async with self._lock:
@@ -260,6 +269,7 @@ class SimClient:
     async def stream(self) -> AsyncIterator[AsyncIterator[str]]:
         endpoint = "/v1/stream"
         await self.breaker.before_request()
+        is_probe = self.breaker.state is BreakerState.HALF_OPEN
         try:
             stream_timeout = httpx.Timeout(
                 connect=self.connect_timeout_s,
@@ -291,6 +301,9 @@ class SimClient:
             if isinstance(exc, SimUnavailable):
                 raise
             raise SimUnavailable(str(exc)) from exc
+        finally:
+            if is_probe and self.breaker.state is BreakerState.HALF_OPEN:
+                await self.breaker.reset_probe()
 
     async def _get(
         self,
@@ -313,6 +326,7 @@ class SimClient:
         json_body: Mapping[str, Any] | None = None,
     ) -> SimResult[Any]:
         await self.breaker.before_request()
+        is_probe = self.breaker.state is BreakerState.HALF_OPEN
 
         def wait_for_retry(retry_state: Any) -> float:
             base = min(0.2 * (2 ** (retry_state.attempt_number - 1)), 0.8)
@@ -332,51 +346,56 @@ class SimClient:
             reraise=True,
         )
         try:
-            async for attempt in retryer:
-                with attempt:
-                    response = await self._http.request(
-                        method,
-                        path,
-                        params=params,
-                        json=json_body,
-                    )
-                    if response.status_code == 503:
-                        parsed = parse_sim_error(response)
-                        if parsed.code == "FAULT_INJECTED":
-                            raise _RetryableRequest(parsed.message)
-                    break
-        except (_RetryableRequest, httpx.TimeoutException, httpx.ConnectError) as exc:
-            await self.breaker.record_failure()
-            sim_client_failures.labels(endpoint=endpoint).inc()
-            sim_client_requests.labels(endpoint=endpoint, outcome="failure").inc()
-            raise SimUnavailable(str(exc) or "simulator unavailable") from exc
-
-        if response.is_error:
-            parsed = parse_sim_error(response)
-            if response.status_code >= 500:
+            try:
+                async for attempt in retryer:
+                    with attempt:
+                        response = await self._http.request(
+                            method,
+                            path,
+                            params=params,
+                            json=json_body,
+                        )
+                        if response.status_code == 503:
+                            parsed = parse_sim_error(response)
+                            if parsed.code == "FAULT_INJECTED":
+                                raise _RetryableRequest(parsed.message)
+                        break
+            except (_RetryableRequest, httpx.TimeoutException, httpx.ConnectError) as exc:
                 await self.breaker.record_failure()
                 sim_client_failures.labels(endpoint=endpoint).inc()
                 sim_client_requests.labels(endpoint=endpoint, outcome="failure").inc()
-                raise SimUnavailable(parsed.message)
+                raise SimUnavailable(str(exc) or "simulator unavailable") from exc
+
+            if response.is_error:
+                parsed = parse_sim_error(response)
+                if response.status_code >= 500:
+                    await self.breaker.record_failure()
+                    sim_client_failures.labels(endpoint=endpoint).inc()
+                    sim_client_requests.labels(endpoint=endpoint, outcome="failure").inc()
+                    raise SimUnavailable(parsed.message)
+                await self.breaker.record_success()
+                sim_client_requests.labels(endpoint=endpoint, outcome="business_error").inc()
+                raise SimBusinessError(parsed.code, parsed.message, response.status_code)
+
+            try:
+                payload = response.json()
+                adapter = (
+                    response_type
+                    if isinstance(response_type, TypeAdapter)
+                    else TypeAdapter(response_type)
+                )
+                data = adapter.validate_python(payload)
+            except (ValueError, ValidationError, TypeError) as exc:
+                await self.breaker.record_failure()
+                sim_client_failures.labels(endpoint=endpoint).inc()
+                sim_client_requests.labels(endpoint=endpoint, outcome="invalid_response").inc()
+                msg = f"invalid simulator response from {endpoint}: {exc}"
+                raise SimInvalidResponse(msg) from exc
+
             await self.breaker.record_success()
-            sim_client_requests.labels(endpoint=endpoint, outcome="business_error").inc()
-            raise SimBusinessError(parsed.code, parsed.message, response.status_code)
-
-        try:
-            payload = response.json()
-            adapter = (
-                response_type
-                if isinstance(response_type, TypeAdapter)
-                else TypeAdapter(response_type)
-            )
-            data = adapter.validate_python(payload)
-        except (ValueError, ValidationError, TypeError) as exc:
-            await self.breaker.record_failure()
-            sim_client_failures.labels(endpoint=endpoint).inc()
-            sim_client_requests.labels(endpoint=endpoint, outcome="invalid_response").inc()
-            raise SimInvalidResponse(f"invalid simulator response from {endpoint}: {exc}") from exc
-
-        await self.breaker.record_success()
-        sim_client_requests.labels(endpoint=endpoint, outcome="success").inc()
-        stale = response.headers.get("X-Simulator-Stale", "").lower() == "true"
-        return SimResult(data=data, stale=stale)
+            sim_client_requests.labels(endpoint=endpoint, outcome="success").inc()
+            stale = response.headers.get("X-Simulator-Stale", "").lower() == "true"
+            return SimResult(data=data, stale=stale)
+        finally:
+            if is_probe and self.breaker.state is BreakerState.HALF_OPEN:
+                await self.breaker.reset_probe()

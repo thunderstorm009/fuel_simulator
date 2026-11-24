@@ -1,0 +1,6 @@
+cold_start_elapsed_seconds=36
+verified_at=2026-11-24T07:14:05Z
+all_services_healthy=true
+services=simulator,postgres,api,worker,predictor,frontend,prometheus,grafana
+endpoints_probed=http://localhost:8101/health,http://localhost:8102/health,http://localhost:8103/health,http://localhost:8101/api/health,http://localhost:5173/
+status=PASS

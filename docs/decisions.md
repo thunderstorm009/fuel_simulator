@@ -53,6 +53,9 @@ Statuses: PROPOSED, ACCEPTED, SUPERSEDED.
 | ADR-047 | Runtime policy switch with automatic rollback and constraint validation | ACCEPTED | 12 |
 | ADR-048 | Browser end-to-end and accessibility testing via Playwright and axe-core | ACCEPTED | 13 |
 | ADR-049 | Cross-directory Playwright module resolution and fail-fast discovery guard | ACCEPTED | Day 4/5 |
+| ADR-050 | In-memory snapshot cache invalidation on same-tick in-place metadata updates | ACCEPTED | 14 (Day 6) |
+| ADR-051 | Circuit breaker half-open probe concurrency guard and sequential instance pre-flight | ACCEPTED | 14 (Day 6) |
+| ADR-052 | Standardized frontend base URL port resolution across shell scripts | ACCEPTED | 14 (Day 6) |
 
 ## Entries
 (Add full entries below as decisions are made.)
@@ -443,3 +446,32 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
   3. Introduce a fail-fast test discovery guard (`npm --prefix web run test:e2e -- --list`) in CI prior to running the test suite, immediately surfacing module resolution or test discovery regressions in <2 seconds.
   4. Integrate clean-clone Playwright discovery verification into `scripts/verify_clean_clone.sh` and add automated configuration regression tests in `tests/unit/test_playwright_discovery.py`.
 - **Consequences:** Eliminates dependency on local root symlinks, guarantees deterministic module resolution across sibling directories in fresh clones and CI, and provides instant diagnosis if test discovery fails.
+
+### ADR-050: In-Memory Snapshot Cache Invalidation on Same-Tick In-Place Metadata Updates (Day 6)
+- **Status:** ACCEPTED
+- **Context:** During continuous ingestion or fault recovery testing (`scripts/fault_demo.sh`), when the simulator is `PAUSED` at tick 0 or advancing slowly, the worker updates the existing snapshot record in PostgreSQL in-place (`UPDATE snapshots SET fetched_at = $2, stale = $3, data_status = $4 WHERE id = $6`). Previously, `PostgresReadRepository.get_latest_snapshot()` cached the parsed snapshot record in memory indexed strictly by `snapshot_id`, and `backend/api/routes/read.py` keyed serialized responses strictly by `snapshot_id`. Consequently, as wall-clock time elapsed, `get_latest_snapshot()` kept serving the stale cached record created at process launch. As `(now - fetched_at)` exceeded 15s and 120s, `/api/data-health` reported `DEGRADED` and then `OFFLINE`, even though PostgreSQL had fresh polls written milliseconds earlier.
+- **Decision:**
+  1. In `backend/api/database.py` (`get_latest_snapshot`), inspect the latest metadata row (`fetched_at`, `stale`, `data_status`). If `snapshot_id` matches the cached record but metadata has been updated in-place, update `self._cached_snapshot_record`'s `fetched_at`, `stale`, and `data_status` fields in memory rather than returning the stale record or unnecessarily re-parsing the large `raw_json` payload.
+  2. In `backend/api/routes/read.py`, update `_make_etag(snap_id, fetched_at)` and `_matches_etag(...)` to incorporate the timestamp of `fetched_at`.
+  3. Key `_RESPONSE_CACHE` by `etag` (which uniquely identifies both snapshot ID and data freshness timestamp) so that subsequent requests immediately reflect refreshed data health while still serving sub-millisecond cached responses within the same poll interval.
+  4. Add unit test `test_cache_invalidation_on_same_tick_snapshot_update` in `tests/unit/test_api_caching_and_rate_limit.py`.
+- **Consequences:** Eliminates artificial staleness and false-positive OFFLINE signals when simulator is paused or running at slow tick rates, prevents recovery timeout regressions in resilience drills, and retains sub-millisecond response caching.
+
+### ADR-051: Circuit Breaker Half-Open Probe Concurrency Guard and Sequential Instance Pre-Flight (Day 6)
+- **Status:** ACCEPTED
+- **Context:** During the resilience verification drill (`scripts/fault_demo.sh`), after injecting high latency into the simulator (`delay_ms=3500`), the client circuit breaker opened due to successive timeouts. When the reset interval expired (`reset_after_s=10.0`), the breaker transitioned to `HALF_OPEN`. However:
+  1. `SnapshotIngestor.fetch_snapshot()` used `asyncio.gather()` across 9 endpoints simultaneously (`get_instance`, `get_regions`, `get_depots`, ...). In `HALF_OPEN`, only a single probe is permitted; the remaining 8 requests raised `SimUnavailable("circuit breaker half-open probe is in flight")`.
+  2. Because `asyncio.gather()` raises immediately upon encountering an unhandled exception, it cancelled the in-flight probe task.
+  3. In `SimClient._request()`, `CancelledError` was not trapped by `except (_RetryableRequest, httpx.TimeoutException, httpx.ConnectError)`. Consequently, neither `record_success()` nor `record_failure()` was executed, leaving `_probe_in_flight = True` permanently. Subsequent cycles remained deadlocked with `circuit breaker half-open probe is in flight`.
+- **Decision:**
+  1. In `CircuitBreaker`, add a `_probe_started_at` timestamp and an explicit `reset_probe()` method. In `before_request()`, if `_probe_in_flight` is `True` but exceeds `reset_after_s`, expire the stale probe.
+  2. In `SimClient._request()` and `stream()`, wrap execution in a `try ... finally` block that invokes `self.breaker.reset_probe()` if the breaker remains in `HALF_OPEN` (guaranteeing that cancellation or timeouts never leak a dangling probe flag).
+  3. In `SnapshotIngestor.fetch_snapshot()`, await `self.client.get_instance()` as a sequential pre-flight probe before gathering the remaining 8 endpoints in parallel. When the breaker is `HALF_OPEN`, `get_instance()` executes as the sole probe; upon success, the breaker closes, allowing the remaining 8 endpoints to run concurrently without probe collisions. If the simulator remains unavailable, `get_instance()` fails fast without initiating 8 doomed requests.
+  4. Add unit test `test_breaker_half_open_probe_reset_on_cancellation` in `tests/integration/test_sim_client.py`.
+- **Consequences:** Completely eliminates circuit breaker deadlock under concurrent or cancelled half-open probes, prevents worker lockouts during recovery from latency or network partition faults, and maintains optimal sub-second parallel ingestion during healthy operation.
+
+### ADR-052: Standardized Frontend Base URL Port Resolution Across Shell Scripts (Day 6)
+- **Status:** ACCEPTED
+- **Context:** In `scripts/fault_demo.sh`, line 7 previously hardcoded `FRONTEND_BASE_URL="${FRONTEND_BASE_URL:-http://localhost:5174}"`, whereas the official compose published port defined in `docker-compose.yml` and `.env.example` is `FRONTEND_HOST_PORT=5173`. In `cold_start_check.sh` and `check_readme.sh`, the URL resolved correctly to port `5173`. When `fault_demo.sh` reached scene 8 ("worker unavailable"), its curl probe to verify frontend availability during worker downtime failed with `curl: (7) Failed to connect to localhost port 5174`.
+- **Decision:** Standardize `FRONTEND_BASE_URL` in `scripts/fault_demo.sh` to dynamically default to `http://localhost:${FRONTEND_HOST_PORT:-5173}` matching all other verification scripts.
+- **Consequences:** Ensures fault demo script executes cleanly against the standard compose configuration.
