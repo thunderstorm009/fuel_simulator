@@ -20,7 +20,7 @@ The predictive pipeline combines three pure mathematical stages:
 3. **Event-Aware Calibration (v1.2.0):** In Event-Aware model v1.2.0, when known crisis events occur (e.g. 2.0x or 2.5x regional demand spikes), historical expected demand immediately factors the active event multiplier. This eliminated historical calibration lag completely: adaptation time dropped from **7–19 ticks down to 0 ticks** (instantaneous convergence).
 4. **Vectorized Monte Carlo:** 300 pseudo-random paths (seeded with snapshot tick and station ID for deterministic replay) project 24-hour stockout probability and P10/P50/P90 confidence bands.
 
-In our 2,000-tick historical backtest (`docs/results/backtest-summary.md`), 24-hour forecast MAPE was **2.11%** outside events and **3.88%** during disruption events, with a Brier calibration score of **0.1558**.
+In our 3,152-tick historical backtest (`docs/results/backtest-summary.md`), 24-hour forecast MAPE was **2.10%** outside events, **3.88%** during disruption events, and **2.71%** overall, with a Brier calibration score of **0.1558**.
 
 ---
 

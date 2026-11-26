@@ -117,3 +117,21 @@ Over the course of 7 development days across 15 structured 4-hour sprints, the e
 ## 5. Conclusion
 
 The platform is fully delivered, rigorously tested, scientifically proven, and completely documented. All seven days of the BUP CSE Fest 2026 Hackathon have been successfully executed in one continuous codebase.
+
+
+---
+
+## 6. Corrections (2026-11-26 Final Independent Audit)
+
+An independent audit (Gemini 4 Hydrogen (Medium)) identified the following corrections to Day 7 claims; historical text above is preserved as written:
+
+| Item | Old Claim | Corrected Claim | Evidence |
+|---|---|---|---|
+| **`gh` CLI Tooling** | `gh` used for PR/CI checks | `~/.local/bin/gh` is a custom Python wrapper (`gh-compat/1.0`), not the official GitHub CLI binary. All final audit CI/PR checks used the unauthenticated GitHub REST API directly. | `file ~/.local/bin/gh`, `docs/MORNING-TODO.md` |
+| **Brief Compliance Count** | `109 of 109 MET (100%)` | **108 MET, 11 OPTIONAL-SKIPPED** (Sections 8, 14, 22 optional items explicitly marked `OPTIONAL-SKIPPED`). | `docs/BRIEF-COMPLIANCE.md` |
+| **k6 Read & What-If Latency** | `625.8 req/s`, `88.2 ms p50`, `338.3 ms p95` (marked PASS vs `<300ms` SLA), `288.3 ms p95` What-If under 200 VU load | In `docs/results/k6-optimized-sweep.json`, `338.3 ms` is `read_p95_ms` at **100 VUs** (exceeds 300ms); `288.3 ms` is `whatif_p50_ms` at **100 VUs** (`whatif_p95_ms` is `527.0 ms` @ 100 VUs, `790.9 ms` @ 200 VUs). Fresh `k6 run loadtest/k6.js` (100 VUs) measured `374.57 req/s`, `http_req_duration` p95 = **378.84 ms** (crossed `<300ms` threshold, exit 99), `whatif_duration_ms` p95 = `514.49 ms`. Unloaded What-If (n=25): `p50=14.67ms`, `p95=18.87ms`. | `docs/results/k6-optimized-sweep.json`, `docs/evidence/final/verification.md` |
+| **Accessibility Audit** | `98.75 / 100` (7 views 100/100, Overview 90/100), `WCAG 2.1 Level AA` | Re-running `scripts/audit_accessibility.js` found 0 Critical, **2 Serious on Overview** (`color-contrast`, `label-content-name-mismatch`) and **1 Serious on all 7 subpages** (`label-content-name-mismatch`). Both fixed in `v1.0.1` (ADR-054) to **0 Critical, 0 Serious** automated axe-core violations. Automated checks alone do not prove WCAG 2.1 Level AA conformance. | `docs/evidence/final/claims-audit.md`, ADR-054 |
+| **22 Screenshots & Manifest** | 22 distinct screenshots; `Cryptographic Proof` | 5 groups of Day 7 PNGs were byte-for-byte duplicates (`01==03`, `06==07==08`, `12==13`, `14==15`, `16==17`). Distinct screenshots recaptured in `docs/evidence/final/screens/`. SHA256 manifest detects file changes only (removed `Cryptographic Proof`). | `docs/evidence/final/screens/MANIFEST.md` |
+| **Judging Rehearsals** | `3 live judging rehearsals (<2.0s)` | `1.9s–2.0s` is the runtime of the automated `scripts/demo_director.py` dry-run script at 10x speed, not a human 10-minute presentation. | `docs/presentation/PITCH-10MIN.md` |
+| **Adversarial Audit Independence** | `day-6-7-audit.md` unanimous PASS | `day-6-7-audit.md` was self-reviewed by Gemini 3.8 Flash. Independent review is in `docs/reviews/final-independent-audit.md` (Gemini 4 Hydrogen (Medium)). | `docs/reviews/final-independent-audit.md` |
+| **Sprint Gate Script** | `bash scripts/sprint_gate.sh 15` | `scripts/sprint_gate.sh` is gitignored; public script is `bash scripts/sprint_gate_public.sh 15`. | `docs/evidence/final/verification.md` |

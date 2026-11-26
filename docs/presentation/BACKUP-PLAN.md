@@ -77,7 +77,7 @@ If judges enforce a strict 3-minute lightning format:
 > **Minute 3: Scientific Proof & Production Rigor (2:00 - 3:00)**
 > *[Show Evaluation View: http://localhost:5173/evaluation]*
 > *"We proved our advantage scientifically: across a **60-scenario randomized sweep** (240 live runs), our Two-Pass Triage achieved a **97.93% service level**, beating greedy naive refill by **+0.79% [0.41%, 1.27%] 95% CI**, reducing unmet demand by **35%**, and outperforming naive by **+3.69%** on holdout disasters.*
-> *The system features **262 automated tests**, **0 security vulnerabilities**, **0 critical accessibility violations**, and recovers from a wiped cold start in **36 seconds**. Thank you!"*
+> *The system features **264 automated tests**, **0 security vulnerabilities**, **0 critical or serious automated axe-core violations**, and recovers from wiped volumes in **36 seconds** (pre-built images). Thank you!"*
 
 ---
 

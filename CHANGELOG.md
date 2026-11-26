@@ -2,6 +2,11 @@
 
 All notable changes to the Fuel Supply Intelligence & Resilience Platform are documented in this file.
 
+## [v1.0.1] - 2026-11-26 - Independent Final Audit & Truthfulness Corrections
+- **Accessibility Fixes (ADR-054):** Fixed `color-contrast` on `.depot-fuel dd span` (`#7589a2` -> `#93a8c1`) and `label-content-name-mismatch` on `Prev` tour button in `GuidedTour.tsx`, achieving **0 Critical and 0 Serious** automated `@axe-core/playwright` violations across all 8 views (regression test added in `web/tests/App.test.tsx`).
+- **Observability Port Hardening (ADR-053):** Bound Prometheus (`9090`), Grafana (`3000`), and Alertmanager (`9093`) host ports to `127.0.0.1` in `docker-compose.yml` (regression test added in `tests/integration/test_compose_config.py`).
+- **Documentation & Claims Corrections:** Corrected brief compliance count (`108 MET`, `11 OPTIONAL-SKIPPED` across 119 rows), separated k6 VU levels (`615.3 req/s` @ 100 VUs / `625.8 req/s` @ 200 VUs in Sprint 12 sweep; `374.57 req/s` and `378.84 ms` p95 in clean-clone `loadtest/k6.js`), separated unloaded vs loaded What-If latency (`14.67 ms` p50 / `18.87 ms` p95 unloaded; `514.49 ms` p95 @ 100 VUs), corrected backtest ticks (`3,152`) and 24h interval coverage (`31.31%`), aligned simulator topology names (`region-dhaka`, `region-chattogram`, 4 stations, 4 corridors), and recaptured distinct browser screenshots in `docs/evidence/final/screens/`.
+
 ## [Sprint 10] - 2026-11-21 - Delivery Excellence, Resilience Limits, Observability, Load Proof & Final Freeze
 - Added `/api/version` endpoint exposing git sha, tag, build time, `model_version` (1.1.0), and `policy_version` (2.1.0), with UI footer component.
 - Added constant-time operator token verification via `hmac.compare_digest` with sliding-window rate limiting (60 decisions/min, HTTP 429).

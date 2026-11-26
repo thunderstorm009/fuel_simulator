@@ -1,26 +1,28 @@
 # Known issues and resolved acceptance status
 
-Updated 2026-11-20. Reflects verified evidence available in this repository.
+Updated 2026-11-26 (Final Independent Audit, `v1.0.1`). Reflects verified evidence available in this repository.
 
 ## Resolved sprint acceptance items
 
 | Area | Resolution | Verified evidence |
 |---|---|---|
-| Sprint 4 live approval & replay | Completed live operator approval; allocation ID 1 reached ARRIVED at tick 137; exact replay returned identical ID | `docs/evidence/sprint-04-overnight.md` |
-| Docker daemon & container health | All 8 containers healthy; cold-start recovery verified in 34 seconds from scratch | `docs/evidence/sprint-07-cold-start.txt`, `docker compose ps` |
-| Sprint 5 resilience matrix | Tested against all 5 simulator faults + payload corruption + worker/predictor outages; Grafana alert fired live | `docs/evidence/sprint-05-fault-demo-accepted.txt`, `docs/evidence/sprint-05-worker-alert-check.txt` |
-| Scenario comparison & determinism | Declarative scenario runner evaluated 4 scenarios × 3 policies × 2 runs; 100% deterministic (delta 0.0000) | `docs/results/scenario-summary.md`, `docs/results/scenario-results.json` |
-| Load testing & performance knee | k6 benchmark completed across normal, latency fault, and predictor stopped; 205k requests, 0% errors, knee at 100 VUs | `docs/loadtest.md`, `docs/results/docker-stats-*.csv` |
-| Isolated clean clone verification | Clean clone build, lint, and test suite pass completely without private local-only development files | `docs/evidence/clean-clone-check.txt` |
-| Reversible chaos testing | 1.0 min random fault injection completed with zero unexplained 5xx API errors and automatic system recovery | `docs/evidence/sprint-07-chaos.json` |
-| Sprint 8 event handling & triage | 6 crisis events covered with 5 scenarios; 2-pass emergency triage; pure anomaly detection; depot supply risk | `docs/sprint-reports/sprint-08.md`, `docs/results/scenario-summary.md` |
-| Sprint 9 intelligence & operator views | 2,000 tick backtest (2.11% MAPE over 24h); pure what-if simulator; 5 new operator views; LP optimizer & buffer | `docs/sprint-reports/sprint-09.md`, `docs/results/backtest-summary.md` |
-| Sprint 10 delivery & resilience limits | CI/CD release workflow; automated deployment rollback; per-service kill recovery (0.10s-0.23s); decision load test (9.5k reqs, 0% errors); judging runbook | `docs/sprint-reports/sprint-10.md`, `docs/JUDGING-DAY.md`, `docs/evidence/sprint-10-resilience-matrix.txt` |
+| Sprint 4 live approval & replay | Completed live operator approval; exact replay returned identical allocation ID | `docs/evidence/sprint-04-overnight.md` |
+| Docker daemon & container health | All 8 containers healthy; cold-start from wiped volumes verified in 36s (pre-built images) | `docs/evidence/day-6/cold-start.txt`, `make smoke` |
+| Sprint 5 & 14 resilience matrix | Tested against all 5 simulator faults + payload corruption + worker/predictor outages | `docs/DAY-6-UPDATE.md`, `docs/results/recovery-times.json` |
+| Scenario comparison & determinism | Declarative scenario runner (54 runs) + 60-scenario sweep (240 runs, `seed=42`, `+0.79% [0.41%, 1.27%]`, 1 loss `holdout_08`) | `docs/results/scenario-summary.md`, `docs/results/scenario-sweep.md` |
+| Load testing & performance | Clean-clone `loadtest/k6.js` (100 VUs): `374.57 req/s`, read p95 `378.84 ms`, What-If p95 `514.49 ms`, 0% errors; Sprint 12 sweep: `615.3 req/s` @ 100 VUs (`338.3 ms` p95), `625.8 req/s` @ 200 VUs (`622.5 ms` p95) | `docs/evidence/final/verification.md`, `docs/results/k6-optimized-sweep.json` |
+| Isolated clean clone verification | Clean clone build, lint, and all 264 tests pass without private local-only files | `docs/evidence/final/verification.md`, `scripts/verify_clean_clone.sh` |
+| Accessibility (automated axe-core) | Fixed `color-contrast` and `label-content-name-mismatch` (ADR-054); 0 Critical, 0 Serious across all 8 views | `docs/evidence/final/browser-audit.md` |
+| Localhost port binding | Bound Prometheus (9090), Grafana (3000), and Alertmanager (9093) to `127.0.0.1` (ADR-053) | `docker-compose.yml`, `tests/integration/test_compose_config.py` |
+
+## Known limitations
+
+1. **Latency under high concurrency:** Combined read + What-If `loadtest/k6.js` crosses the 300 ms p95 threshold at 100+ VUs (`378.84 ms` on clean-clone run; `338.3 ms` in Sprint 12 sweep) with 0% HTTP errors.
+2. **24h forecast interval coverage:** In `docs/results/backtest-summary.md`, 24h P10–P90 coverage is `31.31%` (under-coverage at longer horizons vs `94.49%` at 1h).
+3. **Optional items:** Reinforcement learning, Kubernetes/Helm/Terraform/GitOps, blue/green/canary/autoscaling, distributed tracing, multi-agent systems, and Kafka are intentionally `OPTIONAL-SKIPPED` (`docs/BRIEF-COMPLIANCE.md`).
 
 ## Open human-only ceremony items
 
-The following items are intentional human responsibilities to be completed by the project owner prior to live presentation:
-
-1. **Rehearsal:** Execute the 5-minute live operator walkthrough script three times using `docs/final-demo-script.md`.
-2. **Backup video recording:** Record a 3-minute screen capture walkthrough showing the operator dashboard, approval interaction, and Grafana alert dashboard as an offline fallback.
-3. **Remote repository push:** Project owner reviews branch diff (`git diff origin/main...HEAD`) and pushes tags and branch to GitHub remote (`git push origin overnight-sprints-4-7 --tags`).
+1. **Three live human rehearsals:** Presenter must practice the 10-minute walkthrough three times using `docs/presentation/PITCH-10MIN.md` and `docs/presentation/NUMBERS-TO-SAY.md`.
+2. **Backup video recording:** Record a 3-minute screen capture walkthrough as an offline fallback (`docs/presentation/BACKUP-PLAN.md`).
+3. **Repository decisions:** Choose a `LICENSE`, decide whether to keep `reference/` public, and optionally publish a GitHub Release.

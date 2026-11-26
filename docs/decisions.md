@@ -475,3 +475,15 @@ The live `demand_spike` x1.8 event on `region-dhaka` reduced Mirpur DIESEL from 
 - **Context:** In `scripts/fault_demo.sh`, line 7 previously hardcoded `FRONTEND_BASE_URL="${FRONTEND_BASE_URL:-http://localhost:5174}"`, whereas the official compose published port defined in `docker-compose.yml` and `.env.example` is `FRONTEND_HOST_PORT=5173`. In `cold_start_check.sh` and `check_readme.sh`, the URL resolved correctly to port `5173`. When `fault_demo.sh` reached scene 8 ("worker unavailable"), its curl probe to verify frontend availability during worker downtime failed with `curl: (7) Failed to connect to localhost port 5174`.
 - **Decision:** Standardize `FRONTEND_BASE_URL` in `scripts/fault_demo.sh` to dynamically default to `http://localhost:${FRONTEND_HOST_PORT:-5173}` matching all other verification scripts.
 - **Consequences:** Ensures fault demo script executes cleanly against the standard compose configuration.
+
+### ADR-053: Bind Observability Ports to Loopback (`127.0.0.1`) in Compose (Final Audit)
+- **Status:** ACCEPTED
+- **Context:** In `docker-compose.yml`, `prometheus` (9090), `grafana` (3000, using local demo password `local-demo-only`), and `alertmanager` (9093) previously published ports on all interfaces (`0.0.0.0`), while `postgres` already published no host ports.
+- **Decision:** Bind `prometheus`, `grafana`, and `alertmanager` host ports to `127.0.0.1` (`127.0.0.1:9090:9090`, `127.0.0.1:3000:3000`, `127.0.0.1:9093:9093`). Added regression test `test_observability_and_db_ports_not_exposed_externally` in `tests/integration/test_compose_config.py`.
+- **Consequences:** Localhost URLs (`http://localhost:3000`, `http://localhost:9090`, `http://localhost:9093`) continue to work identically for the operator and demo, while preventing accidental LAN exposure of the local Grafana demo credential and internal telemetry endpoints.
+
+### ADR-054: Fix Accessibility `color-contrast` and `label-content-name-mismatch` Violations (Final Audit)
+- **Status:** ACCEPTED
+- **Context:** Independent re-run of `scripts/audit_accessibility.js` (`@axe-core/playwright`) revealed 0 Critical violations, but 2 Serious violations on Overview (`color-contrast` 4.46:1 on `.depot-fuel dd span`, `label-content-name-mismatch` on `Prev` button in `GuidedTour.tsx`) and 1 Serious violation (`label-content-name-mismatch`) on all 7 subpages.
+- **Decision:** Lighten `.depot-fuel dd span` in `web/src/styles/global.css` from `#7589a2` to `#93a8c1` (>6.5:1 contrast on `#152235`) and align `aria-label="Prev tour step"` in `web/src/components/layout/GuidedTour.tsx` so visible text `"Prev"` is included in the accessible name. Added regression test in `web/tests/App.test.tsx`.
+- **Consequences:** Eliminates all Critical and Serious axe-core violations across all 8 views (0 Critical, 0 Serious). Automated axe checks remain a baseline hygiene check and do not by themselves prove full WCAG 2.1 Level AA conformance.

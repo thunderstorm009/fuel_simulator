@@ -4,22 +4,22 @@
 > A simulation-driven platform for fuel inventory intelligence, demand forecasting, shortage-risk analysis and resilient allocation decision support.
 
 [![CI Status](https://img.shields.io/badge/CI-passing-brightgreen)](https://github.com/thunderstorm009/fuel_simulator/actions)
-[![Python Tests](https://img.shields.io/badge/pytest-239%20passed-brightgreen)](tests/)
-[![Frontend Tests](https://img.shields.io/badge/vitest-11%20passed-brightgreen)](web/tests/)
+[![Python Tests](https://img.shields.io/badge/pytest-240%20passed-brightgreen)](tests/)
+[![Frontend Tests](https://img.shields.io/badge/vitest-12%20passed-brightgreen)](web/tests/)
 [![E2E Tests](https://img.shields.io/badge/playwright-12%20passed-brightgreen)](tests/e2e/)
-[![Total Tests](https://img.shields.io/badge/total%20tests-262%20passed-brightgreen)](tests/)
-[![Accessibility](https://img.shields.io/badge/axe--core-98.75%2F100%20(0%20critical)-brightgreen)](docs/evidence/day-7/browser-audit.md)
-[![Throughput](https://img.shields.io/badge/k6%20throughput-625.8%20req%2Fs-blue)](docs/loadtest.md)
+[![Total Tests](https://img.shields.io/badge/total%20tests-264%20passed-brightgreen)](tests/)
+[![Accessibility](https://img.shields.io/badge/axe--core-0%20critical%20%2F%200%20serious-brightgreen)](docs/evidence/final/browser-audit.md)
+[![Throughput](https://img.shields.io/badge/k6%20sweep-625.8%20req%2Fs%20%40%20200%20VUs-blue)](docs/loadtest.md)
 [![Docker Compose](https://img.shields.io/badge/Docker%20Compose-8%20services-blue)](docker-compose.yml)
-[![Release](https://img.shields.io/badge/release-v1.0.0-blueviolet)](https://github.com/thunderstorm009/fuel_simulator/releases/tag/v1.0.0)
+[![Release](https://img.shields.io/badge/release-v1.0.1-blueviolet)](https://github.com/thunderstorm009/fuel_simulator/releases)
 [![Scope](https://img.shields.io/badge/scope-SIMULATED-orange)](#scope-and-limitations)
 
 ---
 
 ## Main Operator Dashboard
 
-![Fuel Supply Intelligence Platform Dashboard](docs/evidence/day-7/screens/01-dashboard-overview.png)
-*Figure 1: Main operator overview displaying real-time simulated network state across regional corridors (Dhaka, Chittagong, Sylhet, Khulna, Rajshahi), overall service level, active policy indicator (`two_pass_urgency_12h_then_target`), Server-Sent Events push status (`● LIVE PUSH`), and regional depot reserves.*
+![Fuel Supply Intelligence Platform Dashboard](docs/evidence/final/screens/01-dashboard-overview.png)
+*Figure 1: Main operator overview displaying real-time simulated network state across 2 regional corridors (`region-dhaka`, `region-chattogram`), 2 bulk depots (`depot-gazipur`, `depot-patiya`), 4 retail stations, overall service level, active policy indicator (`two_pass_urgency_12h_then_target`), and Server-Sent Events push status (`● LIVE PUSH`).*
 
 ---
 
@@ -47,7 +47,7 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 - **2. Detect:** Pure mathematical anomaly detectors (`backend/shared/core/detect.py`) identifying demand surges (ratio >= 1.3), corridor disruptions, station outages, depot constraints, and model calibration drift.
 - **3. Predict:** Pure empirical demand forecasting with diurnal curve modeling (`forecast.py`), Event-Aware calibration v1.2.0 (0-tick spike adaptation lag), and Monte Carlo stockout risk projection with P10–P90 confidence intervals (`risk.py`).
 - **4. Decide:** Constrained two-pass triage heuristic prioritizing stations facing stockout within 12 hours while locking depot dispatch capacity; optional SciPy Linear Programming solver (`optimizer.py`) and safety buffer policy.
-- **5. Simulate:** Pure zero-database in-memory What-If simulator (`POST /api/whatif`, `WhatIfSimulator.tsx`) computing post-dispatch tank inventory and averted stockout hours (<50ms unloaded, ~288ms under 200 VU load) prior to decision.
+- **5. Simulate:** Pure zero-database in-memory What-If simulator (`POST /api/whatif`, `WhatIfSimulator.tsx`) computing post-dispatch tank inventory and averted stockout hours (`14.67 ms p50 / 18.87 ms p95` unloaded, `n=25`; `514.49 ms p95` under 100-VU mixed load) prior to decision.
 - **6. Approve:** Enforced human authority gate using constant-time token comparison (`hmac.compare_digest`) with sliding-window rate limiting (60 req/min) and required operator name logging.
 - **7. Act:** Outbox-pattern background executor re-verifying freshness and physical constraints at the exact moment of dispatch; permanent idempotency key prevents duplicate execution.
 - **8. Monitor:** Low-cardinality Prometheus metrics, provisioned 4-layer Grafana dashboards, codified alert rules with Alertmanager routing, and correlation-traced decision lifecycles.
@@ -68,7 +68,7 @@ All interface views are rendered in React 19, TypeScript 5.8, and Tailwind CSS. 
 | **Decision Audit History** | ![Decision History](docs/evidence/day-7/screens/10-decision-history.png) | Permanent audit trail proving operator identity (`actor`), timestamp, action, and UUID idempotency key, with Export CSV and Export JSON controls. |
 | **Crisis Alert Center** | ![Alert Center](docs/evidence/day-7/screens/16-alert-center-incidents.png) | Real-time crisis alert hub surfacing active anomalies with severity badges, search filters, and generative plain-text incident explanations. |
 | **Network Topology View** | ![Network View](docs/evidence/day-7/screens/12-network-topology.png) | Graph topology visualizing supply nodes (Gazipur, Patiya depots), retail stations, connecting corridors, and active transit trucks. |
-| **Forecasting Evaluation** | ![Evaluation View](docs/evidence/day-7/screens/21-evaluation-policy-comparison.png) | Empirical evaluation view presenting 60-scenario sweep results, Brier calibration score (0.1558), and backtest MAPE across 1h–24h horizons (2.1%–3.1%). |
+| **Forecasting Evaluation** | ![Evaluation View](docs/evidence/final/screens/21-evaluation-policy-comparison.png) | Empirical evaluation view presenting 60-scenario sweep results, Brier calibration score (0.1558), and backtest MAPE across 1h–24h horizons (`1.66%–2.71%` overall; `2.10%` 24h outside events). |
 | **System Health & Observability** | ![System Health](docs/evidence/day-7/screens/18-system-health-dashboard.png) | Aggregated component health status (API, Worker, Predictor, Database, Simulator) with data freshness tracking, memory usage, and SSE push status. |
 
 ---
@@ -85,7 +85,7 @@ Every capability in this platform was built sequentially in one continuous repos
 | **Day 4** | Sprints 7–8 | **Two-Pass Triage & Human Governance Gate:** Developed Two-Pass Urgency Triage heuristic prioritizing stations facing stockout within 12 hours. Codified 5 physical constraint audits. Enforced mandatory human approval with constant-time token comparison and transactional outbox executor. | [`docs/DAY-4-UPDATE.md`](docs/DAY-4-UPDATE.md)<br/>[`docs/sprint-reports/sprint-04.md`](docs/sprint-reports/sprint-04.md) |
 | **Day 5** | Sprints 9–10 | **Hosted CI Hardening & Discovery Guard:** Resolved hosted CI Playwright module resolution defect across sibling directories (DEF-01 / ADR-049). Added fail-fast zero-discovery guard. Completed 60-scenario randomized crisis sweep (240 live runs, seed=42) proving +0.79% SLA advantage. | [`docs/DAY-5-UPDATE.md`](docs/DAY-5-UPDATE.md)<br/>[`docs/sprint-reports/sprint-11.md`](docs/sprint-reports/sprint-11.md) |
 | **Day 6** | Sprint 14 | **Defect Closure, Concurrency Hardening & Cold Start:** Resolved in-memory snapshot cache staleness on same-tick polls (DEF-05 / ADR-050). Resolved circuit breaker half-open probe concurrency deadlock under `asyncio.gather` (DEF-06 / ADR-051). Verified 8 fault scenes (<1.79s recovery), 36s cold-start from wiped volumes, and 0 security vulnerabilities. | [`docs/DAY-6-UPDATE.md`](docs/DAY-6-UPDATE.md)<br/>[`docs/sprint-reports/sprint-14.md`](docs/sprint-reports/sprint-14.md) |
-| **Day 7** | Sprint 15 | **Presentation Pack, Browser Proof & Release v1.0.0:** Captured 22 high-resolution real browser screenshots (1440x960 2x & mobile). Audited WCAG 2.1 AA accessibility across 8 views (0 critical violations, 98.75/100 score). Verified 3 live judging rehearsals (<2.0s). Delivered complete presentation pack (`PITCH-10MIN.md`, `SLIDES.md`, `slides.html`, `slides.pdf`, `QA-CHEATSHEET.md`, `BACKUP-PLAN.md`), master claims ledger (34 claims traced), and release `v1.0.0`. | [`docs/DAY-7-UPDATE.md`](docs/DAY-7-UPDATE.md)<br/>[`docs/sprint-reports/sprint-15.md`](docs/sprint-reports/sprint-15.md) |
+| **Day 7** | Sprint 15 | **Presentation Pack, Browser Proof & Release v1.0.0:** Captured browser screenshots (`docs/evidence/day-7/screens/`, later deduplicated and refreshed in `docs/evidence/final/screens/`). Audited accessibility across 8 views (updated in `v1.0.1` to 0 Critical / 0 Serious automated axe-core violations). Executed 3 automated `demo_director.py` dry runs (<2.0s). Delivered presentation pack (`PITCH-10MIN.md`, `SLIDES.md`, `slides.html`, `slides.pdf`, `QA-CHEATSHEET.md`, `BACKUP-PLAN.md`), claims ledger, and release `v1.0.0` (corrected in `v1.0.1`). | [`docs/DAY-7-UPDATE.md`](docs/DAY-7-UPDATE.md)<br/>[`docs/sprint-reports/sprint-15.md`](docs/sprint-reports/sprint-15.md) |
 
 ---
 
@@ -170,25 +170,14 @@ The platform was engineered across fifteen sequential 4-hour development sprints
 
 ```text
 ============================= test session starts ==============================
-collected 239 items
-tests/unit/ .................................................... passed (158)
-tests/integration/ ............................................ passed (49)
-tests/scenarios/ .............................................. passed (32)
-======================= 239 passed, 2 warnings in 3.38s =======================
+pytest:     240 passed (tests/unit/, tests/integration/, tests/scenarios/)
+vitest:      12 passed (web/tests/App.test.tsx, web/tests/NewViews.test.tsx)
+playwright:  12 passed (tests/e2e/platform.spec.ts)
+--------------------------------------------------------------------------------
+Total Automated Test Suite: 264 passed
 
-RUN  web vitest
-✓ tests/NewViews.test.tsx (5 tests)
-✓ tests/App.test.tsx (6 tests)
-Test Files  2 passed (2) | Tests  11 passed (11) in 1.48s
-
-RUN  playwright test (E2E browser suite)
-✓ 12 tests passed in 31.7s (dashboard, tour, spike, approve/reject, what-if, fault, alerts, health, SSE, a11y)
-
-Total Automated Test Suite:
-✓ 262 passed across Python, Vitest, and Playwright E2E
-
-axe-core accessibility audit:
-✓ 0 Critical violations across all 8 operational pages (Scores: 100/100 on 7 subpages, 90/100 overview; average 98.75/100)
+axe-core accessibility audit (automated checks only):
+✓ 0 Critical, 0 Serious violations across all 8 operational views
 
 ruff check .        --> All checks passed!
 ruff format --check --> Clean, 0 formatting issues
@@ -215,15 +204,15 @@ Evaluated across **60 randomized crisis scenarios** (192 ticks / 2 simulated day
 
 In Sprint 12, the API was scaled via 4 Uvicorn workers, connection pooling (20 connections), 3 composite database indexes, pre-serialized byte-caching, and ETag / 304 Not Modified support:
 
-| Metric | Baseline (Pre-Sprint 12) | Optimized (Sprint 12) | Improvement |
+| Metric | Sprint 12 Sweep (100 VUs) | Sprint 12 Sweep (200 VUs) | Clean-Clone `loadtest/k6.js` (100 VUs) |
 |---|---|---|---|
-| **Max Throughput** | 201.0 req/s (saturated at 100 VUs) | **625.8 req/s** (at 200 VUs) | **+211% (3.1x speedup)** |
-| **Read Latency (p50)** | 402.1 ms | **88.2 ms** | **-78% faster** |
-| **Read Latency (p95)** | 1,210.6 ms | **338.3 ms** | **-72% faster** |
-| **What-If Simulation (p95)** | 834.0 ms | **288.3 ms** | **-65% faster (target < 500ms MET)** |
-| **PostgreSQL CPU Usage** | 309.8% CPU | **34.1% CPU** | **-89% load reduction** |
-| **Error Rate** | 0.00% | **0.00%** | **0 errors across all loads** |
-| **Client Read Traffic via SSE**| 12.0 req/min (polling) | **0.6 req/min** (push hints) | **-95% client read traffic** |
+| **Throughput** | **615.3 req/s** | **625.8 req/s** | **374.57 req/s** (24,368 reqs / 65s) |
+| **Read Latency (p50)** | 88.2 ms | 210.4 ms | 99.06 ms (combined) |
+| **Read Latency (p95)** | **338.3 ms** (>300 ms) | **622.5 ms** (>300 ms) | **378.84 ms** (crossed `<300 ms` threshold) |
+| **What-If Simulation (p50 / p95)** | 288.3 ms / 527.0 ms | 404.9 ms / 790.9 ms | 155.34 ms / 514.49 ms (**14.67 / 18.87 ms idle**) |
+| **PostgreSQL CPU Usage** | 23.2% CPU | 36.5% CPU (34.1% @ 400 VUs) | — |
+| **Error Rate** | **0.00%** | **0.00%** | **0.00%** |
+| **Client Read Traffic via SSE**| 12.0 → 0.6 req/min (-95%) | 12.0 → 0.6 req/min (-95%) | 10s REST polling fallback on disconnect |
 
 ---
 
@@ -278,11 +267,10 @@ make demo
 # Run Playwright end-to-end browser tests
 make test-e2e
 
-# Run unit and integration tests
-make test
-
-# Run code linters
+# Run code linters and unit/integration tests (install frontend dev deps once first)
+npm ci --prefix web
 make lint
+make test
 
 # Run end-to-end smoke check
 make smoke
@@ -333,7 +321,7 @@ make smoke
   - [k6 Load & Latency Benchmark Report](docs/loadtest.md)
   - [Live Soak Test 90-Minute Report](docs/results/soak-test-summary.md)
   - [Architectural Decision Records Log (ADR-001 through ADR-052)](docs/decisions.md)
-  - [Hackathon Brief Compliance Matrix (All 109 Requirements)](docs/BRIEF-COMPLIANCE.md)
+  - [Hackathon Brief Compliance Matrix (108 MET, 11 OPTIONAL-SKIPPED)](docs/BRIEF-COMPLIANCE.md)
 
 ---
 

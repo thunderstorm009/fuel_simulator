@@ -2,7 +2,7 @@
 
 - **Project:** Fuel Supply Intelligence & Resilience Platform
 - **Source of Truth:** Official Hackathon Brief (`reference/BUP_CSE_FEST_2026_Participant_Facing_Hackathon_Draft.pdf`) and Simulator Integration Guide (`reference/BUP_Fuel_Supply_Simulator_Integration_Guide_Final.pdf`).
-- **Last Verified:** 2026-11-24 (Day 6 Verification Battery & Sprint 14 Audit)
+- **Last Verified:** 2026-11-26 (Final Independent Audit — 108 MET, 0 PARTIAL, 0 NOT MET, 11 OPTIONAL-SKIPPED across 119 rows)
 - **Status Values:**
   - `MET`: Fully implemented, verified with automated tests or running evidence.
   - `PARTIAL`: Core built; extensions scheduled in Sprints 8–10.
@@ -82,6 +82,9 @@
 | 14.1 | Deployment versioning and configuration templates | **MET** | Semantic commit tagging, `.env.example`, multi-stage Dockerfiles | Sprint 1 |
 | 14.2 | Simulation replay and determinism proof | **MET** | `scripts/scenario_runner.py` (24 runs, delta 0.0000 across all runs) | Sprint 6 |
 | 14.3 | Model drift and prediction error tracking | **MET** | `backend/shared/core/backtest.py`, `backend/shared/core/detect.py:detect_calibration_drift`, `docs/results/backtest-summary.md` | Sprint 9 |
+| 14.4 | Kubernetes / Helm / Terraform / GitOps | **OPTIONAL-SKIPPED** | Explicitly optional in brief Section 14; single-host Docker Compose used per hackathon scope | — |
+| 14.5 | Blue/green deployments, canary releases, autoscaling | **OPTIONAL-SKIPPED** | Explicitly optional in brief Section 14; omitted per scope | — |
+| 14.6 | Distributed tracing | **OPTIONAL-SKIPPED** | Explicitly optional in brief Section 14; structured JSON correlation IDs used instead | — |
 | **15** | **Observability Requirement** | | | |
 | 15.1 | Structured JSON application logging with contextual trace metadata | **MET** | Implemented across `backend/api`, `backend/worker`, `intel/predictor` | Sprint 1 |
 | 15.2 | Low-cardinality Prometheus metrics on read, write, and processing paths | **MET** | `backend/shared/core/metrics.py`, exposed via `/metrics` on ports 8101, 8102, 8103 | Sprint 5 |
@@ -127,6 +130,8 @@
 | **22** | **Optional Advanced Work** | | | |
 | 22.1 | Generative AI operator incident explanations (mocked/offline) | **MET** | `backend/shared/core/summarize.py`, `GET /api/incidents/{id}/summary`, `AlertCenterPage.tsx`, ADR-040 | Sprint 9 |
 | 22.2 | Advanced mathematical optimization (LP / MIP) | **MET** | `backend/shared/core/policies/optimizer.py`, `tests/unit/test_optimizer_and_buffer.py`, ADR-039 | Sprint 9 |
+| 22.3 | Multi-agent systems / Reinforcement learning | **OPTIONAL-SKIPPED** | Explicitly optional in brief Section 22 and out of scope per `AGENTS.md` | — |
+| 22.4 | Distributed streaming systems (e.g. Kafka) | **OPTIONAL-SKIPPED** | Explicitly optional in brief Section 22; PostgreSQL `LISTEN/NOTIFY` + SSE used instead | — |
 | **23** | **Demonstration Story (The Operational Loop)** | | | |
 | 23.1 | Step 1: Normal operational state observation | **MET** | Documented in `docs/final-demo-script.md` | Sprint 7 |
 | 23.2 | Step 2: Demand surge / disruption detection | **MET** | `backend/shared/core/detect.py`, `docs/evidence/sprint-08-demand-spike-detection.txt` | Sprint 8 |

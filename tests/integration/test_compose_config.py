@@ -41,3 +41,17 @@ def test_alerts_profile_is_isolated_from_default_stack() -> None:
     alert_services = set(res_alerts.stdout.strip().split())
     assert "alertmanager" in alert_services
     assert "webhook-receiver" in alert_services
+
+
+def test_observability_and_db_ports_not_exposed_externally() -> None:
+    result = subprocess.run(
+        ["docker", "compose", "--profile", "alerts", "config", "--format", "json"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    config = json.loads(result.stdout)
+    assert "ports" not in config["services"]["postgres"]
+    for svc in ("prometheus", "grafana", "alertmanager"):
+        for p in config["services"][svc]["ports"]:
+            assert p["host_ip"] == "127.0.0.1"

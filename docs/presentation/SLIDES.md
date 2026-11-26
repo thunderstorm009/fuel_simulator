@@ -11,14 +11,14 @@
 
 - **Lead Engineer:** Faizul Kabir Abrar ([@thunderstorm009](https://github.com/thunderstorm009))
 - **Repository:** `thunderstorm009/fuel_simulator` (Release `v1.0.0`)
-- **Test Suite:** 262 Automated Tests (239 Python, 11 Vitest, 12 Playwright E2E)
-- **Status:** 100% Brief Compliance (109 / 109 Requirements Met)
+- **Test Suite:** 264 Automated Tests (240 Python, 12 Vitest, 12 Playwright E2E)
+- **Status:** 108 Required Requirements MET (11 Optional Items Skipped)
 
 ---
 
 ### Slide 2: The Challenge: Cascading Shortages in Regional Fuel Logistics
 
-- **Vulnerable Topology:** 2 primary bulk supply depots (Gazipur, Patiya) feeding 8 retail filling stations across 4 transit corridors.
+- **Vulnerable Topology:** 2 regions (`region-dhaka`, `region-chattogram`), 2 primary bulk supply depots (`depot-gazipur`, `depot-patiya`) feeding 4 retail filling stations across 4 transit corridors.
 - **Cascading Failure Modes:**
   - Route blockages (highway protests, monsoons, bottlenecks) causing 3x travel delays.
   - Abrupt regional demand surges (panic buying, harvest season, industrial spikes).
@@ -49,9 +49,9 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 
 - **Dual-Mode Telemetry Synchronization:**
   - SSE push invalidation stream (`● LIVE PUSH`) cuts browser polling overhead by **95%**.
-  - Automatic fallback to REST polling (2s interval) if SSE connection encounters transient disconnect.
+  - Automatic fallback to REST polling (10s interval) if SSE connection encounters transient disconnect.
 - **Station Inventory & Ullage Tracking:**
-  - Real-time tracking of Diesel, Petrol, and Octane across all 8 stations.
+  - Real-time tracking of Diesel, Petrol, and Octane across all 4 stations.
   - Physical tank ullage limits strictly enforced to prevent catastrophic tank overflows.
 
 ![Station Inventory and Ullage](../evidence/day-7/screens/03-station-inventory-ullage.png)
@@ -66,7 +66,7 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 
 - **Pure Statistical Forecasting (`forecast.py`):**
   - Hour-of-day diurnal consumption curves with day-of-week seasonality factors.
-  - Evaluated on backtests across 1h to 24h horizons: **2.11% Mean Absolute Percentage Error (MAPE)**.
+  - Evaluated on 3,152-tick backtest: **2.10% 24h outside-event MAPE** (**2.71% overall 24h**).
 - **Vectorized Monte Carlo Runway (`risk.py`):**
   - 300 stochastic simulation paths per station-fuel pair.
   - Computes P10 (pessimistic), P50 (median), and P90 (optimistic) stock trajectories in **<12ms**.
@@ -129,7 +129,7 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 - **Immediate Impact Feedback:**
   - Recomputes destination stock trajectory and averted stockout hours instantly.
   - Audits physical constraints before human commitment, eliminating trial-and-error in live dispatch.
-  - Benchmarked under load: **288.3 ms p95 at 200 concurrent Virtual Users**.
+  - Idle What-If latency: **14.67 ms p50 / 18.87 ms p95** (n=25); under 100-VU mixed load (`loadtest/k6.js`): **514.49 ms p95** (0% errors).
 
 ---
 
@@ -158,7 +158,7 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 *Figure 10.1: Supply network topology map showing regional depots, connecting highway corridors, and transit trucks.*
 
 - **Corridor Telemetry:**
-  - Tracks 4 regional road arteries (Dhaka-Chittagong, Dhaka-Sylhet, Dhaka-Khulna, Dhaka-Rajshahi).
+  - Tracks 4 regional road corridors (`route-gazipur-mirpur`, `route-gazipur-tongi`, `route-patiya-karnaphuli`, `route-patiya-coxsbazar`).
   - Dynamic travel time multipliers reflect active road disruptions and weather delays.
 - **In-Transit Fuel Tracking:**
   - Explicitly separates **on-hand inventory** from **scheduled supply** and **in-transit trucks**.
@@ -180,8 +180,8 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
   - Serves cached state with explicit data age telemetry (`X-Simulator-Stale: true`).
 - **Concurrency-Hardened Recovery:**
   - Resolved half-open probe deadlock under `asyncio.gather` (ADR-051).
-  - Verified sub-second recovery (**0.21s to 1.79s**) across all 8 fault scenes.
-  - Disaster recovery drill: **2.93s RTO** complete database restore from cold backup.
+  - Post-fault data age recovers in **0.21s to 1.79s** across all 8 fault scenes; container restarts reach running in 0.38–1.02s, healthy in 5.35–6.87s, fresh API data in 0.38–3.06s.
+  - Disaster recovery drill: **2.93s `psql` restore RTO** (RPO ~5s).
 
 ![Recovery Cleared Banner](../evidence/day-7/screens/20-recovery-cleared-banner.png)
 *Figure 11.2: Restored operational state with healthy telemetry badges and active push invalidation.*
@@ -207,14 +207,14 @@ Observe ──> Detect ──> Predict ──> Decide ──> Simulate ──> A
 
 | Dimension | Measured Metric | Benchmark Standard | Status |
 |---|---|---|:---:|
-| **Automated Tests** | **262 tests passed** (239 Pytest, 11 Vitest, 12 Playwright) | 100% test pass rate | **PASS** |
-| **API Throughput** | **625.8 requests/sec** (at 200 VUs) | Sub-300ms p95 read latency | **PASS** |
-| **What-If Latency** | **288.3 ms p95** (under 200 VU load; <50ms unloaded) | <500ms brief SLA target | **PASS** |
-| **Cold Start Timing** | **36 seconds** from wiped Docker volumes to healthy stack | Rapid recovery standard | **PASS** |
-| **Database Restore RTO** | **2.93 seconds** complete disaster recovery | Resilient continuity target | **PASS** |
-| **Security Audits** | **0 vulnerabilities** (pip-audit, npm audit, Trivy, Gitleaks) | Zero known High/Critical | **PASS** |
-| **Accessibility Audit** | **0 Critical Violations** across all 8 views (Score: 98.75/100) | WCAG 2.1 AA standards | **PASS** |
-| **Brief Compliance** | **109 of 109 requirements MET** (100% verified) | Official hackathon charter | **PASS** |
+| **Automated Tests** | **264 tests passed** (240 Pytest, 12 Vitest, 12 Playwright) | 100% test pass rate | **PASS** |
+| **API Throughput** | **615.3 req/s @ 100 VUs** (`338.3 ms` p95), **625.8 req/s @ 200 VUs** (`622.5 ms` p95) | 0% errors (p95 > 300ms at 100+ VUs) | **MEASURED** |
+| **What-If Latency** | **14.67 ms p50 / 18.87 ms p95** unloaded; **514.49 ms p95** @ 100 VUs | <50ms when idle | **PASS (idle)** |
+| **Cold Start Timing** | **36 seconds** from wiped Docker volumes (pre-built images) | Rapid recovery standard | **PASS** |
+| **Database Restore RTO** | **2.93 seconds** `psql` restore duration (RPO ~5s) | Resilient continuity target | **PASS** |
+| **Security Audits** | **0 vulnerabilities** (pip-audit, npm audit, Trivy, Gitleaks 68 commits) | Zero known High/Critical | **PASS** |
+| **Accessibility Audit** | **0 Critical, 0 Serious** automated axe-core violations across 8 views | Automated checks only | **PASS (axe)** |
+| **Brief Compliance** | **108 required MET**, **11 OPTIONAL-SKIPPED** (119 items) | Official hackathon charter | **PASS** |
 
 ---
 

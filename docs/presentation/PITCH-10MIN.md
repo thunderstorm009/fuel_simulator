@@ -13,14 +13,14 @@
 | Act | Time Window | Section Title | Primary UI Route / Screen | Key Message |
 |:---:|:---:|---|---|---|
 | **0** | `00:00 - 01:00` | Context, Problem & 9-Stage Loop | Architecture Slide | Regional fuel logistics fail due to cascading blindspots; our closed loop restores control. |
-| **1** | `01:00 - 02:15` | Real-Time Telemetry & SSE Push | `/` (Dashboard) & `01-dashboard` | Instant observability of 2 depots, 4 corridors, 8 stations with zero-lag SSE invalidation. |
+| **1** | `01:00 - 02:15` | Real-Time Telemetry & SSE Push | `/` (Dashboard) & `01-dashboard` | Instant observability of 2 regions, 2 depots, 4 corridors, 4 stations with SSE invalidation. |
 | **2** | `02:15 - 03:30` | Shortage Risk & Monte Carlo Projections | `/risk` & `04-risk`, `05-trajectory` | Pure statistical forecasting with diurnal curves and 300-path Monte Carlo risk runway. |
 | **3** | `03:30 - 04:30` | Crisis Injection & Real-Time Detection | `/alerts` & `16-alert-center` | Mathematical anomaly detectors trigger instant warnings with zero-tick adaptation lag. |
 | **4** | `04:30 - 05:45` | Decision Support: Two-Pass Triage | `/recommendations` & `06-ranked` | Emergency 12h urgency triage with 5 strict physical constraint audits before any action. |
 | **5** | `05:45 - 06:45` | What-If Simulation Sandbox | `/recommendations` (What-If modal) | In-memory zero-database simulation (<50ms) proving averted stockouts before committing. |
 | **6** | `06:45 - 07:45` | Mandatory Human Approval & Idempotency | `/recommendations` & `09-approval` | Operator identity, constant-time token check, and permanent UUID idempotency key. |
 | **7** | `07:45 - 08:45` | Resilience, Chaos & Recovery | `/health` & `19-degraded`, `20-recovery` | Circuit breaker trips under fault, surfaces degraded banner, auto-recovers in <1 second. |
-| **8** | `08:45 - 10:00` | Scientific Proof, Verification & Q&A | `/evaluation` & `21-evaluation` | 60-scenario sweep (+0.79% SLA, +3.69% holdout), 262 tests, 36s cold start, 100% compliant. |
+| **8** | `08:45 - 10:00` | Scientific Proof, Verification & Q&A | `/evaluation` & `21-evaluation` | 60-scenario sweep (+0.79% SLA, +3.69% holdout), 264 tests, 36s cold start, 108/108 required met. |
 
 ---
 
@@ -30,7 +30,7 @@
 
 > **[SLIDE 1 & 2: Title & Problem Architecture]**
 >
-> *"Good morning, respected judges. In downstream fuel distribution across Bangladesh—from the bulk terminals at Gazipur and Patiya out to retail stations in Chittagong, Sylhet, and Bogra—a single highway bottleneck or demand surge can trigger cascading retail stockouts within 12 hours.*
+> *"Good morning, respected judges. In downstream fuel distribution across Bangladesh—from the bulk depots at Gazipur and Patiya out to retail stations in Dhaka (`station-mirpur`, `station-tongi`) and Chattogram (`station-karnaphuli`, `station-coxsbazar`)—a single highway bottleneck or demand surge can trigger cascading retail stockouts within 12 hours.*
 >
 > *Existing systems operate in silos: telemetry lives in spreadsheets, dispatchers guess demand, and emergency dispatches violate tank ullage or depot truck capacity.*
 >
@@ -119,9 +119,9 @@
 >
 > *It is a zero-database, purely in-memory counterfactual simulator. It runs directly inside the API process using the latest cached network snapshot.*
 >
-> *Let's adjust the slider: increase dispatch volume to Chittagong Station by 5,000 liters.*
+> *Let's adjust the slider: increase dispatch volume to `station-coxsbazar` (Chattogram) by 5,000 liters.*
 >
-> *In **under 50 milliseconds** (and 288 ms under 200 virtual user load), the sandbox projects the counterfactual stock trajectory, computes the averted stockout hours, and audits physical feasibility.*
+> *In **under 50 milliseconds** when idle (**14.67 ms p50 / 18.87 ms p95**, or 514.49 ms p95 under 100-VU mixed load), the sandbox projects the counterfactual stock trajectory, computes the averted stockout hours, and audits physical feasibility.*
 >
 > *The operator knows the exact outcome of their decision before issuing a command."*
 
@@ -160,9 +160,9 @@
 >
 > *Look at our typed Circuit Breaker (`sim_client.py`). When the simulator fails, the breaker trips to OPEN. The UI immediately displays an amber **DEGRADED MODE** banner, halts recommendations, and serves cached data labeled with its exact age in seconds.*
 >
-> *When the simulator recovers, our breaker uses a half-open probe. In Sprint 14, we resolved a concurrency edge case (ADR-051) where parallel probes under `asyncio.gather` could deadlock. Now, recovery is verified in **0.21 to 1.79 seconds** across all 8 fault scenarios.*
+> *When the simulator recovers, our breaker uses a half-open probe. In Sprint 14, we resolved a concurrency edge case (ADR-051) where parallel probes under `asyncio.gather` could deadlock. Now, post-fault data age recovers in **0.21 to 1.79 seconds** across all 8 fault scenarios (container restarts reach running in 0.38–1.02s, healthy in 5.35–6.87s, fresh API data in 0.38–3.06s).*
 >
-> *Furthermore, our database disaster recovery drill demonstrated a complete cold restore with **2.93 seconds RTO**."*
+> *Furthermore, our database disaster recovery drill demonstrated a complete cold `psql` restore with **2.93 seconds RTO** (RPO ~5s)."*
 
 ---
 
@@ -175,10 +175,10 @@
 > 1. **Robust 60-Scenario Sweep:** Across 240 simulation runs (192 ticks each, seed=42), our Two-Pass Triage heuristic achieved a **97.93% Mean Service Level**, outperforming greedy naive refill by **+0.79% [0.41%, 1.27%] 95% bootstrap CI**, cutting unmet demand by **35%**. On 10 unseen holdout disasters, the margin increased to **+3.69%**.
 > 2. **Honest Boundary Disclosure:** We identified our system's exact physical failure ceiling—23,000 L/tick demand surge under 2 simultaneous corridor blocks—and published our single scenario loss (`holdout_08`, -0.08% SLA) due to transit timing lag.
 > 3. **Engineering Rigor:**
->    - **262 automated tests** (239 Python, 11 Vitest, 12 Playwright E2E).
+>    - **264 automated tests** (240 Python, 12 Vitest, 12 Playwright E2E).
 >    - **0 security vulnerabilities** across `pip-audit`, `npm audit`, `trivy`, and `gitleaks`.
->    - **0 critical accessibility violations** across all 8 views (axe-core score 98.75/100).
->    - **36-second cold-start** from wiped Docker volumes.
->    - **100% Brief Compliance** across all 109 charter items.
+>    - **0 critical and 0 serious automated axe-core violations** across all 8 views.
+>    - **36-second cold-start** from wiped Docker volumes (with pre-built images).
+>    - **108 required brief items MET** (with 11 optional items explicitly `OPTIONAL-SKIPPED`).
 >
 > *Thank you. We are ready for your questions."*

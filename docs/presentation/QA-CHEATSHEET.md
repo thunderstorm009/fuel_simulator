@@ -33,7 +33,7 @@
 ### Q4: How does your demand forecast adapt to abrupt crisis spikes without lagging behind?
 > **Answer:**
 > Traditional moving-average or ARIMA models suffer from a 3–5 tick lag because they wait for historical averages to catch up with sudden demand surges.
-> We developed **Event-Aware Calibration v1.2.0** (`core/forecast.py`). When our pure anomaly detector (`detect.py`) spots a demand surge (consumption ratio $\ge 1.3$), it flags an active crisis event. The forecasting engine immediately applies an empirical surge scale factor to the baseline diurnal curve with **zero-tick adaptation lag**. Across our 60 crisis scenarios, this cut forecast Mean Absolute Percentage Error (MAPE) during surge events from 14.8% down to 2.11%.
+> We developed **Event-Aware Calibration v1.2.0** (`core/forecast.py`). When our pure anomaly detector (`detect.py`) spots a demand surge (consumption ratio $\ge 1.3$), it flags an active crisis event. The forecasting engine immediately applies an empirical surge scale factor to the baseline diurnal curve with **zero-tick adaptation lag**. Across our 3,152-tick backtest, 24h MAPE is **2.10%** outside events (**2.71%** overall, **3.88%** inside events), proving the model matches the simulator's documented demand rules.
 
 ---
 
@@ -42,7 +42,7 @@
 > We implement typed resilience patterns compliant with Section 12 of the hackathon charter:
 > 1. **Three Error Shapes:** The simulator client (`sim_client.py`) parses all three official error formats: `detail.code` (allocation rejections), `error.code` (injected HTTP 503 faults), and `detail` lists (FastAPI 422 validation errors).
 > 2. **Circuit Breakers:** Upstream calls are wrapped in a typed circuit breaker. Consecutive failures trip the breaker to `OPEN`, immediately displaying a prominent amber `DEGRADED MODE` banner in the UI and serving cached data labeled with its exact age.
-> 3. **Concurrency-Safe Recovery (ADR-051):** We resolved a subtle race condition where parallel probe requests under `asyncio.gather` could deadlock a half-open breaker. Our worker now executes a single sequential pre-flight probe (`get_instance()`) before fanning out, guaranteeing sub-second recovery (0.21s to 1.79s).
+> 3. **Concurrency-Safe Recovery (ADR-051):** We resolved a subtle race condition where parallel probe requests under `asyncio.gather` could deadlock a half-open breaker. Our worker now executes a single sequential pre-flight probe (`get_instance()`) before fanning out, keeping post-fault data age at **0.21s to 1.79s** across all 8 fault scenes (with container restart timings of 0.38–1.02s running, 5.35–6.87s healthy, 0.38–3.06s data visible in `docs/results/recovery-times.json`).
 
 ---
 
@@ -68,14 +68,14 @@
 ### Q8: Why did you use Server-Sent Events (SSE) with REST polling fallback instead of WebSockets?
 > **Answer:**
 > SSE is unidirectional, lightweight, and operates natively over standard HTTP/1.1 and HTTP/2 without protocol upgrade overhead or complex proxy configuration.
-> The simulator emits SSE event hints. Our worker listens to these hints, updates PostgreSQL, and uses `LISTEN/NOTIFY` to trigger FastAPI SSE streams (`GET /api/stream`) to connected browser clients. This reduced browser read requests from 12 req/min down to 0.6 req/min (**95% reduction in read traffic**). If an operator's network drops the SSE connection, the frontend TanStack Query hooks automatically fall back to 2-second REST polling until the stream reconnects.
+> The simulator emits SSE event hints. Our worker listens to these hints, updates PostgreSQL, and uses `LISTEN/NOTIFY` to trigger FastAPI SSE streams (`GET /api/stream`) to connected browser clients. This reduced browser read requests from 12 req/min down to 0.6 req/min (**95% reduction in read traffic**). If an operator's network drops the SSE connection, the frontend TanStack Query hooks automatically fall back to 10-second REST polling until the stream reconnects.
 
 ---
 
 ### Q9: How does the What-If Simulation Sandbox achieve sub-50ms latency without hitting the database?
 > **Answer:**
 > The What-If Sandbox (`POST /api/whatif`) is a pure zero-database in-memory simulation engine.
-> When the API starts, it maintains an in-memory cache of the latest network state updated via background worker notifications. When an operator adjusts candidate allocation sliders in the UI, the request payload is evaluated entirely in RAM using pure Python functions. It executes candidate trajectory projections and constraint validations in **<50 milliseconds** unloaded, and clocked at **288.3 ms p95 under 200 concurrent virtual users** in k6 load tests.
+> When the API starts, it maintains an in-memory cache of the latest network state updated via background worker notifications. When an operator adjusts candidate allocation sliders in the UI, the request payload is evaluated entirely in RAM using pure Python functions. It executes candidate trajectory projections and constraint validations in **14.67 ms p50 / 18.87 ms p95 unloaded** (n=25), **514.49 ms p95 under 100-VU mixed load** (`loadtest/k6.js`), and **790.9 ms p95 at 200 VUs** in the Sprint 12 sweep (`288.3 ms` was What-If p50 at 100 VUs).
 
 ---
 
@@ -98,10 +98,9 @@
 
 ### Q12: How do you verify accessibility compliance across the platform?
 > **Answer:**
-> In Sprint 13 and Sprint 15, we integrated `@axe-core/playwright` directly into our end-to-end test suite (`tests/e2e/platform.spec.ts` and `scripts/capture_day7_evidence.js`).
-> We audited all 8 operational views against WCAG 2.1 Level AA rules:
-> - **0 Critical Violations** across all 8 views.
-> - **Average Score:** **98.75 / 100** (7 views scored 100/100; Overview scored 90/100 due to minor color contrast on muted secondary timestamps).
+> In Sprint 13, Sprint 15, and the `v1.0.1` final audit, we integrated `@axe-core/playwright` (`tests/e2e/platform.spec.ts` and `scripts/audit_accessibility.js`).
+> After fixing `color-contrast` and `label-content-name-mismatch` in `v1.0.1` (ADR-054):
+> - **0 Critical and 0 Serious Violations** across all 8 views (automated axe-core checks only; automated tools alone do not prove full WCAG 2.1 Level AA conformance).
 > All interactive elements feature ARIA labels, semantic roles, table headers, and keyboard navigability.
 
 ---
@@ -125,7 +124,7 @@
 ### Q15: How can judges verify that your performance numbers and claims are real?
 > **Answer:**
 > We maintain a **Master Claims Ledger** in `docs/evidence/day-7/claims-ledger.md` mapping every single reported number to its exact reproducible command or source file:
-> - Test counts: Run `source .venv/bin/activate && pytest` (239 passed) and `npm --prefix web run test:e2e` (12 passed).
+> - Test counts: Run `pytest` (240 passed), `npm --prefix web run test` (12 passed), and `make test-e2e` (12 passed) = 264 total.
 > - Cold start: Run `bash scripts/cold_start_check.sh --confirm-volume-destroy`.
 > - Fault recovery: Run `bash scripts/fault_demo.sh`.
 > - Load tests: Run `k6 run loadtest/k6_read_spike.js`.
