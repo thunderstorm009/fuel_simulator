@@ -6,6 +6,9 @@
 - **Commit:** HEAD of branch `sprints-11-13` (Git tag `sprint-13`)
 - **Status:** **PRODUCTION READY & JUDGING PREPARED**
 
+> [!NOTE]
+> **v1.0.1 Independent Audit Corrections (2026-11-26):** Following `v1.0.0`, an independent audit (`docs/reviews/final-independent-audit.md`) corrected several overstated claims in `v1.0.0` docs: (1) brief compliance is **108 MET, 11 OPTIONAL-SKIPPED** (not 109/109 MET); (2) k6 read p95 exceeds 300 ms at 100+ VUs (`338.3 ms` @ 100 VUs in Sprint 12 sweep, `378.84 ms` in `loadtest/k6.js`), and `288.3 ms` was What-If p50 @ 100 VUs (unloaded What-If is `14.67 ms` p50 / `18.87 ms` p95); (3) fixed 2 Serious axe-core violations (`color-contrast`, `label-content-name-mismatch`) to reach 0 Critical / 0 Serious automated axe-core violations; (4) bound Grafana/Prometheus/Alertmanager ports to `127.0.0.1`; (5) recaptured non-duplicate browser screenshots in `docs/evidence/final/screens/`.
+
 ---
 
 ## Executive Summary

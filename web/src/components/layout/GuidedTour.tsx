@@ -123,7 +123,7 @@ export default function GuidedTour() {
               style={{ padding: "0.2rem 0.5rem", fontSize: "0.75rem" }}
               disabled={step === 0}
               onClick={() => setStep((s) => Math.max(0, s - 1))}
-              aria-label="Previous tour step"
+              aria-label="Prev tour step"
             >
               Prev
             </button>

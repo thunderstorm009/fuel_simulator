@@ -122,7 +122,7 @@ sequenceDiagram
   Core->>Core: Pure constraint validation (core.validator)
   Core->>Core: Counterfactual inventory projection (hours-to-stockout delta)
   Core-->>API: WhatIfResponse (valid, runway before/after, violated constraints)
-  API-->>UI: HTTP 200 (executed in <50ms unloaded, ~288ms under load)
+  API-->>UI: HTTP 200 (14.67 ms p50 / 18.87 ms p95 unloaded; 514.49 ms p95 @ 100 VUs)
   UI-->>Operator: Real-time counterfactual runway visualization
 ```
 

@@ -4,9 +4,9 @@ Last updated: 2026-11-24. Resume point for the shared repository worktree.
 
 ## Current status
 
-- Branch: `day-6-7`, branched from `main` (`9f992d4` after PR #3 merge). Tags: `sprint-0`, `sprint-4`, `sprint-5`, `sprint-6`, `sprint-7`, `sprint-8`, `sprint-9`, `sprint-10`, `sprint-11`, `sprint-12`, `sprint-13`, `sprint-14`, `sprint-15`.
-- Sprints 1–15: ALL COMPLETE. All gates passed and tagged.
-- Release: `v1.0.0` ready for merge into `main`.
+- Branch: `final-audit`, branched from `main` (`1bdbeb9`, tag `v1.0.0`). Tags: `sprint-0`, `sprint-4`–`sprint-16`, `v1.0.0`.
+- Sprints 1–16: ALL COMPLETE. Independent final audit (`docs/reviews/final-independent-audit.md`, Gemini 4 Hydrogen (Medium)) passed with GO verdict.
+- Release: `v1.0.1` ready for PR merge (`final-audit` -> `main`).
 
 ## Verification in this work package (Sprint 15)
 
@@ -126,6 +126,9 @@ Do not edit `.env`, stage ignored local instructions, expose secrets, reset stat
 | Sprint 11 | PASS; truth pass, measured failure boundaries, 60-scenario sweep (95% CI), event-aware calibration, 0 security findings, tick 8/15 compatibility; tag `sprint-11` | [sprint-11.md](sprint-reports/sprint-11.md) |
 | Sprint 12 | PASS; API performance (626 req/s), SSE push (-95% load), 90m soak, alert routing, backup/restore (RTO 2.93s), policy switch; tag `sprint-12` | [sprint-12.md](sprint-reports/sprint-12.md) |
 | Sprint 13 | PASS; Playwright E2E suite, axe-core a11y (0 critical violations), demo director & preflight, offline backup pack, documentation consolidation, release packaging; tag `sprint-13` | [sprint-13.md](sprint-reports/sprint-13.md) |
+| Sprint 14 | PASS; DEF-05/06/07 fixes, 8 fault scenes, 36s cold start, security scans; tag `sprint-14` | [sprint-14.md](sprint-reports/sprint-14.md) |
+| Sprint 15 | PASS; presentation pack, Day 7 evidence, PR #19, release `v1.0.0`; tag `sprint-15` | [sprint-15.md](sprint-reports/sprint-15.md) |
+| Sprint 16 | PASS; independent final audit (Gemini 4 Hydrogen), claims & compliance recount, ADR-053/054, non-duplicate screenshots; tag `sprint-16` | [sprint-16.md](sprint-reports/sprint-16.md) |
 
 ## Five-minute status update
 

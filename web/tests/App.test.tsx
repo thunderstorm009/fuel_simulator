@@ -229,4 +229,10 @@ describe("operator application", () => {
     expect(screen.getByText("OFFLINE")).toBeInTheDocument();
     expect(screen.getByText(/5xx error rate: 1.00%/)).toBeInTheDocument();
   });
+
+  it("keeps guided tour button accessible name aligned with visible text", () => {
+    renderApp();
+    const prevBtn = screen.getByRole("button", { name: /Prev tour step/i });
+    expect(prevBtn.textContent?.trim()).toBe("Prev");
+  });
 });

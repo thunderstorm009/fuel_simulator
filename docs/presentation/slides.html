@@ -439,7 +439,7 @@
             </div>
             <div class="feature-card">
               <h4>🔬 Scientific Proof</h4>
-              <p>60-scenario sweep (+0.79% SLA, +3.69% holdout); 262 automated tests.</p>
+              <p>60-scenario sweep (+0.79% SLA, +3.69% holdout); 264 automated tests.</p>
             </div>
           </div>
           <div style="background: #111e38; border: 1px solid #1e3a8a; border-radius: 8px; padding: 18px; display: flex; justify-content: space-between; align-items: center;">
@@ -448,7 +448,7 @@
               <div style="font-size: 13px; color: #9ca3af; margin-top: 4px;">Repository: thunderstorm009/fuel_simulator (Release v1.0.0)</div>
             </div>
             <div style="display: flex; gap: 10px;">
-              <span class="badge-pass">262 TESTS PASSED</span>
+              <span class="badge-pass">264 TESTS PASSED</span>
               <span class="badge-pass">0 VULNERABILITIES</span>
               <span class="badge-pass">100% BRIEF COMPLIANT</span>
             </div>
@@ -553,7 +553,7 @@
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/01-dashboard-overview.png" alt="Dashboard Overview">
+            <img src="../evidence/final/screens/01-dashboard-overview.png" alt="Dashboard Overview">
             <div class="img-caption">Figure 4: Operator Dashboard with SIMULATED HUD, tick progress, and SSE push status.</div>
           </div>
         </div>
@@ -574,14 +574,14 @@
           <p class="lead">Forecasting decomposes demand patterns without external heavy ML dependencies.</p>
           <ul class="bullet-list">
             <li><strong>Diurnal Modeling:</strong> Pure empirical hour-of-day curve modeling with day-of-week seasonality factors.</li>
-            <li><strong>Empirical Backtest MAPE:</strong> Clocked at <strong>2.11% MAPE</strong> across 1h–24h prediction horizons.</li>
+            <li><strong>Empirical Backtest MAPE:</strong> 3,152-tick backtest: <strong>2.10% 24h outside-event MAPE</strong> (2.71% overall 24h).</li>
             <li><strong>Monte Carlo Runway:</strong> Simulates 300 consumption trajectories per station-fuel pair to derive P10 (pessimistic), P50, and P90 stockout curves.</li>
             <li><strong>Trajectory Drawer:</strong> Interactive slide-out drawer surfacing uncertainty drivers and runway hours.</li>
           </ul>
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/05-trajectory-drawer-mc.png" alt="Trajectory Drawer">
+            <img src="../evidence/final/screens/05-trajectory-drawer-mc.png" alt="Trajectory Drawer">
             <div class="img-caption">Figure 5: 24-hour Monte Carlo trajectory drawer showing P10-P90 confidence bounds.</div>
           </div>
         </div>
@@ -608,7 +608,7 @@
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/16-alert-center-incidents.png" alt="Alert Center">
+            <img src="../evidence/final/screens/16-alert-center-incidents.png" alt="Alert Center">
             <div class="img-caption">Figure 6: Real-time Alert Center with severity badges, search, and CSV/JSON export.</div>
           </div>
         </div>
@@ -663,12 +663,12 @@
           <ul class="bullet-list">
             <li><strong>Zero-Database In-Memory:</strong> Evaluates candidate adjustments entirely in API RAM from cached telemetry snapshots.</li>
             <li><strong>Instant Counterfactual Feedback:</strong> Recomputes post-dispatch inventory, averted stockout hours, and physical feasibility in <strong>&lt;50ms unloaded</strong>.</li>
-            <li><strong>High-Concurrency Scaling:</strong> Benchmarked in k6 load tests at <strong>288.3 ms p95 at 200 concurrent Virtual Users</strong>.</li>
+            <li><strong>High-Concurrency Scaling:</strong> Idle What-If: <strong>14.67 ms p50 / 18.87 ms p95</strong> (n=25); 100-VU mixed load: <strong>514.49 ms p95</strong>.</li>
           </ul>
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/08-what-if-counterfactual-runway.png" alt="What-If Sandbox">
+            <img src="../evidence/final/screens/08-what-if-counterfactual-runway.png" alt="What-If Sandbox">
             <div class="img-caption">Figure 8: What-If Sandbox displaying candidate slider, post-dispatch tanks, and averted stockouts.</div>
           </div>
         </div>
@@ -696,7 +696,7 @@
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/09-human-approval-flow.png" alt="Approval Flow">
+            <img src="../evidence/final/screens/09-human-approval-flow.png" alt="Approval Flow">
             <div class="img-caption">Figure 9: Human approval card requiring operator name and secret token.</div>
           </div>
         </div>
@@ -716,14 +716,14 @@
         <div class="col-left">
           <p class="lead">Complete structural map of the regional fuel distribution grid.</p>
           <ul class="bullet-list">
-            <li><strong>4 Transit Corridors:</strong> Dhaka-Chittagong, Dhaka-Sylhet, Dhaka-Khulna, and Dhaka-Rajshahi.</li>
+            <li><strong>4 Transit Corridors:</strong> Gazipur-Mirpur, Gazipur-Tongi, Patiya-Karnaphuli, and Patiya-Cox's Bazar.</li>
             <li><strong>Dynamic Latency Multipliers:</strong> Travel times dynamically adapt to road blockages and weather events.</li>
             <li><strong>In-Transit Pipeline Separation:</strong> Granular tracking distinguishes bulk terminal pipelines from road tankers.</li>
           </ul>
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/12-network-topology.png" alt="Network Topology">
+            <img src="../evidence/final/screens/12-network-topology.png" alt="Network Topology">
             <div class="img-caption">Figure 10: Supply topology graph showing depots, stations, corridors, and trucks.</div>
           </div>
         </div>
@@ -751,7 +751,7 @@
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/19-degraded-mode-banner.png" alt="Degraded Banner">
+            <img src="../evidence/final/screens/19-degraded-mode-banner.png" alt="Degraded Banner">
             <div class="img-caption">Figure 11: Degraded mode banner active during simulator outage with data age telemetry.</div>
           </div>
         </div>
@@ -810,7 +810,7 @@
         </div>
         <div class="col-right">
           <div class="img-box">
-            <img src="../evidence/day-7/screens/21-evaluation-policy-comparison.png" alt="Evaluation Comparison">
+            <img src="../evidence/final/screens/21-evaluation-policy-comparison.png" alt="Evaluation Comparison">
             <div class="img-caption">Figure 12: Empirical evaluation dashboard displaying 54 deterministic runs and sweep metrics.</div>
           </div>
         </div>
@@ -840,7 +840,7 @@
             <tbody>
               <tr>
                 <td><strong>Automated Test Suite</strong></td>
-                <td><strong>262 Tests Passed</strong> (239 Pytest, 11 Vitest, 12 Playwright)</td>
+                <td><strong>264 Tests Passed</strong> (240 Pytest, 12 Vitest, 12 Playwright)</td>
                 <td>100% Pass Rate</td>
                 <td><span class="badge-pass">PASS</span></td>
               </tr>
@@ -852,7 +852,7 @@
               </tr>
               <tr>
                 <td><strong>What-If Simulation Latency</strong></td>
-                <td><strong>288.3 ms p95</strong> (under 200 VU load; &lt;50ms unloaded)</td>
+                <td><strong>14.67 ms p50 / 18.87 ms p95</strong> idle (514.49 ms p95 @ 100 VUs)</td>
                 <td>&lt;500ms brief SLA</td>
                 <td><span class="badge-pass">PASS</span></td>
               </tr>
@@ -876,13 +876,13 @@
               </tr>
               <tr>
                 <td><strong>Accessibility Compliance</strong></td>
-                <td><strong>0 Critical Violations</strong> (Score: 98.75/100 across 8 views)</td>
+                <td><strong>0 Critical, 0 Serious</strong> (automated axe-core across 8 views)</td>
                 <td>WCAG 2.1 Level AA</td>
                 <td><span class="badge-pass">PASS</span></td>
               </tr>
               <tr>
                 <td><strong>Official Brief Compliance</strong></td>
-                <td><strong>109 of 109 Requirements Met (100%)</strong></td>
+                <td><strong>108 Required MET, 11 OPTIONAL-SKIPPED</strong> (119 items)</td>
                 <td>Hackathon Charter</td>
                 <td><span class="badge-pass">PASS</span></td>
               </tr>

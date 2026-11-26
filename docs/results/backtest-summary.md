@@ -48,6 +48,6 @@
 ## Key Findings & Calibration Analysis
 
 - **Short Horizons (1h - 6h)**: Aggregate MAPE is 2.01%, tracking diurnal cycles with high fidelity.
-- **Interval Coverage**: Observed P10–P90 coverage (31.3%) closely matches the nominal 80.0% envelope.
+- **Interval Coverage**: Observed 1h coverage (94.49%) exceeds and 6h coverage (74.15%) approaches the nominal 80.0% P10–P90 target, while 24h coverage (31.31%) shows under-coverage at longer horizons where cumulative variance grows faster than the fixed band.
 - **Event-Aware Calibration**: Model v1.2.0 incorporates known event multipliers into historical baseline calculation, eliminating the legacy 4–6 tick lag.
 

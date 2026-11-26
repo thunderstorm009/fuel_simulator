@@ -127,3 +127,16 @@ With every bug resolved and all 109 brief requirements confirmed MET, Day 7 will
 3. **Presentation Pack:** Compile `docs/presentation/PITCH-10MIN.md`, `SLIDES.md`, `slides.html`, `slides.pdf`, `QA-CHEATSHEET.md`, and `BACKUP-PLAN.md`.
 4. **Judging Rehearsals:** Conduct 3 live rehearsals with `scripts/demo_director.py` and log timings to `docs/evidence/day-7/rehearsal.md`.
 5. **Sprint 15 Closeout, PR & Release:** Tag `sprint-15`, push branch `day-6-7`, open PR into `main`, verify green CI, merge, tag `v1.0.0`, and update repository metadata.
+
+
+---
+
+## 7. Corrections (2026-11-26 Final Independent Audit)
+
+An independent audit (Gemini 4 Hydrogen (Medium)) identified the following corrections to Day 6 claims; historical text above is preserved as written:
+
+| Item | Old Claim | Corrected Claim | Evidence |
+|---|---|---|---|
+| **Brief Compliance Count** | `109 of 109 MET (100%)` (while noting RL was `OPTIONAL-SKIPPED`) | **108 MET, 0 PARTIAL, 0 NOT MET, 11 OPTIONAL-SKIPPED** (119 total rows in `docs/BRIEF-COMPLIANCE.md` after adding omitted optional items from Sections 14 & 22). | `docs/BRIEF-COMPLIANCE.md`, `docs/evidence/final/claims-audit.md` |
+| **Fault Recovery Times (`0.21s`–`1.79s`)** | `0.21s to 1.79s` recovery across all 8 fault scenes | `0.21s`–`1.79s` in `scripts/fault_demo.sh` measures post-fault `data_age_seconds` / poll latency after clearing the fault, not container restart time. Per-service 3-number recovery in `docs/results/recovery-times.json` is `0.38–1.02s` (container running), `5.35–6.87s` (healthy), `0.38–3.06s` (data visible). | `docs/results/recovery-times.json`, `scripts/fault_demo.sh` |
+| **Sprint Gate Script Path** | `bash scripts/sprint_gate.sh 14` | `scripts/sprint_gate.sh` is gitignored (`.gitignore:19`) and absent in a clean clone. Public reproducible command is `bash scripts/sprint_gate_public.sh 14`. | `.gitignore:19`, `docs/evidence/final/verification.md` |

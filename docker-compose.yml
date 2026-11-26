@@ -132,7 +132,7 @@ services:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./observability/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     depends_on:
       api:
         condition: service_healthy
@@ -156,7 +156,7 @@ services:
       - grafana_data:/var/lib/grafana
       - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     depends_on:
       prometheus:
         condition: service_healthy
@@ -175,7 +175,7 @@ services:
     volumes:
       - ./observability/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     ports:
-      - "9093:9093"
+      - "127.0.0.1:9093:9093"
     healthcheck:
       test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:9093/-/healthy]
       interval: 5s
